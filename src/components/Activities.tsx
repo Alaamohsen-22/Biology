@@ -1,5 +1,9 @@
 import { useState } from "react";
 import type { Lesson, Question } from "../data/lessons";
+import { CardOrdering } from "./CardOrdering";
+import { ActivityFeedback, useActivityFeedback } from "./ActivityFeedback";
+import { useSound } from "./SoundSystem";
+import { ScientificScene } from "./science/ScientificScene";
 export function Matching({
   lesson,
   onDone,
@@ -12,61 +16,83 @@ export function Matching({
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [tries, setTries] = useState(0);
   const [ok, setOk] = useState(done);
+  const feedback = useActivityFeedback();
+  const sound = useSound();
   return (
-    <section className="card">
-      <span className="eyebrow">نشاط ١ · مطابقة وتصنيف</span>
-      <h2>اربط كل مثال بمفهومه</h2>
-      <p>اختر من القوائم؛ تعمل باللمس ولوحة المفاتيح.</p>
-      {lesson.pairs.map(([a, b], i) => (
-        <label className="match-row" key={a}>
-          <span>{a}</span>
-          <select
-            value={answers[a] ?? ""}
-            disabled={ok}
-            onChange={(e) => setAnswers({ ...answers, [a]: e.target.value })}
+    <section className="card activity-board" data-sound-scope="custom">
+      <div className="section-head">
+        <div>
+          <span className="eyebrow">نشاط ١ · مطابقة وتصنيف</span>
+          <h2>اربط كل مثال بمفهومه</h2>
+        </div>
+        {done && <span className="pill">✓ إنجاز محفوظ</span>}
+      </div>
+      <p>اختر المفهوم المناسب لكل بطاقة. تعمل القوائم باللمس ولوحة المفاتيح.</p>
+      <div className="matching-cards">
+        {lesson.pairs.map(([a, b], i) => (
+          <label
+            className={`matching-card ${answers[a] ? "answered" : ""} ${tries > 0 ? (answers[a] === b ? "correct" : "needs-review") : ""}`}
+            key={a}
           >
-            <option value="">اختر المفهوم</option>
-            {[...lesson.pairs].reverse().map(([, v]) => (
-              <option key={v}>{v}</option>
-            ))}
-          </select>
-          {tries > 0 && answers[a] !== b && (
-            <small>
-              {tries > 1
-                ? `فكر في: ${b}`
-                : `ارجع إلى فقرة ${lesson.concepts[Math.min(i, lesson.concepts.length - 1)].title}`}
-            </small>
-          )}
-        </label>
-      ))}
-      <button
-        className="primary"
-        disabled={ok || Object.keys(answers).length < lesson.pairs.length}
-        onClick={() => {
-          setTries(tries + 1);
-          if (lesson.pairs.every(([a, b]) => answers[a] === b)) {
-            setOk(true);
-            onDone();
-          }
-        }}
-      >
-        {ok ? "✓ أتقنت المطابقة" : "تحقق من المطابقة"}
-      </button>
-      <button
-        className="text-button"
-        onClick={() => {
-          setOk(false);
-          setTries(0);
-          setAnswers({});
-        }}
-      >
-        إعادة نشاط المطابقة {done && "· إنجازك محفوظ ✓"}
-      </button>
-      {tries > 0 && !ok && (
-        <p role="status" className="hint">
-          بعض العلاقات تحتاج مراجعة. اقرأ التلميحات ثم حاول مجددًا.
-        </p>
-      )}
+            <span className="activity-number">{i + 1}</span>
+            <b>{a}</b>
+            <select
+              value={answers[a] ?? ""}
+              disabled={ok}
+              onChange={(e) => {
+                setAnswers({ ...answers, [a]: e.target.value });
+                sound.play("select");
+              }}
+            >
+              <option value="">اختر المفهوم</option>
+              {[...lesson.pairs].reverse().map(([, v]) => (
+                <option key={v}>{v}</option>
+              ))}
+            </select>
+            {tries > 0 && answers[a] !== b && (
+              <small>
+                {tries > 1
+                  ? `فكر في: ${b}`
+                  : `ارجع إلى فقرة ${lesson.concepts[Math.min(i, lesson.concepts.length - 1)].title}`}
+              </small>
+            )}
+            {tries > 0 && answers[a] === b && <small>✓ علاقة صحيحة</small>}
+          </label>
+        ))}
+      </div>
+      <div className="button-row">
+        <button
+          className="primary"
+          disabled={ok || Object.keys(answers).length < lesson.pairs.length}
+          onClick={() => {
+            setTries(tries + 1);
+            feedback.check(
+              lesson.pairs.every(([a, b]) => answers[a] === b),
+              () => {
+                setOk(true);
+                onDone();
+              },
+            );
+          }}
+        >
+          {ok ? "✓ أتقنت المطابقة" : "تحقق من المطابقة"}
+        </button>
+        <button
+          onClick={() => {
+            setOk(false);
+            setTries(0);
+            setAnswers({});
+            feedback.reset();
+            sound.play("step");
+          }}
+        >
+          إعادة نشاط المطابقة {done && "· إنجازك محفوظ ✓"}
+        </button>
+      </div>
+      <ActivityFeedback
+        status={feedback.status}
+        celebrating={feedback.celebrating}
+      />
     </section>
   );
 }
@@ -75,79 +101,22 @@ export function Ordering({
   onDone,
   done,
   title = "رتب المراحل",
+  reduced = false,
 }: {
   items: string[];
   onDone: () => void;
   done: boolean;
   title?: string;
+  reduced?: boolean;
 }) {
-  const [order, setOrder] = useState(() => items.map((_, i) => i).reverse());
-  const [tries, setTries] = useState(0);
-  const [ok, setOk] = useState(done);
-  const move = (i: number, d: number) => {
-    const copy = [...order];
-    [copy[i], copy[i + d]] = [copy[i + d], copy[i]];
-    setOrder(copy);
-  };
   return (
-    <section className="card">
-      <span className="eyebrow">نشاط ٢ · ترتيب</span>
-      <h2>{title}</h2>
-      <ol className="order-list">
-        {order.map((idx, i) => (
-          <li key={idx}>
-            <span>{i + 1}</span>
-            <b>{items[idx]}</b>
-            <div>
-              <button
-                aria-label={`تقديم ${items[idx]}`}
-                disabled={i === 0 || ok}
-                onClick={() => move(i, -1)}
-              >
-                ↑
-              </button>
-              <button
-                aria-label={`تأخير ${items[idx]}`}
-                disabled={i === order.length - 1 || ok}
-                onClick={() => move(i, 1)}
-              >
-                ↓
-              </button>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <button
-        className="primary"
-        disabled={ok}
-        onClick={() => {
-          setTries(tries + 1);
-          if (order.every((v, i) => v === i)) {
-            setOk(true);
-            onDone();
-          }
-        }}
-      >
-        {ok ? "✓ ترتيب صحيح" : "تحقق من الترتيب"}
-      </button>
-      <button
-        className="text-button"
-        onClick={() => {
-          setOk(false);
-          setTries(0);
-          setOrder(items.map((_, i) => i).reverse());
-        }}
-      >
-        إعادة نشاط الترتيب {done && "· إنجازك محفوظ ✓"}
-      </button>
-      {tries > 0 && !ok && (
-        <p className="hint" role="status">
-          {tries === 1
-            ? "حدد البداية أولًا، ثم ابحث عن علاقة السبب بالنتيجة."
-            : `تبدأ المراحل بـ «${items[0]}»، وتنتهي بـ «${items[items.length - 1]}».`}
-        </p>
-      )}
-    </section>
+    <CardOrdering
+      items={items}
+      onDone={onDone}
+      done={done}
+      title={title}
+      reduced={reduced}
+    />
   );
 }
 export function Formative({
@@ -160,13 +129,15 @@ export function Formative({
   done: boolean;
 }) {
   const [choice, setChoice] = useState(-1);
-  const [tries, setTries] = useState(0);
   const [ok, setOk] = useState(done);
+  const [tries, setTries] = useState(0);
+  const feedback = useActivityFeedback();
+  const sound = useSound();
   return (
-    <div className="card">
+    <section className="card activity-board" data-sound-scope="custom">
       <span className="eyebrow">فكّر ثم اختبر فهمك</span>
       <h2>{question.text}</h2>
-      <div className="options">
+      <div className="options activity-options">
         {question.options.map((o, i) => (
           <label key={o}>
             <input
@@ -174,45 +145,55 @@ export function Formative({
               name="formative"
               checked={choice === i}
               disabled={ok}
-              onChange={() => setChoice(i)}
+              onChange={() => {
+                setChoice(i);
+                sound.play("select");
+              }}
             />
             <span>{o}</span>
           </label>
         ))}
       </div>
-      <button
-        disabled={choice < 0 || ok}
-        className="primary"
-        onClick={() => {
-          setTries(tries + 1);
-          if (choice === question.answer) {
-            setOk(true);
-            onDone();
-          }
-        }}
-      >
-        {ok ? "✓ فهم متحقق" : "تحقق وحاول"}
-      </button>
-      <button
-        className="text-button"
-        onClick={() => {
-          setOk(false);
-          setTries(0);
-          setChoice(-1);
-        }}
-      >
-        إعادة التقويم {done && "· إنجازك محفوظ ✓"}
-      </button>
+      <div className="button-row">
+        <button
+          disabled={choice < 0 || ok}
+          className="primary"
+          onClick={() => {
+            setTries(tries + 1);
+            feedback.check(choice === question.answer, () => {
+              setOk(true);
+              onDone();
+            });
+          }}
+        >
+          {ok ? "✓ فهم متحقق" : "تحقق وحاول"}
+        </button>
+        <button
+          onClick={() => {
+            setChoice(-1);
+            setTries(0);
+            setOk(false);
+            feedback.reset();
+            sound.play("step");
+          }}
+        >
+          إعادة التقويم {done && "· إنجازك محفوظ ✓"}
+        </button>
+      </div>
       {tries > 0 && (
-        <p className="hint" role="status">
+        <p className="hint">
           {ok
             ? question.why
             : tries === 1
-              ? "استبعد الخيارات المخالفة للمفهوم، وحاول مرة أخرى."
+              ? "استبعد الخيارات المخالفة للمفهوم، ثم حاول مجددًا."
               : question.why}
         </p>
       )}
-    </div>
+      <ActivityFeedback
+        status={feedback.status}
+        celebrating={feedback.celebrating}
+      />
+    </section>
   );
 }
 export function UrinaryAssembly({
@@ -226,57 +207,40 @@ export function UrinaryAssembly({
   const [chosen, setChosen] = useState(["", "", "", ""]);
   const [checked, setChecked] = useState(done);
   const [tries, setTries] = useState(0);
+  const feedback = useActivityFeedback();
+  const sound = useSound();
   return (
-    <section className="card">
-      <span className="eyebrow">تجميع افتراضي آمن · بديل التشريح</span>
-      <h2>ابنِ نموذج الجهاز البولي</h2>
+    <section className="card activity-board" data-sound-scope="custom">
+      <div className="section-head">
+        <div>
+          <span className="eyebrow">تجميع افتراضي آمن · بديل التشريح</span>
+          <h2>ابنِ نموذج الجهاز البولي</h2>
+        </div>
+        {done && <span className="pill">✓ إنجاز محفوظ</span>}
+      </div>
+      <p>لاحظ مواضع الأعضاء في الرسم، ثم اربطها بالاسم والوظيفة.</p>
       <div className="assembly-layout">
-        <svg
-          viewBox="0 0 360 330"
-          role="img"
-          aria-label="نموذج الجهاز البولي مع أربعة مواضع للتسمية"
-        >
-          <path
-            d="M120 55q-45-26-44 40t44 10q-17-22 0-50M240 55q45-26 44 40t-44 10q17-22 0-50"
-            fill="#ba8580"
-          />
-          <path
-            d="M116 108q4 70 38 118M244 108q-4 70-38 118"
-            stroke="#c8b778"
-            strokeWidth="7"
-            fill="none"
-          />
-          <ellipse cx="180" cy="238" rx="35" ry="29" fill="#d1b98d" />
-          <path d="M180 263v38" stroke="#b8a071" strokeWidth="9" />
-          {[
-            [51, 68],
-            [302, 159],
-            [287, 243],
-            [281, 299],
-          ].map(([x, y], i) => (
-            <g key={i}>
-              <circle
-                cx={x}
-                cy={y}
-                r="17"
-                fill={checked ? "#719671" : "#e0d8bf"}
-              />
-              <text
-                x={x}
-                y={y + 5}
-                textAnchor="middle"
-                fill="#fff"
-                fontSize="14"
-              >
-                {checked ? "✓" : i + 1}
-              </text>
-            </g>
-          ))}
-        </svg>
+        <ScientificScene
+          id="urine"
+          t={checked ? 1 : 0.5}
+          value={checked ? 1 : 0.5}
+          vars={{ time: 100 }}
+          compact
+        />
         <div>
           {parts.map((p, i) => (
-            <label className="match-row" key={p}>
-              <span>الموضع {i + 1}</span>
+            <label className="assembly-part-card" key={p}>
+              <span className="activity-number">{i + 1}</span>
+              <b>
+                {
+                  [
+                    "عضوان لتنقية الدم",
+                    "أنبوبان نحو المثانة",
+                    "حجرة تخزين مؤقت",
+                    "أنبوب إلى الخارج",
+                  ][i]
+                }
+              </b>
               <select
                 aria-label={`اسم العضو في الموضع ${i + 1}`}
                 value={chosen[i]}
@@ -285,6 +249,7 @@ export function UrinaryAssembly({
                   const copy = [...chosen];
                   copy[i] = e.target.value;
                   setChosen(copy);
+                  sound.play("tool");
                 }}
               >
                 <option value="">اختر العضو</option>
@@ -293,50 +258,45 @@ export function UrinaryAssembly({
                 ))}
               </select>
               {tries > 0 && chosen[i] !== p && (
-                <small>
-                  {
-                    [
-                      "تنقية الدم وتكوين البول",
-                      "نقل البول إلى المثانة",
-                      "التخزين المؤقت",
-                      "الطرح إلى خارج الجسم",
-                    ][i]
-                  }
-                </small>
+                <small>راجع الاسم المرتبط بهذه الوظيفة في الرسم.</small>
               )}
             </label>
           ))}
         </div>
       </div>
-      <button
-        className="primary"
-        disabled={checked || chosen.some((x) => !x)}
-        onClick={() => {
-          setTries(tries + 1);
-          if (chosen.every((x, i) => x === parts[i])) {
-            setChecked(true);
-            onDone();
-          }
-        }}
-      >
-        {checked ? "✓ نموذج مكتمل وصحيح" : "تحقق من تركيب النموذج"}
-      </button>
-      <button
-        className="text-button"
-        onClick={() => {
-          setChecked(false);
-          setTries(0);
-          setChosen(["", "", "", ""]);
-        }}
-      >
-        إعادة تركيب النموذج {done && "· إنجازك محفوظ ✓"}
-      </button>
-      {checked && (
-        <p className="hint">
-          الكليتان تنقيان الدم؛ الحالبان ينقلان البول؛ المثانة تخزنه؛ والإحليل
-          يطرحه.
-        </p>
-      )}
+      <div className="button-row">
+        <button
+          className="primary"
+          disabled={checked || chosen.some((x) => !x)}
+          onClick={() => {
+            setTries(tries + 1);
+            feedback.check(
+              chosen.every((x, i) => x === parts[i]),
+              () => {
+                setChecked(true);
+                onDone();
+              },
+            );
+          }}
+        >
+          {checked ? "✓ نموذج مكتمل وصحيح" : "تحقق من تركيب النموذج"}
+        </button>
+        <button
+          onClick={() => {
+            setChecked(false);
+            setTries(0);
+            setChosen(["", "", "", ""]);
+            feedback.reset();
+            sound.play("step");
+          }}
+        >
+          إعادة تركيب النموذج {done && "· إنجازك محفوظ ✓"}
+        </button>
+      </div>
+      <ActivityFeedback
+        status={feedback.status}
+        celebrating={feedback.celebrating}
+      />
     </section>
   );
 }

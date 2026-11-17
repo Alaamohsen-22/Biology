@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { soundManager } from "../engine/sound";
 import { Music2, Pause, Play, RotateCcw } from "lucide-react";
 export function AmbientMusic({ enabled }: { enabled: boolean }) {
   const audio = useRef<HTMLAudioElement>(null);
@@ -24,6 +25,7 @@ export function AmbientMusic({ enabled }: { enabled: boolean }) {
         src={`${import.meta.env?.BASE_URL ?? "/Biology/"}audio/ambience/island.wav`}
         preload="none"
         onEnded={() => setPlaying(false)}
+        onPause={() => setPlaying(false)}
         onError={() => setError(true)}
       />
       <div className="button-row">
@@ -37,8 +39,9 @@ export function AmbientMusic({ enabled }: { enabled: boolean }) {
             } else {
               audio.current.volume = 0.2;
               try {
-                await audio.current.play();
-                setPlaying(true);
+                const ok = await soundManager.playMedia(audio.current, "music");
+                setPlaying(ok);
+                setError(!ok);
               } catch {
                 setError(true);
               }

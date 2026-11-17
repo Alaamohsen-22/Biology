@@ -50,14 +50,22 @@ import {
 } from "./components/Activities";
 import { Simulation } from "./components/Simulation";
 import { Project } from "./components/Project";
-import { CardOrdering } from "./components/CardOrdering";
+
 import assets from "./data/assets.json";
+import {
+  SoundPreferences,
+  SoundNotice,
+  SoundSettings,
+  interfaceClick,
+} from "./components/SoundSystem";
+import { ObservationPreview } from "./components/ObservationPreview";
 type SettingsData = {
   dark: boolean;
   contrast: boolean;
   reduced: boolean;
   font: number;
   sound: boolean;
+  volume: number;
   threshold: number;
 };
 const SETTINGS = "life-island-settings-v1",
@@ -68,6 +76,7 @@ const defaultSettings: SettingsData = {
   reduced: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   font: 100,
   sound: true,
+  volume: 70,
   threshold: 70,
 };
 function getProgress() {
@@ -86,9 +95,14 @@ function getSettings() {
       ...defaultSettings,
       dark: r.dark === true,
       contrast: r.contrast === true,
-      reduced: r.reduced !== false,
+      reduced:
+        typeof r.reduced === "boolean" ? r.reduced : defaultSettings.reduced,
       font: [90, 100, 110, 120, 130].includes(r.font) ? r.font : 100,
       sound: r.sound !== false,
+      volume:
+        typeof r.volume === "number" && r.volume >= 0 && r.volume <= 100
+          ? r.volume
+          : 70,
       threshold:
         typeof r.threshold === "number" &&
         r.threshold >= 50 &&
@@ -200,7 +214,11 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
   return (
-    <div className="app">
+    <div
+      className="app"
+      onClickCapture={(event) => interfaceClick(event.target)}
+    >
+      <SoundPreferences enabled={settings.sound} volume={settings.volume} />
       <a className="skip-link" href="#main">
         تجاوز إلى المحتوى
       </a>
@@ -258,6 +276,7 @@ export default function App() {
         </div>
       </header>
       <main id="main" tabIndex={-1}>
+        <SoundNotice />
         {notice && (
           <div className="notice" role="status">
             {notice}
@@ -620,6 +639,7 @@ export default function App() {
                       </p>
                     )}
                     <Quiz
+                      threshold={settings.threshold}
                       key={`pre-${active}`}
                       title={`قبل الاستكشاف: ${lesson.title}`}
                       questions={bank(lesson, "pre")}
@@ -750,36 +770,18 @@ export default function App() {
                         }))
                       }
                     />
-                    {active === 1 ? (
-                      <CardOrdering
-                        items={lesson.order}
-                        done={lp.activities.includes("order")}
-                        sound={settings.sound}
-                        reduced={settings.reduced}
-                        onDone={() =>
-                          patchLesson(active, (p) => ({
-                            ...p,
-                            activities: [
-                              ...new Set([...p.activities, "order"]),
-                            ],
-                          }))
-                        }
-                      />
-                    ) : (
-                      <Ordering
-                        key={`order-${active}`}
-                        items={lesson.order}
-                        done={lp.activities.includes("order")}
-                        onDone={() =>
-                          patchLesson(active, (p) => ({
-                            ...p,
-                            activities: [
-                              ...new Set([...p.activities, "order"]),
-                            ],
-                          }))
-                        }
-                      />
-                    )}
+                    <Ordering
+                      key={`order-${active}`}
+                      items={lesson.order}
+                      done={lp.activities.includes("order")}
+                      reduced={settings.reduced}
+                      onDone={() =>
+                        patchLesson(active, (p) => ({
+                          ...p,
+                          activities: [...new Set([...p.activities, "order"])],
+                        }))
+                      }
+                    />
                   </>
                 )}
                 {tab === 7 && (
@@ -835,6 +837,7 @@ export default function App() {
                       </div>
                     )}
                     <Quiz
+                      threshold={settings.threshold}
                       key={`post-${active}-${lp.attempts}`}
                       title={`تحدي الإتقان: ${lesson.title}`}
                       questions={bank(lesson, "post", lp.attempts)}
@@ -998,6 +1001,7 @@ export default function App() {
               </div>
             )}
             <Quiz
+              threshold={settings.threshold}
               key={`final-${finalAttempt}`}
               title="الاختبار البعدي الشامل"
               questions={finalBank(finalAttempt)}
@@ -1267,6 +1271,7 @@ function Explore({ lesson }: { lesson: Lesson }) {
       <span className="eyebrow">توقّع · لاحظ · فسّر</span>
       <h2>قبل أن تعرف الإجابة</h2>
       <p>{lesson.explore}</p>
+      <ObservationPreview lesson={lesson} />
       <label>
         اكتب توقعك
         <textarea
@@ -1401,7 +1406,7 @@ function SettingsDialog({
         ["dark", "الوضع الداكن"],
         ["contrast", "تباين مرتفع"],
         ["reduced", "تقليل الحركة"],
-        ["sound", "إتاحة صوت المعلمة"],
+        ["sound", "الصوت والتسجيلات والمؤثرات"],
       ].map(([key, label]) => (
         <label className="toggle" key={key}>
           <span>{label}</span>
@@ -1412,6 +1417,11 @@ function SettingsDialog({
           />
         </label>
       ))}
+      <SoundSettings
+        enabled={s.sound}
+        volume={s.volume}
+        onVolume={(volume) => setSettings({ ...s, volume })}
+      />{" "}
       <p className="muted">
         النصوص التعليمية ظاهرة دائمًا. الصوت لا يعمل تلقائيًا. جميع الأنشطة تدعم
         اللمس ولوحة المفاتيح.

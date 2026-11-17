@@ -2491,3 +2491,581 @@ footer .text-button {
     transform: rotate(var(--turn));
   }
 }
+
+/* Scientific workspaces v2: large drawings, synchronized steps and touch controls. */
+.simulation-v2 {
+  padding: 28px;
+  overflow: hidden;
+}
+.simulation-v2 .lab-visual {
+  max-width: none;
+  margin: 0;
+  width: 100%;
+}
+.simulation-v2 .lab-visual svg {
+  border-radius: 22px;
+}
+.scientific-scene {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+}
+.scientific-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  aspect-ratio: 760/474;
+}
+.science-label {
+  font:
+    600 18px "Noto Sans Arabic",
+    Tahoma,
+    sans-serif;
+  fill: #3b5a4a;
+  direction: rtl;
+  unicode-bidi: plaintext;
+}
+.scientific-scene figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 15px 0 10px;
+}
+.scientific-scene figcaption span {
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+.science-parts {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.science-parts button {
+  min-height: 44px;
+  padding: 8px 13px;
+  font-size: 0.78rem;
+  flex: 1;
+  white-space: normal;
+  min-width: 110px;
+}
+.science-parts button > span {
+  width: 23px;
+  height: 23px;
+  background: var(--soft);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+.science-parts button[aria-pressed="true"] {
+  background: var(--green);
+  color: var(--paper);
+}
+.part-description {
+  padding: 13px 16px;
+  background: var(--soft);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  margin: 12px 0 0;
+}
+.lab-step-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--soft);
+  border-radius: 15px;
+  margin: 18px 0;
+}
+.lab-step-header p {
+  font-size: 0.92rem;
+  font-weight: 600;
+  flex: 1;
+  margin: 0;
+}
+.play-state {
+  display: inline-flex;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  font-size: 0.7rem;
+  background: var(--paper);
+  white-space: nowrap;
+}
+.play-state.running {
+  border-color: #8fae80;
+  color: var(--green);
+}
+.simulation-v2 .simulation-controls {
+  display: flex;
+  gap: 10px;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+.simulation-v2 .simulation-controls button {
+  min-height: 48px;
+  font-size: 0.78rem;
+  padding: 10px 14px;
+}
+.simulation-v2 .speed select {
+  min-height: 44px;
+}
+.lab-timeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 20px 0 6px;
+}
+.lab-timeline > span {
+  border-top: 4px solid var(--line);
+  padding: 9px 7px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.lab-timeline b {
+  font-size: 0.7rem;
+  background: var(--soft);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.lab-timeline small {
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.lab-timeline .current {
+  border-color: #d8b264;
+}
+.lab-timeline .complete {
+  border-color: #87a67d;
+}
+.lab-timeline .complete b {
+  background: #87a67d;
+  color: #fff;
+}
+.lab-information {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 20px;
+  align-items: center;
+  margin: 18px 0;
+}
+.lab-information > p {
+  font-size: 0.85rem;
+  line-height: 2.1;
+  margin: 0;
+}
+.lab-information .lab-result b {
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+.lab-instruction {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+.experiment-workbench {
+  margin-top: 20px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--bg);
+  position: relative;
+  isolation: isolate;
+}
+.experiment-workbench .variables {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.experiment-workbench .variables > label {
+  padding: 17px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin: 0;
+}
+.experiment-workbench .variables label > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.82rem;
+  min-height: 44px;
+  align-items: center;
+}
+.experiment-workbench input[type="range"] {
+  height: 32px;
+  touch-action: pan-y;
+}
+.variable-choices {
+  display: flex;
+  gap: 7px;
+  margin-top: 6px;
+}
+.variable-choices button {
+  flex: 1;
+  min-height: 44px;
+  font-size: 0.7rem;
+  padding: 7px;
+}
+.variable-choices button[aria-pressed="true"] {
+  background: var(--soft);
+  border-color: #86a07b;
+  color: var(--green);
+}
+.experiment-workbench .experiment-notes {
+  position: relative;
+}
+.experiment-notes button {
+  min-height: 46px;
+}
+.activity-board {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.matching-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.matching-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 19px;
+  display: grid;
+  grid-template-columns: 35px 1fr;
+  gap: 12px;
+  align-items: center;
+  background: var(--bg);
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.matching-card b {
+  font-size: 0.95rem;
+}
+.matching-card select {
+  grid-column: 1/-1;
+  width: 100%;
+  min-height: 50px;
+  font-size: 0.88rem;
+}
+.matching-card small {
+  grid-column: 1/-1;
+  font-size: 0.75rem;
+  color: var(--green);
+}
+.matching-card.answered {
+  border-color: #a1b591;
+}
+.matching-card.correct {
+  background: var(--soft);
+}
+.matching-card.needs-review {
+  border-color: #c7af7a;
+}
+.activity-number {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  background: var(--soft);
+  color: var(--green);
+  border-radius: 11px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.activity-board .button-row {
+  margin-top: 20px;
+}
+.activity-board button,
+.activity-options label {
+  min-height: 48px;
+}
+.activity-options {
+  margin: 20px 0;
+}
+.activity-options label {
+  padding: 16px 20px;
+  min-height: 58px;
+  border-radius: 14px;
+  transition:
+    background 0.2s,
+    transform 0.15s;
+}
+.activity-options label:active {
+  transform: scale(0.99);
+}
+.activity-options input {
+  width: 22px;
+  height: 22px;
+}
+.assembly-layout {
+  grid-template-columns: 1.4fr 1fr;
+  gap: 22px;
+}
+.assembly-layout .scientific-svg {
+  max-width: none;
+  margin: 0;
+}
+.assembly-part-card {
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+.assembly-part-card b {
+  font-size: 0.8rem;
+}
+.assembly-part-card select {
+  grid-column: 1/-1;
+  width: 100%;
+  min-height: 46px;
+}
+.assembly-part-card small {
+  grid-column: 1/-1;
+  color: var(--muted);
+}
+.observation-preview {
+  margin: 24px 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.observation-preview .button-row {
+  margin: 16px 0;
+}
+.observation-preview button {
+  min-height: 46px;
+}
+.observation-preview button[aria-pressed="true"] {
+  background: var(--green);
+  color: var(--paper);
+}
+.compost-display {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 20px 0;
+}
+.compost-lab .variables label {
+  padding: 15px;
+  background: var(--soft);
+  border-radius: 12px;
+}
+.compost-lab input[type="range"] {
+  height: 30px;
+}
+.compost-lab .button-row button {
+  min-height: 48px;
+}
+.quiz .options label {
+  min-height: 52px;
+  border-radius: 13px;
+}
+.quiz .options input {
+  width: 21px;
+  height: 21px;
+}
+.quiz > button {
+  min-height: 48px;
+}
+.sound-notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid #d1b67d;
+  background: var(--paper);
+  border-radius: 12px;
+  margin: 15px 0;
+  font-size: 0.8rem;
+}
+.sound-notice span {
+  flex: 1;
+}
+.sound-notice button {
+  min-height: 44px;
+}
+.sound-settings {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin: 18px 0;
+}
+.sound-settings label {
+  font-size: 0.82rem;
+}
+.sound-settings input {
+  height: 32px;
+}
+.sound-settings button {
+  min-height: 46px;
+}
+.sound-settings p {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin: 9px 0 0;
+}
+.icon-button,
+.lesson-bottom button {
+  min-height: 44px;
+  min-width: 44px;
+}
+[data-theme="dark"] .science-label {
+  fill: #3b5a4a;
+}
+[data-theme="dark"] .scientific-svg {
+  background: #eff3e9;
+}
+@media (max-width: 760px) {
+  .simulation-v2 {
+    padding: 16px;
+  }
+  .scientific-svg {
+    border-radius: 16px !important;
+  }
+  .science-label {
+    font-size: 20px;
+  }
+  .scientific-scene figcaption {
+    display: block;
+    font-size: 0.83rem;
+  }
+  .scientific-scene figcaption span {
+    display: block;
+    font-size: 0.7rem;
+    margin-top: 5px;
+  }
+  .science-parts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .science-parts button {
+    min-width: 0;
+    font-size: 0.76rem;
+    padding: 8px;
+    min-height: 47px;
+  }
+  .lab-step-header {
+    flex-wrap: wrap;
+    padding: 13px;
+    gap: 10px;
+  }
+  .lab-step-header p {
+    flex-basis: 100%;
+    order: 3;
+    font-size: 0.88rem;
+  }
+  .play-state {
+    margin-right: auto;
+    font-size: 0.65rem;
+  }
+  .simulation-v2 .simulation-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .simulation-v2 .simulation-controls button {
+    width: 100%;
+    font-size: 0.76rem;
+    padding: 9px 7px;
+    min-height: 48px;
+  }
+  .simulation-v2 .speed {
+    margin: 0;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    grid-column: 1/-1;
+  }
+  .lab-timeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .lab-timeline small {
+    font-size: 0.7rem;
+  }
+  .lab-information {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .lab-information > p {
+    font-size: 0.83rem;
+  }
+  .experiment-workbench {
+    padding: 14px;
+  }
+  .experiment-workbench .variables {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .experiment-workbench .variables > label {
+    padding: 13px;
+  }
+  .variable-choices button {
+    font-size: 0.73rem;
+  }
+  .matching-cards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .matching-card {
+    padding: 16px;
+  }
+  .matching-card b {
+    font-size: 0.9rem;
+  }
+  .matching-card select {
+    font-size: 0.85rem;
+  }
+  .activity-board .button-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .assembly-layout {
+    grid-template-columns: 1fr;
+  }
+  .assembly-layout .scientific-svg {
+    max-width: none;
+  }
+  .activity-options label {
+    font-size: 0.85rem;
+  }
+  .observation-preview .button-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .sound-notice {
+    flex-wrap: wrap;
+  }
+  .lesson-bottom {
+    flex-wrap: wrap;
+  }
+  .lesson-bottom button {
+    font-size: 0.75rem;
+  }
+  .compost-lab .button-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .compost-lab .button-row button {
+    width: 100%;
+  }
+}

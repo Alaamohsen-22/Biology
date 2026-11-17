@@ -28,6 +28,8 @@ const { Matching, Ordering, Formative } = await import(
   "../src/components/Activities"
 );
 const { lessons, bank } = await import("../src/data/lessons");
+const { soundManager } = await import("../src/engine/sound");
+soundManager.configure(false);
 for (const lesson of lessons) {
   for (const scene of lesson.scenes) {
     test(`station ${lesson.id}, ${scene.id}: observation, changed variable, completion, conclusion`, () => {
@@ -46,7 +48,7 @@ for (const lesson of lessons) {
       try {
         assert.equal(
           ui.getByRole("button", { name: "تشغيل" }).hasAttribute("disabled"),
-          true,
+          false,
         );
         for (let i = 0; i < scene.stages.length; i++)
           fireEvent.click(ui.getByRole("button", { name: /خطوة تالية/ }));
@@ -63,9 +65,12 @@ for (const lesson of lessons) {
         fireEvent.change(range, {
           target: {
             value:
-              variable.initial === variable.max ? variable.min : variable.max,
+              Number((range as HTMLInputElement).value) === variable.max
+                ? variable.min
+                : variable.max,
           },
         });
+        fireEvent.click(ui.getByRole("button", { name: "تشغيل", exact: true }));
         for (let i = 0; i < scene.stages.length; i++)
           fireEvent.click(ui.getByRole("button", { name: /خطوة تالية/ }));
         fireEvent.click(ui.getByRole("button", { name: /تسجيل الملاحظة/ }));
@@ -135,19 +140,17 @@ for (const lesson of lessons) {
     const orderUI = render(
       <Ordering items={lesson.order} done={false} onDone={() => orders++} />,
     );
+    for (const item of [...lesson.order].reverse())
+      fireEvent.click(
+        orderUI.getByRole("button", { name: new RegExp(item), exact: false }),
+      );
     fireEvent.click(orderUI.getByRole("button", { name: /تحقق من الترتيب/ }));
     assert.equal(orders, 0);
-    for (let idx = 0; idx < lesson.order.length; idx++) {
-      let current = Array.from(
-        orderUI.container.querySelectorAll("li b"),
-      ).findIndex((x) => x.textContent === lesson.order[idx]);
-      while (current > idx) {
-        fireEvent.click(
-          orderUI.getByRole("button", { name: `تقديم ${lesson.order[idx]}` }),
-        );
-        current--;
-      }
-    }
+    fireEvent.click(orderUI.getByRole("button", { name: "إعادة المحاولة" }));
+    for (const item of lesson.order)
+      fireEvent.click(
+        orderUI.getByRole("button", { name: new RegExp(item), exact: false }),
+      );
     fireEvent.click(orderUI.getByRole("button", { name: /تحقق من الترتيب/ }));
     assert.equal(orders, 1);
     cleanup();
@@ -172,6 +175,10 @@ test("complete learner journey through seven stations, compost, final, certifica
     configurable: true,
   });
   dom.window.localStorage.clear();
+  dom.window.localStorage.setItem(
+    "life-island-settings-v1",
+    JSON.stringify({ sound: false, reduced: true }),
+  );
   Object.defineProperty(dom.window, "matchMedia", {
     value: () => ({ matches: true }),
     configurable: true,
@@ -247,9 +254,16 @@ test("complete learner journey through seven stations, compost, final, certifica
         fireEvent.change(scope.getAllByRole("slider")[0], {
           target: {
             value:
-              variable.initial === variable.max ? variable.min : variable.max,
+              Number(
+                (scope.getAllByRole("slider")[0] as HTMLInputElement).value,
+              ) === variable.max
+                ? variable.min
+                : variable.max,
           },
         });
+        fireEvent.click(
+          scope.getByRole("button", { name: "تشغيل", exact: true }),
+        );
         for (let i = 0; i < scene.stages.length; i++)
           fireEvent.click(scope.getByRole("button", { name: /خطوة تالية/ }));
         fireEvent.click(scope.getByRole("button", { name: /تسجيل الملاحظة/ }));
@@ -381,7 +395,7 @@ test("automatic playback, pause, replay and speed controls operate for every sci
           fireEvent.click(ui.getByRole("button", { name: "إيقاف مؤقت" }));
           assert.equal(tick, undefined);
           assert.ok(cleared > 0);
-          fireEvent.click(ui.getByRole("button", { name: "تشغيل" }));
+          fireEvent.click(ui.getByRole("button", { name: "استئناف" }));
           const advance = tick;
           act(() => {
             for (let i = 0; i < 100; i++) advance?.();
@@ -496,6 +510,7 @@ test("nutrition card ordering: select, undo, remove, retry, wrong and correct wi
     writable: true,
     configurable: true,
   });
+  soundManager.configure(true, 0.7);
   t.mock.timers.enable({ apis: ["setTimeout"] });
   let completed = 0;
   const items = lessons[0].order;
@@ -548,7 +563,7 @@ test("nutrition card ordering: select, undo, remove, retry, wrong and correct wi
     assert.notDeepEqual(next, old);
     for (const id of [3, 2, 1, 0]) pick(id);
     fireEvent.click(ui.getByRole("button", { name: /تحقق من الترتيب/ }));
-    assert.ok(ui.getByText("محاولة جميلة! فكّر قليلًا وجرّب مرة أخرى! 💚"));
+    assert.ok(ui.getByText("محاولة جميلة! جرّب مرة أخرى 💚"));
     act(() => t.mock.timers.tick(170));
     assert.equal(plays.filter((s) => s.endsWith("error.wav")).length, 1);
     assert.equal(completed, 0);
@@ -559,12 +574,12 @@ test("nutrition card ordering: select, undo, remove, retry, wrong and correct wi
     fireEvent.click(verify);
     assert.equal(completed, 1);
     assert.ok(ui.getByText("ممتاز! أنت عالم صغير مبدع! 🌟"));
-    assert.ok(ui.getByTestId("ordering-celebration"));
+    assert.ok(ui.getByTestId("activity-celebration"));
     act(() => t.mock.timers.tick(170));
     assert.equal(plays.filter((s) => s.endsWith("success.wav")).length, 1);
     assert.equal(creates, 1);
-    act(() => t.mock.timers.tick(2300));
-    assert.equal(ui.queryByTestId("ordering-celebration"), null);
+    act(() => t.mock.timers.tick(2500));
+    assert.equal(ui.queryByTestId("activity-celebration"), null);
     fireEvent.click(ui.getByRole("button", { name: "إعادة المحاولة" }));
     assert.ok(ui.getByText("✓ أُنجز النشاط"));
     assert.equal(completed, 1);
@@ -583,13 +598,14 @@ test("nutrition card ordering: select, undo, remove, retry, wrong and correct wi
     act(() => t.mock.timers.tick(170));
     assert.equal(plays.length, before);
     assert.ok(
-      ui.getByTestId("ordering-celebration").classList.contains("still"),
+      ui.getByTestId("activity-celebration").classList.contains("still"),
     );
     for (let i = 0; i < 20; i++)
       assert.deepEqual([...shuffledCards(4)].sort(), [0, 1, 2, 3]);
   } finally {
     cleanup();
     t.mock.timers.reset();
+    soundManager.configure(false);
     Object.defineProperty(globalThis, "Audio", {
       value: originalAudio,
       writable: true,

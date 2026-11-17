@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { compost } from "../engine/models";
 import { Ordering } from "./Activities";
+import { ScientificScene } from "./science/ScientificScene";
+import { useSound } from "./SoundSystem";
+import { ActivityFeedback, useActivityFeedback } from "./ActivityFeedback";
 export function Project({
   onFinish,
   previous,
@@ -10,6 +13,8 @@ export function Project({
   onFinish: (score: number, criteria: number[]) => void;
   previous?: number;
 }) {
+  const sound = useSound();
+  const assessment = useActivityFeedback();
   const [materials, setMaterials] = useState<string[]>([]);
   const [air, setAir] = useState(60);
   const [moisture, setMoisture] = useState(55);
@@ -21,12 +26,12 @@ export function Project({
   const [message, setMessage] = useState("");
   const [playing, setPlaying] = useState(false);
   useEffect(() => {
-    if (!playing || reduced) return;
+    if (!playing) return;
     const timer = window.setInterval(
-      () => setDays((day) => Math.min(90, day + 3)),
-      350,
+      () => setDays((day) => Math.min(90, day + (reduced ? 15 : 3))),
+      reduced ? 1600 : 350,
     );
-    return () => clearInterval(timer);
+    return () => window.clearInterval(timer);
   }, [playing, reduced]);
   useEffect(() => {
     if (days >= 90) setPlaying(false);
@@ -34,6 +39,8 @@ export function Project({
   const result = compost(materials, air, moisture, days);
   const invalidate = () => {
     setRan(false);
+    assessment.reset();
+    sound.play("tool");
     setPlaying(false);
     setMessage("");
   };
@@ -45,7 +52,9 @@ export function Project({
       environment === "safe" ? 25 : 0,
     ];
     const grade = criteria.reduce((a, b) => a + b, 0);
+    if (assessment.status === "correct") return;
     onFinish(grade, criteria);
+    assessment.check(grade === 100);
     setMessage(
       grade === 100
         ? "أحسنت! أتممت المهمة وفق المعايير الأربعة."
@@ -66,7 +75,7 @@ export function Project({
           يستغرق أسابيع أو أشهر.
         </p>
       </header>
-      <div className="card compost-lab">
+      <div className="card compost-lab" data-sound-scope="custom">
         <h2>حاوية التحلل الافتراضية</h2>
         <div className="material-grid">
           {[
@@ -96,19 +105,12 @@ export function Project({
           ))}
         </div>
         <div className="compost-display">
-          <div className="compost-bin">
-            <span>◌ ◌ ◌ ◌ ◌</span>
-            <div
-              style={{
-                height: `${35 + result.value * 55}%`,
-                background: `hsl(30 28% ${50 - result.value * 29}%)`,
-              }}
-            >
-              {materials.map((m) => (
-                <small key={m}>{m}</small>
-              ))}
-            </div>
-          </div>
+          <ScientificScene
+            id="compost"
+            t={days / 90}
+            value={result.value}
+            vars={{ days, air, moisture, materialCount: materials.length }}
+          />
           <div>
             <h3>{ran ? result.label : "اختر المواد وشغّل التجربة"}</h3>
             <p>{Math.round(result.value * 100)}% مؤشر تحلل نسبي في النموذج.</p>
@@ -168,18 +170,29 @@ export function Project({
         </p>
         <div className="button-row">
           <button
-            disabled={reduced}
             onClick={() => {
               if (days >= 90) setDays(0);
               setRan(true);
               setPlaying(!playing);
+              sound.play(playing ? "click" : "start");
             }}
           >
             {playing ? "إيقاف تقدم الزمن" : "شاهد التحلل بزمن مسرع"}
           </button>
           <button
+            disabled={days === 0}
+            onClick={() => {
+              setPlaying(false);
+              setDays(Math.max(0, days - 7));
+              sound.play("step");
+            }}
+          >
+            أسبوع افتراضي سابق
+          </button>
+          <button
             onClick={() => {
               setDays(Math.min(90, days + 7));
+              sound.play("step");
               setRan(true);
             }}
           >
@@ -190,12 +203,15 @@ export function Project({
             onClick={() => {
               setRan(true);
               if (days === 0) setDays(60);
+              sound.play("tool");
             }}
           >
             شغّل وقارن النتيجة
           </button>
           <button
             onClick={() => {
+              sound.play("step");
+              assessment.reset();
               setMaterials([]);
               setDays(0);
               setPlaying(false);
@@ -222,13 +238,22 @@ export function Project({
         done={ordered}
         title="رتب خطوات إعداد الحاوية"
       />
-      <section className="card">
+      <section className="card activity-board" data-sound-scope="custom">
+        <ActivityFeedback
+          status={assessment.status}
+          celebrating={assessment.celebrating}
+          reduced={reduced}
+        />
         <h2>فسّر واحمِ البيئة</h2>
         <label>
           لماذا تتغير البقايا؟
           <select
             value={interpret}
-            onChange={(e) => setInterpret(e.target.value)}
+            onChange={(e) => {
+              setInterpret(e.target.value);
+              assessment.reset();
+              sound.play("select");
+            }}
           >
             <option value="">اختر تفسيرًا</option>
             <option value="microbes">
@@ -243,7 +268,11 @@ export function Project({
           ما السلوك المناسب؟
           <select
             value={environment}
-            onChange={(e) => setEnvironment(e.target.value)}
+            onChange={(e) => {
+              setEnvironment(e.target.value);
+              assessment.reset();
+              sound.play("select");
+            }}
           >
             <option value="">اختر إجراءً</option>
             <option value="safe">
@@ -254,7 +283,12 @@ export function Project({
         </label>
         <button
           className="primary"
-          disabled={!ran || !interpret || !environment}
+          disabled={
+            !ran ||
+            !interpret ||
+            !environment ||
+            assessment.status === "correct"
+          }
           onClick={submit}
         >
           قيّم مشروعي

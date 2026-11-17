@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useSound } from "./SoundSystem";
 import type { Question } from "../data/lessons";
 import { CheckCircle2, ArrowLeft, Lightbulb } from "lucide-react";
 import { score, support } from "../engine/progress";
@@ -6,19 +7,28 @@ export function Quiz({
   questions,
   title,
   pre = false,
+  threshold = 70,
   onFinish,
 }: {
   questions: Question[];
   title: string;
   pre?: boolean;
+  threshold?: number;
   onFinish: (score: number, goals: Record<number, boolean>) => void;
 }) {
+  const sound = useSound();
+  const scored = useRef(false);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const [hints, setHints] = useState<Record<string, number>>({});
   const correct = questions.filter((q) => answers[q.id] === q.answer).length;
   const finish = () => {
-    if (Object.keys(answers).length !== questions.length) return;
+    if (scored.current || Object.keys(answers).length !== questions.length)
+      return;
+    scored.current = true;
+    sound.play(
+      score(correct, questions.length) >= threshold ? "success" : "error",
+    );
     setSubmitted(true);
     const goals: Record<number, boolean> = {};
     for (const q of questions)
@@ -26,7 +36,7 @@ export function Quiz({
     onFinish(score(correct, questions.length), goals);
   };
   return (
-    <div className="quiz">
+    <div className="quiz" data-sound-scope="custom">
       <div className="section-head">
         <div>
           <span className="eyebrow">
@@ -61,7 +71,10 @@ export function Quiz({
                   name={q.id}
                   checked={answers[q.id] === j}
                   disabled={submitted}
-                  onChange={() => setAnswers({ ...answers, [q.id]: j })}
+                  onChange={() => {
+                    setAnswers({ ...answers, [q.id]: j });
+                    sound.play("select");
+                  }}
                 />
                 <span>{option}</span>
               </label>

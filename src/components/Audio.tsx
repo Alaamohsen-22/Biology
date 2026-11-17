@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Volume2, Square, RotateCcw } from "lucide-react";
+import { soundManager } from "../engine/sound";
 import audioConfig from "../data/audio.json";
 export function TeacherAudio({
   lesson = 0,
@@ -32,7 +33,10 @@ export function TeacherAudio({
           <div className="button-row">
             <button
               onClick={() => {
-                void ref.current?.play().catch(() => setError(true));
+                if (ref.current)
+                  void soundManager
+                    .playMedia(ref.current, "narration")
+                    .then((ok) => setError(!ok));
               }}
             >
               تشغيل
@@ -45,7 +49,9 @@ export function TeacherAudio({
               onClick={() => {
                 if (ref.current) {
                   ref.current.currentTime = 0;
-                  void ref.current.play().catch(() => setError(true));
+                  void soundManager
+                    .playMedia(ref.current, "narration")
+                    .then((ok) => setError(!ok));
                 }
               }}
             >

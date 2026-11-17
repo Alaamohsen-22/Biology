@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, RotateCcw, Undo2, Star } from "lucide-react";
-import { createEffectPlayer, type Effect } from "../engine/effects";
+import { useId, useState } from "react";
+import { CheckCircle2, RotateCcw, Undo2 } from "lucide-react";
+import { useSound } from "./SoundSystem";
+import { ActivityFeedback, useActivityFeedback } from "./ActivityFeedback";
 export function shuffledCards(length: number, previous: number[] = []) {
   const next = Array.from({ length }, (_, i) => i);
   for (let i = next.length - 1; i > 0; i--) {
@@ -15,120 +16,76 @@ export function CardOrdering({
   items,
   done,
   onDone,
-  sound = true,
+  sound: allowSound = true,
   reduced = false,
+  title = "رتب المراحل",
 }: {
   items: string[];
   done: boolean;
   onDone: () => void;
   sound?: boolean;
   reduced?: boolean;
+  title?: string;
 }) {
   const [pool, setPool] = useState(() => shuffledCards(items.length));
   const [chosen, setChosen] = useState<number[]>([]);
-  const [result, setResult] = useState<"idle" | "wrong" | "correct">("idle");
-  const [celebrating, setCelebrating] = useState(false);
-  const validated = useRef(false);
-  const soundRef = useRef(sound);
-  soundRef.current = sound;
-  const player = useRef<ReturnType<typeof createEffectPlayer> | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (!sound) player.current?.stop();
-  }, [sound]);
-  useEffect(
-    () => () => {
-      player.current?.stop();
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
-  const play = (effect: Effect) => {
-    // Keep spoken teacher recordings intelligible if one is currently playing.
-    if (Array.from(document.querySelectorAll("audio")).some((a) => !a.paused))
-      return;
-    player.current ??= createEffectPlayer();
-    player.current.play(effect, soundRef.current);
+  const sound = useSound();
+  const feedback = useActivityFeedback(allowSound);
+  const id = useId();
+  const success = feedback.status === "correct";
+  const choose = (item: number) => {
+    if (success || chosen.includes(item)) return;
+    if (allowSound) sound.play("select");
+    setChosen([...chosen, item]);
   };
-  const choose = (id: number) => {
-    if (validated.current || chosen.includes(id)) return;
-    if (timer.current) clearTimeout(timer.current);
-    play("select");
-    setChosen([...chosen, id]);
-    setResult("idle");
-  };
-  const remove = (id: number) => {
-    if (validated.current) return;
-    if (timer.current) clearTimeout(timer.current);
-    play("select");
-    setChosen(chosen.filter((x) => x !== id));
-    setResult("idle");
+  const remove = (item: number) => {
+    if (success) return;
+    if (allowSound) sound.play("move");
+    setChosen(chosen.filter((x) => x !== item));
+    feedback.reset();
   };
   const retry = () => {
-    player.current?.stop();
-    if (timer.current) clearTimeout(timer.current);
-    setCelebrating(false);
-    validated.current = false;
+    feedback.reset();
     setPool(shuffledCards(items.length, pool));
     setChosen([]);
-    setResult("idle");
-  };
-  const check = () => {
-    if (validated.current || chosen.length !== items.length) return;
-    const correct = chosen.every((id, i) => id === i);
-    // The check cue leads into a single success/error cue, without layering channels.
-    play("check");
-    setResult(correct ? "correct" : "wrong");
-    if (timer.current) clearTimeout(timer.current);
-    if (correct) {
-      validated.current = true;
-      onDone();
-      setCelebrating(true);
-    }
-    timer.current = setTimeout(() => {
-      play(correct ? "success" : "error");
-      if (correct)
-        timer.current = setTimeout(() => setCelebrating(false), 2300);
-    }, 170);
+    if (allowSound) sound.play("step");
   };
   return (
     <section
-      className={`card card-ordering ${result === "correct" ? "ordering-success" : ""}`}
-      aria-labelledby="card-order-title"
+      className={`card card-ordering ${success ? "ordering-success" : ""}`}
+      aria-labelledby={id}
+      data-sound-scope="custom"
     >
       <div className="section-head">
         <div>
-          <span className="eyebrow">نشاط ٢ · لعبة ترتيب المراحل</span>
-          <h2 id="card-order-title">رتب المراحل</h2>
+          <span className="eyebrow">نشاط تفاعلي · لعبة ترتيب المراحل</span>
+          <h2 id={id}>{title}</h2>
         </div>
         {done && <span className="pill">✓ أُنجز النشاط</span>}
       </div>
-      <p id="card-order-instructions">
-        اضغط على البطاقات حسب الترتيب الصحيح للمراحل
-      </p>
+      <p>اضغط على البطاقات حسب الترتيب الصحيح للمراحل</p>
       <p className="muted">
-        اضغط على بطاقة مختارة لإعادتها، أو استخدم «تراجع عن آخر خطوة». يمكنك
-        اللعب مجددًا دون فقد إنجازك السابق.
+        اضغط على بطاقة مختارة لإعادتها، أو استخدم «تراجع عن آخر خطوة». إنجازك
+        السابق محفوظ عند إعادة اللعب.
       </p>
       <div
         className="ordering-bank"
         role="group"
         aria-label="بطاقات المراحل المتاحة"
-        aria-describedby="card-order-instructions"
       >
         {pool
-          .filter((id) => !chosen.includes(id))
-          .map((id) => (
+          .filter((item) => !chosen.includes(item))
+          .map((item) => (
             <button
               className="science-card"
-              key={id}
-              onClick={() => choose(id)}
-              disabled={validated.current}
+              key={item}
+              onClick={() => choose(item)}
+              disabled={success}
             >
               <span className="science-card-icon" aria-hidden="true">
-                {["💧", "☀️", "🌿", "🫧"][id % 4]}
+                ✦
               </span>
-              <b>{items[id]}</b>
+              <b>{items[item]}</b>
               <span aria-hidden="true">＋</span>
             </button>
           ))}
@@ -145,25 +102,21 @@ export function CardOrdering({
             {chosen.length} / {items.length}
           </span>
         </h3>
-        {chosen.length === 0 ? (
-          <p className="ordering-empty">
-            تبدأ رحلتك ببطاقة… اختر المرحلة الأولى من الأعلى.
-          </p>
+        {!chosen.length ? (
+          <p className="ordering-empty">اختر المرحلة الأولى من البطاقات.</p>
         ) : (
           <ol>
-            {chosen.map((id, i) => (
-              <li key={id}>
+            {chosen.map((item, i) => (
+              <li key={item}>
                 <button
                   className="science-card chosen-card"
-                  aria-label={`إلغاء اختيار ${items[id]}`}
-                  disabled={validated.current}
-                  onClick={() => remove(id)}
+                  aria-label={`إلغاء اختيار ${items[item]}`}
+                  disabled={success}
+                  onClick={() => remove(item)}
                 >
                   <span className="card-rank">{i + 1}</span>
-                  <b>{items[id]}</b>
-                  <span aria-hidden="true">
-                    {result === "correct" ? "✓" : "×"}
-                  </span>
+                  <b>{items[item]}</b>
+                  <span aria-hidden="true">{success ? "✓" : "×"}</span>
                 </button>
               </li>
             ))}
@@ -173,14 +126,19 @@ export function CardOrdering({
       <div className="button-row ordering-actions">
         <button
           className="primary"
-          disabled={chosen.length !== items.length || result === "correct"}
-          onClick={check}
+          disabled={chosen.length !== items.length || success}
+          onClick={() =>
+            feedback.check(
+              chosen.every((item, i) => item === i),
+              onDone,
+            )
+          }
         >
           <CheckCircle2 size={19} />
           تحقق من الترتيب
         </button>
         <button
-          disabled={!chosen.length || result === "correct"}
+          disabled={!chosen.length || success}
           onClick={() => remove(chosen[chosen.length - 1])}
         >
           <Undo2 size={18} />
@@ -191,49 +149,11 @@ export function CardOrdering({
           إعادة المحاولة
         </button>
       </div>
-      <div
-        role="status"
-        aria-live="polite"
-        className={`ordering-feedback ${result}`}
-      >
-        {result === "correct" ? (
-          <>
-            <CheckCircle2 size={46} />
-            <strong>ممتاز! أنت عالم صغير مبدع! 🌟</strong>
-          </>
-        ) : result === "wrong" ? (
-          <strong>محاولة جميلة! فكّر قليلًا وجرّب مرة أخرى! 💚</strong>
-        ) : (
-          <span>
-            الإكمال يُسجل بعد ترتيب صحيح فقط؛ لا تُخصم درجات عند المحاولة.
-          </span>
-        )}
-      </div>
-      {celebrating && (
-        <div
-          className={`ordering-celebration ${reduced ? "still" : ""}`}
-          aria-hidden="true"
-          data-testid="ordering-celebration"
-        >
-          {Array.from({ length: 18 }, (_, i) => (
-            <i
-              key={i}
-              style={
-                {
-                  "--x": `${(i * 37) % 100}%`,
-                  "--delay": `${(i % 5) * 0.07}s`,
-                  "--turn": `${i % 2 ? 130 : -140}deg`,
-                  "--color": ["#d7ad4a", "#719a74", "#bd756a", "#72a6b4"][
-                    i % 4
-                  ],
-                } as React.CSSProperties
-              }
-            >
-              {i % 3 === 0 ? <Star fill="currentColor" size={22} /> : <span />}
-            </i>
-          ))}
-        </div>
-      )}
+      <ActivityFeedback
+        status={feedback.status}
+        celebrating={feedback.celebrating}
+        reduced={reduced}
+      />
     </section>
   );
 }
