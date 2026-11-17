@@ -97,7 +97,7 @@ export function UrinaryArt({ t, value, prefix }: ArtProps) {
       {drain > 0 && (
         <Drop x={380} y={mix(365, 430, drain)} size={7} color="#deb95a" />
       )}
-      <Arrow x1={170} y1={116} x2={223} y2={116} prefix={prefix} />
+      <Arrow x1={195} y1={140} x2={223} y2={140} prefix={prefix} />
       <Label x={133} y={103}>
         الكليتان
       </Label>
