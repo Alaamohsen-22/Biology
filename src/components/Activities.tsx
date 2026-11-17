@@ -52,6 +52,16 @@ export function Matching({
       >
         {ok ? "✓ أتقنت المطابقة" : "تحقق من المطابقة"}
       </button>
+      <button
+        className="text-button"
+        onClick={() => {
+          setOk(false);
+          setTries(0);
+          setAnswers({});
+        }}
+      >
+        إعادة نشاط المطابقة {done && "· إنجازك محفوظ ✓"}
+      </button>
       {tries > 0 && !ok && (
         <p role="status" className="hint">
           بعض العلاقات تحتاج مراجعة. اقرأ التلميحات ثم حاول مجددًا.
@@ -120,6 +130,16 @@ export function Ordering({
       >
         {ok ? "✓ ترتيب صحيح" : "تحقق من الترتيب"}
       </button>
+      <button
+        className="text-button"
+        onClick={() => {
+          setOk(false);
+          setTries(0);
+          setOrder(items.map((_, i) => i).reverse());
+        }}
+      >
+        إعادة نشاط الترتيب {done && "· إنجازك محفوظ ✓"}
+      </button>
       {tries > 0 && !ok && (
         <p className="hint" role="status">
           {tries === 1
@@ -172,6 +192,16 @@ export function Formative({
         }}
       >
         {ok ? "✓ فهم متحقق" : "تحقق وحاول"}
+      </button>
+      <button
+        className="text-button"
+        onClick={() => {
+          setOk(false);
+          setTries(0);
+          setChoice(-1);
+        }}
+      >
+        إعادة التقويم {done && "· إنجازك محفوظ ✓"}
       </button>
       {tries > 0 && (
         <p className="hint" role="status">
@@ -290,6 +320,16 @@ export function UrinaryAssembly({
         }}
       >
         {checked ? "✓ نموذج مكتمل وصحيح" : "تحقق من تركيب النموذج"}
+      </button>
+      <button
+        className="text-button"
+        onClick={() => {
+          setChecked(false);
+          setTries(0);
+          setChosen(["", "", "", ""]);
+        }}
+      >
+        إعادة تركيب النموذج {done && "· إنجازك محفوظ ✓"}
       </button>
       {checked && (
         <p className="hint">

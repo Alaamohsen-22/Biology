@@ -193,6 +193,15 @@ test("complete learner journey through seven stations, compost, final, certifica
     fireEvent.click(ui.getByRole("button", { name: /تصحيح الاختبار/ }));
   };
   const sortItems = (items: string[]) => {
+    if (ui.container.querySelector(".card-ordering")) {
+      const scope = within(
+        ui.container.querySelector<HTMLElement>(".card-ordering")!,
+      );
+      for (const item of items)
+        fireEvent.click(scope.getByRole("button", { name: new RegExp(item) }));
+      fireEvent.click(scope.getByRole("button", { name: /تحقق من الترتيب/ }));
+      return;
+    }
     for (let idx = 0; idx < items.length; idx++) {
       let current = Array.from(ui.container.querySelectorAll("li b")).findIndex(
         (x) => x.textContent === items[idx],
@@ -391,5 +400,200 @@ test("automatic playback, pause, replay and speed controls operate for every sci
     dom.window.setInterval = originalSet;
     dom.window.clearInterval = originalClear;
     globalThis.clearInterval = originalGlobalClear;
+  }
+});
+test("all seven stations and ten stages are open before any assessment; visiting never awards mastery", async () => {
+  const { initialProgress, emptyLesson } = await import(
+    "../src/engine/progress"
+  );
+  const { default: App } = await import("../src/App");
+  const { stages } = await import("../src/data/lessons");
+  const initial = {
+    ...initialProgress(),
+    name: "متعلم حر",
+    lessons: {
+      1: { ...emptyLesson(), pre: 42, post: 57, activities: ["match"] },
+    },
+  };
+  dom.window.localStorage.setItem(
+    "life-island-progress-v1",
+    JSON.stringify(initial),
+  );
+  dom.window.localStorage.setItem(
+    "life-island-settings-v1",
+    JSON.stringify({ sound: false, reduced: true, unlock: false }),
+  );
+  const ui = render(<App />);
+  try {
+    fireEvent.click(ui.getByRole("button", { name: /أكمل مغامرتك/ }));
+    for (const lesson of [...lessons].reverse()) {
+      const pin = ui.getByRole("button", {
+        name: `المحطة ${lesson.id} ${lesson.title}: متاحة`,
+      });
+      assert.equal(pin.hasAttribute("disabled"), false);
+      fireEvent.click(pin);
+      for (const index of [9, 0, 8, 1, 7, 2, 6, 3, 5, 4]) {
+        fireEvent.click(
+          ui.getByRole("button", {
+            name: new RegExp(`^0?${index + 1}\\s*${stages[index]}$`),
+          }),
+        );
+        const next = ui.getByRole("button", { name: /تابع الاستكشاف/ });
+        const prev = ui.getByRole("button", { name: "المرحلة السابقة" });
+        assert.equal(next.hasAttribute("disabled"), index === 9);
+        assert.equal(prev.hasAttribute("disabled"), index === 0);
+        if (index < 9) {
+          fireEvent.click(next);
+          assert.ok(ui.getByText(`${index + 2} / 10`));
+          fireEvent.click(ui.getByRole("button", { name: "المرحلة السابقة" }));
+        }
+      }
+      fireEvent.click(ui.getByRole("button", { name: /العودة للخريطة/ }));
+    }
+    fireEvent.click(ui.getByRole("button", { name: /مهمة الدبال/ }));
+    assert.ok(ui.getByRole("heading", { name: /حاوية التحلل الافتراضية/ }));
+    fireEvent.click(ui.getByRole("button", { name: /تحدي الوحدة/ }));
+    assert.ok(ui.getByRole("heading", { name: "الاختبار البعدي الشامل" }));
+    fireEvent.click(ui.getByRole("button", { name: /رحلة إنجازي/ }));
+    assert.equal(
+      ui
+        .getByRole("button", { name: /شهادة المستكشف/ })
+        .hasAttribute("disabled"),
+      true,
+    );
+    assert.deepEqual(
+      JSON.parse(dom.window.localStorage.getItem("life-island-progress-v1")!),
+      initial,
+    );
+  } finally {
+    cleanup();
+  }
+});
+
+test("nutrition card ordering: select, undo, remove, retry, wrong and correct without duplicate celebration", async (t) => {
+  const { CardOrdering, shuffledCards } = await import(
+    "../src/components/CardOrdering"
+  );
+  const { act, within } = await import("@testing-library/react");
+  const plays: string[] = [];
+  let creates = 0;
+  const originalAudio = globalThis.Audio;
+  class FakeAudio {
+    src = "";
+    currentTime = 0;
+    volume = 1;
+    constructor() {
+      creates++;
+    }
+    pause() {}
+    play() {
+      plays.push(this.src);
+      return Promise.resolve();
+    }
+  }
+  Object.defineProperty(globalThis, "Audio", {
+    value: FakeAudio,
+    writable: true,
+    configurable: true,
+  });
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  let completed = 0;
+  const items = lessons[0].order;
+  const ui = render(
+    <CardOrdering
+      items={items}
+      done={true}
+      sound={true}
+      reduced={false}
+      onDone={() => completed++}
+    />,
+  );
+  const pick = (id: number) =>
+    fireEvent.click(
+      within(
+        ui.getByRole("group", { name: "بطاقات المراحل المتاحة" }),
+      ).getByRole("button", { name: new RegExp(items[id]) }),
+    );
+  try {
+    const old = Array.from(
+      ui
+        .getByRole("group", { name: "بطاقات المراحل المتاحة" })
+        .querySelectorAll("b"),
+    ).map((x) => x.textContent);
+    assert.ok(ui.getByText("✓ أُنجز النشاط"));
+    assert.equal(completed, 0);
+    assert.equal(plays.length, 0);
+    pick(0);
+    pick(1);
+    fireEvent.click(ui.getByRole("button", { name: /تراجع عن آخر خطوة/ }));
+    assert.equal(
+      ui.getByRole("group", { name: "منطقة الإجابة" }).querySelectorAll("li")
+        .length,
+      1,
+    );
+    fireEvent.click(
+      ui.getByRole("button", { name: `إلغاء اختيار ${items[0]}` }),
+    );
+    assert.equal(
+      ui.getByRole("group", { name: "منطقة الإجابة" }).querySelectorAll("li")
+        .length,
+      0,
+    );
+    fireEvent.click(ui.getByRole("button", { name: "إعادة المحاولة" }));
+    const next = Array.from(
+      ui
+        .getByRole("group", { name: "بطاقات المراحل المتاحة" })
+        .querySelectorAll("b"),
+    ).map((x) => x.textContent);
+    assert.notDeepEqual(next, old);
+    for (const id of [3, 2, 1, 0]) pick(id);
+    fireEvent.click(ui.getByRole("button", { name: /تحقق من الترتيب/ }));
+    assert.ok(ui.getByText("محاولة جميلة! فكّر قليلًا وجرّب مرة أخرى! 💚"));
+    act(() => t.mock.timers.tick(170));
+    assert.equal(plays.filter((s) => s.endsWith("error.wav")).length, 1);
+    assert.equal(completed, 0);
+    fireEvent.click(ui.getByRole("button", { name: "إعادة المحاولة" }));
+    for (const id of [0, 1, 2, 3]) pick(id);
+    const verify = ui.getByRole("button", { name: /تحقق من الترتيب/ });
+    fireEvent.click(verify);
+    fireEvent.click(verify);
+    assert.equal(completed, 1);
+    assert.ok(ui.getByText("ممتاز! أنت عالم صغير مبدع! 🌟"));
+    assert.ok(ui.getByTestId("ordering-celebration"));
+    act(() => t.mock.timers.tick(170));
+    assert.equal(plays.filter((s) => s.endsWith("success.wav")).length, 1);
+    assert.equal(creates, 1);
+    act(() => t.mock.timers.tick(2300));
+    assert.equal(ui.queryByTestId("ordering-celebration"), null);
+    fireEvent.click(ui.getByRole("button", { name: "إعادة المحاولة" }));
+    assert.ok(ui.getByText("✓ أُنجز النشاط"));
+    assert.equal(completed, 1);
+    ui.rerender(
+      <CardOrdering
+        items={items}
+        done={true}
+        sound={false}
+        reduced={true}
+        onDone={() => completed++}
+      />,
+    );
+    const before = plays.length;
+    for (const id of [0, 1, 2, 3]) pick(id);
+    fireEvent.click(ui.getByRole("button", { name: /تحقق من الترتيب/ }));
+    act(() => t.mock.timers.tick(170));
+    assert.equal(plays.length, before);
+    assert.ok(
+      ui.getByTestId("ordering-celebration").classList.contains("still"),
+    );
+    for (let i = 0; i < 20; i++)
+      assert.deepEqual([...shuffledCards(4)].sort(), [0, 1, 2, 3]);
+  } finally {
+    cleanup();
+    t.mock.timers.reset();
+    Object.defineProperty(globalThis, "Audio", {
+      value: originalAudio,
+      writable: true,
+      configurable: true,
+    });
   }
 });

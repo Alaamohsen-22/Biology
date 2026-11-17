@@ -50,6 +50,7 @@ import {
 } from "./components/Activities";
 import { Simulation } from "./components/Simulation";
 import { Project } from "./components/Project";
+import { CardOrdering } from "./components/CardOrdering";
 import assets from "./data/assets.json";
 type SettingsData = {
   dark: boolean;
@@ -58,7 +59,6 @@ type SettingsData = {
   font: number;
   sound: boolean;
   threshold: number;
-  unlock: boolean;
 };
 const SETTINGS = "life-island-settings-v1",
   SAVE = "life-island-progress-v1";
@@ -69,7 +69,6 @@ const defaultSettings: SettingsData = {
   font: 100,
   sound: true,
   threshold: 70,
-  unlock: false,
 };
 function getProgress() {
   try {
@@ -96,7 +95,6 @@ function getSettings() {
         r.threshold <= 100
           ? r.threshold
           : 70,
-      unlock: r.unlock === true,
     };
   } catch {
     return defaultSettings;
@@ -177,14 +175,6 @@ export default function App() {
     [],
   );
   const openLesson = (id: number) => {
-    const unlocked =
-      id === 1 || settings.unlock || mastered.some((l) => l.id === id - 1);
-    if (!unlocked) {
-      setNotice(
-        "أتقن المحطة السابقة أولًا. يمكن للمعلمة فتح جميع المحطات من الإعدادات.",
-      );
-      return;
-    }
     setActive(id);
     setTab(0);
     go("lesson");
@@ -218,13 +208,13 @@ export default function App() {
         <button
           className="brand"
           onClick={() => go("cover")}
-          aria-label="جزيرة أسرار الحياة، الغلاف"
+          aria-label="حديقة أسرار الحياة، الغلاف"
         >
           <span className="brand-symbol">
             <Leaf size={25} />
           </span>
           <span>
-            جزيرة أسرار الحياة<small>علوم نكتشفها… وحياة نفهمها</small>
+            حديقة أسرار الحياة<small>علوم نكتشفها… وحياة نفهمها</small>
           </span>
         </button>
         <nav
@@ -285,14 +275,14 @@ export default function App() {
                   الأساسي
                 </div>
                 <h1>
-                  جزيرة
+                  حديقة
                   <br />
                   <em>أسرار الحياة</em>
                   <br />
                   <span>كل كائن حيّ… يخفي سرًّا.</span>
                 </h1>
                 <p className="cover-description">
-                  أهلًا بك في <b>جزيرة أسرار الحياة</b>.<br />
+                  أهلًا بك في <b>حديقة أسرار الحياة</b>.<br />
                   سبع محطات، تجارب بين يديك، ومغامرة تبدأ بسؤال.
                 </p>
                 <div className="cover-actions">
@@ -332,7 +322,7 @@ export default function App() {
                   </div>
                 </div>
                 <TeacherAudio
-                  text="مرحبًا بك في جزيرة أسرار الحياة! سنكتشف خصائص الكائنات الحية بالملاحظة والتجريب والتفكير."
+                  text="مرحبًا بك في حديقة أسرار الحياة! سنكتشف خصائص الكائنات الحية بالملاحظة والتجريب والتفكير."
                   enabled={settings.sound}
                 />
                 <AmbientMusic enabled={settings.sound} />
@@ -440,7 +430,7 @@ export default function App() {
                   أهلًا {progress.name}،<br />
                   أي سرّ سنكتشف اليوم؟
                 </h1>
-                <p>ابدأ بالتغذية، وأتقن التحديات لتفتح المحطة التالية.</p>
+                <p>كل المحطات متاحة منذ البداية. اختر ما تود استكشافه بحرية.</p>
               </div>
               <div className="progress-badge">
                 <Compass size={32} />
@@ -478,23 +468,19 @@ export default function App() {
                     [50, 78],
                     [76, 53],
                   ];
-                  const unlocked =
-                    l.id === 1 ||
-                    settings.unlock ||
-                    mastered.some((m) => m.id === l.id - 1);
                   const done = mastered.some((m) => m.id === l.id);
                   return (
                     <button
-                      className={`map-pin ${!unlocked ? "locked" : ""} ${done ? "done" : ""}`}
+                      className={`map-pin ${done ? "done" : ""}`}
                       style={{
                         left: `${positions[i][0]}%`,
                         top: `${positions[i][1]}%`,
                       }}
                       key={l.id}
                       onClick={() => openLesson(l.id)}
-                      aria-label={`المحطة ${l.id} ${l.title}: ${done ? "متقنة" : unlocked ? "متاحة" : "مغلقة"}`}
+                      aria-label={`المحطة ${l.id} ${l.title}: ${done ? "متقنة" : "متاحة"}`}
                     >
-                      <span>{unlocked ? l.icon : <Lock size={19} />}</span>
+                      <span>{l.icon}</span>
                       <b>
                         {l.id}. {l.title}
                       </b>
@@ -555,7 +541,10 @@ export default function App() {
               <Leaf />
               <div>
                 <h3>مهمتك الكبرى تنتظرك</h3>
-                <p>أتقن المحطات السبع ثم اصنع الدبال واختبر فهمك للوحدة.</p>
+                <p>
+                  يمكنك استكشاف مهمة الدبال واختبار الوحدة الآن، أو العودة
+                  إليهما لاحقًا.
+                </p>
               </div>
               <button onClick={() => go("project")}>
                 استعرض المهمة <ArrowLeft size={17} />
@@ -761,17 +750,36 @@ export default function App() {
                         }))
                       }
                     />
-                    <Ordering
-                      key={`order-${active}`}
-                      items={lesson.order}
-                      done={lp.activities.includes("order")}
-                      onDone={() =>
-                        patchLesson(active, (p) => ({
-                          ...p,
-                          activities: [...new Set([...p.activities, "order"])],
-                        }))
-                      }
-                    />
+                    {active === 1 ? (
+                      <CardOrdering
+                        items={lesson.order}
+                        done={lp.activities.includes("order")}
+                        sound={settings.sound}
+                        reduced={settings.reduced}
+                        onDone={() =>
+                          patchLesson(active, (p) => ({
+                            ...p,
+                            activities: [
+                              ...new Set([...p.activities, "order"]),
+                            ],
+                          }))
+                        }
+                      />
+                    ) : (
+                      <Ordering
+                        key={`order-${active}`}
+                        items={lesson.order}
+                        done={lp.activities.includes("order")}
+                        onDone={() =>
+                          patchLesson(active, (p) => ({
+                            ...p,
+                            activities: [
+                              ...new Set([...p.activities, "order"]),
+                            ],
+                          }))
+                        }
+                      />
+                    )}
                   </>
                 )}
                 {tab === 7 && (
@@ -901,22 +909,18 @@ export default function App() {
                         <div className="earned-stars">★★★</div>
                         <h3>وسام مستكشف {lesson.title}</h3>
                         <p>تحدٍّ إثرائي: {lesson.enrichment}</p>
-                        <button
-                          className="primary"
-                          onClick={() => {
-                            setCelebrate(true);
-                            setTimeout(() => setCelebrate(false), 1800);
-                            if (active < 7) openLesson(active + 1);
-                            else go("project");
-                          }}
-                        >
-                          {active < 7
-                            ? "إلى المحطة التالية"
-                            : "إلى المهمة الكبرى"}{" "}
-                          <ArrowLeft size={17} />
-                        </button>
                       </>
                     )}
+                    <button
+                      className="primary"
+                      onClick={() => {
+                        if (active < 7) openLesson(active + 1);
+                        else go("project");
+                      }}
+                    >
+                      {active < 7 ? "إلى المحطة التالية" : "إلى المهمة الكبرى"}{" "}
+                      <ArrowLeft size={17} />
+                    </button>
                   </section>
                 )}
                 <div className="lesson-bottom">
@@ -938,93 +942,76 @@ export default function App() {
             </div>
           </>
         )}
-        {page === "project" &&
-          (all || settings.unlock ? (
-            <Project
-              reduced={settings.reduced}
-              previous={progress.project}
-              onFinish={(value, criteria) =>
+        {page === "project" && (
+          <Project
+            reduced={settings.reduced}
+            previous={progress.project}
+            onFinish={(value, criteria) =>
+              setProgress({
+                ...progress,
+                project: value,
+                projectCriteria: criteria,
+              })
+            }
+          />
+        )}
+        {page === "final" && (
+          <>
+            <header className="page-heading">
+              <span className="eyebrow">تحدي الوحدة الأولى · ١٥ سؤالًا</span>
+              <h1>اجمع خيوط أسرار الحياة</h1>
+              <p>
+                يغطي الاختبار الدروس السبعة. معيار الإتقان {settings.threshold}
+                %، ويمكن إعادة المحاولة بعد المراجعة.
+              </p>
+            </header>
+            {progress.final !== undefined && (
+              <div className="card">
+                <h2>النتيجة: {progress.final}%</h2>
+                <div className="goal-grid">
+                  {lessons.map((l, i) => (
+                    <div key={l.id}>
+                      <b>
+                        {progress.finalGoals?.[i] ? "✓" : "↺"} {l.title}
+                      </b>
+                      <p>
+                        {progress.finalGoals?.[i]
+                          ? "إجابات أهداف المحطة صحيحة في هذه المحاولة."
+                          : l.concepts[0].text}
+                      </p>
+                      {!progress.finalGoals?.[i] && (
+                        <button onClick={() => openLesson(l.id)}>
+                          راجع المحطة
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => setFinalAttempt(finalAttempt + 1)}>
+                  إعادة بأسئلة مكافئة
+                </button>
+                {certificate && (
+                  <button className="primary" onClick={() => go("certificate")}>
+                    شهادتي <Trophy size={18} />
+                  </button>
+                )}
+              </div>
+            )}
+            <Quiz
+              key={`final-${finalAttempt}`}
+              title="الاختبار البعدي الشامل"
+              questions={finalBank(finalAttempt)}
+              onFinish={(value, goals) =>
                 setProgress({
                   ...progress,
-                  project: value,
-                  projectCriteria: criteria,
+                  final: value,
+                  finalGoals: goals,
+                  date: new Date().toISOString(),
                 })
               }
             />
-          ) : (
-            <Locked
-              title="مهمة الدبال"
-              text="أتقن المحطات السبع لفتح المهمة الختامية."
-              onBack={() => go("map")}
-            />
-          ))}
-        {page === "final" &&
-          (all || settings.unlock ? (
-            <>
-              <header className="page-heading">
-                <span className="eyebrow">تحدي الوحدة الأولى · ١٥ سؤالًا</span>
-                <h1>اجمع خيوط أسرار الحياة</h1>
-                <p>
-                  يغطي الاختبار الدروس السبعة. معيار الإتقان{" "}
-                  {settings.threshold}%، ويمكن إعادة المحاولة بعد المراجعة.
-                </p>
-              </header>
-              {progress.final !== undefined && (
-                <div className="card">
-                  <h2>النتيجة: {progress.final}%</h2>
-                  <div className="goal-grid">
-                    {lessons.map((l, i) => (
-                      <div key={l.id}>
-                        <b>
-                          {progress.finalGoals?.[i] ? "✓" : "↺"} {l.title}
-                        </b>
-                        <p>
-                          {progress.finalGoals?.[i]
-                            ? "إجابات أهداف المحطة صحيحة في هذه المحاولة."
-                            : l.concepts[0].text}
-                        </p>
-                        {!progress.finalGoals?.[i] && (
-                          <button onClick={() => openLesson(l.id)}>
-                            راجع المحطة
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <button onClick={() => setFinalAttempt(finalAttempt + 1)}>
-                    إعادة بأسئلة مكافئة
-                  </button>
-                  {certificate && (
-                    <button
-                      className="primary"
-                      onClick={() => go("certificate")}
-                    >
-                      شهادتي <Trophy size={18} />
-                    </button>
-                  )}
-                </div>
-              )}
-              <Quiz
-                key={`final-${finalAttempt}`}
-                title="الاختبار البعدي الشامل"
-                questions={finalBank(finalAttempt)}
-                onFinish={(value, goals) =>
-                  setProgress({
-                    ...progress,
-                    final: value,
-                    finalGoals: goals,
-                    date: new Date().toISOString(),
-                  })
-                }
-              />
-            </>
-          ) : (
-            <Locked
-              title="تحدي الوحدة"
-              text="يُفتح الاختبار بعد إتقان المحطات السبع. يمكنك متابعة تقدمك في لوحة الإنجاز."
-              onBack={() => go("map")}
-            />
-          ))}
+          </>
+        )}
         {page === "dashboard" && (
           <>
             <header className="page-heading split">
@@ -1134,7 +1121,7 @@ export default function App() {
             </div>
             <p className="hint">
               تتاح الشهادة بعد إتقان الدروس السبعة ومشروع الدبال والاختبار
-              الشامل. فتح المحطات من إعدادات المعلمة لا يمنح نجومًا أو شهادة
+              الشامل. التنقل بين المحطات والمراحل لا يمنح نجومًا أو شهادة
               تلقائيًا.
             </p>
           </>
@@ -1146,7 +1133,7 @@ export default function App() {
                 <div className="tatreez" />
                 <div className="certificate-leaves">❧ ★ ❧</div>
                 <span className="eyebrow">
-                  جزيرة أسرار الحياة · المنهاج الفلسطيني
+                  حديقة أسرار الحياة · المنهاج الفلسطيني
                 </span>
                 <h1>شهادة مستكشف أسرار الحياة</h1>
                 <p>تُمنح هذه الشهادة للمستكشف</p>
@@ -1205,7 +1192,7 @@ export default function App() {
       <footer>
         <div>
           <Leaf size={19} />
-          <b>جزيرة أسرار الحياة</b>
+          <b>حديقة أسرار الحياة</b>
           <span>اكتشف، جرّب، تعلّم، وانطلق!</span>
         </div>
         <p>إعداد أ. آلاء محسن كلاب · العلوم والحياة · الصف السابع</p>
@@ -1443,15 +1430,9 @@ function SettingsDialog({
             onChange={(e) => setSettings({ ...s, threshold: +e.target.value })}
           />
         </label>
-        <label className="toggle">
-          فتح جميع المحطات للمعاينة
-          <input
-            type="checkbox"
-            checked={s.unlock}
-            onChange={(e) => setSettings({ ...s, unlock: e.target.checked })}
-          />
-        </label>
-        <small>تغيير المعيار يعيد احتساب الإتقان؛ الفتح لا يمنح نجومًا.</small>
+        <small>
+          التنقل مفتوح للجميع؛ تغيير المعيار يعيد احتساب الإتقان فقط.
+        </small>
       </details>
     </section>
   );
@@ -1470,7 +1451,7 @@ function Guide({
     ],
     [
       "انتقل بين المحطات",
-      "ابدأ بالتغذية. اجتز متطلبات الإتقان لفتح المحطة التالية. لوحة المتابعة تظهر ما أنجزته وما بقي.",
+      "كل المحطات والمراحل والمشروع والاختبار متاحة منذ البداية؛ اختر مسارك بحرية. لوحة المتابعة تظهر الإتقان الفعلي، لا عدد الزيارات.",
     ],
     [
       "شاهد المحاكاة",
@@ -1494,7 +1475,7 @@ function Guide({
     ],
     [
       "المشروع والشهادة",
-      "بعد الدروس أكمل مشروع الدبال والاختبار الشامل. اطبع الشهادة أو احفظ PDF من نافذة الطباعة.",
+      "استكشف مشروع الدبال والاختبار الشامل في الوقت الذي تختاره. لنيل الشهادة أتقن الدروس والمشروع والاختبار. اطبع الشهادة أو احفظ PDF من نافذة الطباعة.",
     ],
     [
       "احفظ تقدمك",
@@ -1536,7 +1517,7 @@ function Guide({
               رفع دائم من المتصفح.
             </p>
             <p>
-              المحتوى والأسئلة في src/data/lessons.ts؛ معايير الفتح والدعم في
+              المحتوى والأسئلة في src/data/lessons.ts؛ معايير الإتقان والدعم في
               src/engine/progress.ts؛ نماذج الظواهر في src/engine/models.ts.
               يلزم مراجعة الإجابات والنماذج بعد أي تعديل.
             </p>

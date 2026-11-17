@@ -2248,3 +2248,246 @@ footer .text-button {
     margin: auto;
   }
 }
+
+/* Touch-first nutrition ordering game: decoration never blocks controls. */
+.card-ordering {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.ordering-bank {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  min-height: 90px;
+  padding: 8px 0 22px;
+}
+.science-card {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  min-height: 86px;
+  width: 100%;
+  padding: 18px;
+  text-align: right;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: 0 4px 12px #214a3810;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  touch-action: manipulation;
+}
+.science-card b {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+.science-card > span:last-child {
+  color: var(--green);
+  font-size: 1.2rem;
+}
+.science-card:active:not(:disabled) {
+  transform: scale(0.97);
+  background: var(--soft);
+}
+.science-card-icon {
+  display: grid;
+  place-items: center;
+  background: var(--soft);
+  width: 43px;
+  height: 43px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  font-size: 1.4rem;
+}
+.ordering-answer {
+  border: 2px dashed #a4b790;
+  background: var(--soft);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+  min-height: 150px;
+}
+.ordering-answer h3 {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ordering-answer h3 span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.ordering-answer ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.chosen-card {
+  animation: card-arrive 0.28s ease-out;
+}
+.card-rank {
+  display: grid;
+  place-items: center;
+  min-width: 37px;
+  height: 37px;
+  background: var(--green);
+  color: var(--paper);
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 800;
+}
+.ordering-empty {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 15px 0;
+}
+.ordering-actions {
+  position: relative;
+  z-index: 2;
+}
+.ordering-actions button {
+  min-height: 48px;
+}
+.ordering-feedback {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 75px;
+  margin-top: 18px;
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 0.85rem;
+}
+.ordering-feedback.correct {
+  background: var(--soft);
+  color: var(--green);
+}
+.ordering-feedback.correct svg {
+  flex-shrink: 0;
+}
+.ordering-feedback.wrong {
+  background: #f3eddc;
+  color: #71603c;
+}
+.ordering-feedback.idle {
+  color: var(--muted);
+}
+.ordering-success .chosen-card {
+  border-color: #6d9d6f;
+  opacity: 1;
+  animation: card-success 0.5s ease-out;
+}
+.ordering-success .science-card:disabled {
+  opacity: 1;
+}
+.ordering-celebration {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 3;
+}
+.ordering-celebration > i {
+  position: absolute;
+  left: var(--x);
+  top: 5%;
+  color: var(--color);
+  animation: ordering-confetti 2.4s var(--delay) ease-out both;
+  display: block;
+  font-style: normal;
+}
+.ordering-celebration > i > span {
+  display: block;
+  width: 9px;
+  height: 16px;
+  border-radius: 2px;
+  background: currentColor;
+}
+.ordering-celebration.still > i {
+  animation: none;
+  top: auto;
+  bottom: 12%;
+  transform: rotate(var(--turn));
+}
+@keyframes card-arrive {
+  from {
+    opacity: 0.3;
+    transform: translateY(-10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes card-success {
+  50% {
+    transform: scale(1.025);
+    box-shadow: 0 0 0 4px #9eb67d44;
+  }
+}
+@keyframes ordering-confetti {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) rotate(0);
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(580px) rotate(var(--turn));
+  }
+}
+@media (max-width: 760px) {
+  .ordering-bank {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .science-card {
+    min-height: 78px;
+    padding: 14px;
+    gap: 10px;
+  }
+  .science-card b {
+    font-size: 0.85rem;
+  }
+  .ordering-answer {
+    padding: 14px;
+  }
+  .ordering-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+  .ordering-actions button {
+    width: 100%;
+    min-height: 49px;
+  }
+  .ordering-feedback {
+    align-items: flex-start;
+    font-size: 0.8rem;
+  }
+  .card-ordering .section-head {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chosen-card,
+  .ordering-success .chosen-card,
+  .ordering-celebration > i {
+    animation: none;
+  }
+  .ordering-celebration > i {
+    top: 12%;
+    transform: rotate(var(--turn));
+  }
+}
