@@ -92,9 +92,10 @@ export function Quiz({
             <>
               <button
                 className="text-button"
-                onClick={() =>
-                  setHints({ ...hints, [q.id]: (hints[q.id] ?? 0) + 1 })
-                }
+                onClick={() => {
+                  sound.play("tool");
+                  setHints({ ...hints, [q.id]: (hints[q.id] ?? 0) + 1 });
+                }}
               >
                 <Lightbulb size={15} /> تلميح
               </button>

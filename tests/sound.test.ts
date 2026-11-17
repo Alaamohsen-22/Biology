@@ -159,3 +159,66 @@ test("all ten effects are local, lightweight nonempty PCM WAV files", async () =
     assert.ok(bytes.subarray(44).some((x) => x !== 0));
   }
 });
+
+test("volume changes apply immediately to the active effect", async () => {
+  const env = environment();
+  try {
+    const manager = new SoundManager();
+    await manager.play("water");
+    manager.configure(true, 0.2);
+    assert.ok(Math.abs(env.events.gain - 0.18) < 0.00001);
+  } finally { env.restore(); }
+});
+
+function pendingMedia() {
+  let resolve!: () => void;
+  let reject!: (reason: Error) => void;
+  let pauses = 0;
+  const audio = {
+    paused: true, muted: false, volume: 1,
+    play() {
+      this.paused = false;
+      return new Promise<void>((yes, no) => { resolve = yes; reject = no; });
+    },
+    pause() { this.paused = true; pauses++; },
+  };
+  return { audio: audio as unknown as HTMLAudioElement,
+    resolve: () => resolve(), reject: () => reject(Error("old request")), pauses: () => pauses };
+}
+
+test("a late media start cannot overlap the recording selected afterward", async () => {
+  const manager = new SoundManager();
+  const first = pendingMedia(), second = pendingMedia();
+  const a = manager.playMedia(first.audio, "music");
+  const b = manager.playMedia(second.audio, "narration");
+  second.resolve();
+  assert.equal(await b, true);
+  first.resolve();
+  assert.equal(await a, false);
+  assert.equal(first.audio.paused, true);
+  assert.equal(second.audio.paused, false);
+});
+
+test("muting during a pending recording prevents late playback and ignores stale errors", async () => {
+  const manager = new SoundManager();
+  const first = pendingMedia();
+  const pending = manager.playMedia(first.audio, "narration");
+  manager.configure(false);
+  first.reject();
+  assert.equal(await pending, false);
+  assert.equal(first.audio.paused, true);
+  assert.equal(manager.getSnapshot().status, "idle");
+});
+
+test("zero volume prevents media start and cancels a pending start", async () => {
+  const manager = new SoundManager();
+  const first = pendingMedia();
+  const pending = manager.playMedia(first.audio, "narration");
+  manager.configure(true, 0);
+  first.resolve();
+  assert.equal(await pending, false);
+  assert.equal(first.audio.paused, true);
+  const second = pendingMedia();
+  assert.equal(await manager.playMedia(second.audio, "music"), false);
+  assert.equal(second.audio.paused, true);
+});

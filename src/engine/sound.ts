@@ -35,6 +35,7 @@ export class SoundManager {
   private lastAt = 0;
   private lastEffect = "";
   private media?: HTMLAudioElement;
+  private mediaSequence = 0;
   private mediaKind: "narration" | "music" = "narration";
   constructor(private base = import.meta.env?.BASE_URL ?? "/Biology/") {}
   subscribe = (listener: () => void) => {
@@ -58,7 +59,16 @@ export class SoundManager {
         ? { status: "idle" as const, message: "" }
         : {}),
     });
-    if (!enabled || level === 0) this.stop();
+    if (!enabled || level === 0) {
+      this.stop();
+      this.mediaSequence++;
+      this.media?.pause();
+    }
+    if (this.gain) {
+      const narrationPlaying = this.media && !this.media.paused && this.mediaKind === "narration";
+      this.gain.gain.value = level * (narrationPlaying ? 0.18 : 0.9);
+    }
+    if (this.fallback) this.fallback.volume = level * 0.9;
     if (this.media) {
       if (!enabled) this.media.pause();
       this.media.muted = !enabled;
@@ -164,7 +174,8 @@ export class SoundManager {
     }
   }
   async playMedia(audio: HTMLAudioElement, kind: "narration" | "music") {
-    if (!this.state.enabled) return false;
+    if (!this.state.enabled || this.state.volume === 0) return false;
+    const token = ++this.mediaSequence;
     this.stop();
     if (this.media && this.media !== audio) this.media.pause();
     this.media = audio;
@@ -173,8 +184,13 @@ export class SoundManager {
     audio.volume = this.state.volume * (kind === "music" ? 0.22 : 1);
     try {
       await audio.play();
+      if (token !== this.mediaSequence || !this.state.enabled || this.state.volume === 0) {
+        if (this.media !== audio || !this.state.enabled || this.state.volume === 0) audio.pause();
+        return false;
+      }
       return true;
     } catch {
+      if (token !== this.mediaSequence) return false;
       this.update({
         status: "blocked",
         message: "تعذر تشغيل التسجيل. اضغط تشغيل مجددًا أو تحقق من الملف.",
