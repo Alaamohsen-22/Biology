@@ -1,3 +1,5 @@
+import { useDraftState } from "../engine/drafts";
+import { soundManager } from "../engine/sound";
 import { useState, useEffect } from "react";
 import { compost } from "../engine/models";
 import { Ordering } from "./Activities";
@@ -14,14 +16,15 @@ export function Project({
   previous?: number;
 }) {
   const sound = useSound();
+  useEffect(() => () => soundManager.stop(), []);
   const assessment = useActivityFeedback();
-  const [materials, setMaterials] = useState<string[]>([]);
-  const [air, setAir] = useState(60);
-  const [moisture, setMoisture] = useState(55);
-  const [days, setDays] = useState(0);
-  const [ordered, setOrdered] = useState(false);
-  const [interpret, setInterpret] = useState("");
-  const [environment, setEnvironment] = useState("");
+  const [materials, setMaterials] = useDraftState<string[]>("compost-materials", []);
+  const [air, setAir] = useDraftState("compost-air", 60);
+  const [moisture, setMoisture] = useDraftState("compost-moisture", 55);
+  const [days, setDays] = useDraftState("compost-days", 0);
+  const [ordered, setOrdered] = useDraftState("compost-ordered", false);
+  const [interpret, setInterpret] = useDraftState("compost-interpret", "");
+  const [environment, setEnvironment] = useDraftState("compost-environment", "");
   const [ran, setRan] = useState(false);
   const [message, setMessage] = useState("");
   const [playing, setPlaying] = useState(false);
@@ -34,7 +37,8 @@ export function Project({
     return () => window.clearInterval(timer);
   }, [playing, reduced]);
   useEffect(() => {
-    if (days >= 90) setPlaying(false);
+    if (days >= 90) { setPlaying(false); if(playing) sound.play("discover"); }
+    else if(playing && days % 15 === 0) sound.play("time");
   }, [days]);
   const result = compost(materials, air, moisture, days);
   const invalidate = () => {

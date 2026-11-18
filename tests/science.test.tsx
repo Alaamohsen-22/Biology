@@ -112,7 +112,7 @@ test("all 23 scenes play and pause in reduced motion as discrete stages, indepen
         assert.ok(interval >= 1000);
         assert.ok(callback);
         act(() => callback?.());
-        assert.ok(ui.getByText("25% · زمن افتراضي مسرّع"));
+        assert.equal((ui.getByRole("progressbar", {name:"تقدم التجربة"}) as HTMLProgressElement).value, .25);
         fireEvent.click(ui.getByRole("button", { name: "إيقاف مؤقت" }));
         assert.equal(callback, undefined);
         fireEvent.click(ui.getByRole("button", { name: "استئناف" }));

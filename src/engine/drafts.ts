@@ -23,3 +23,9 @@ export function useDraft<T>(key: string, initial: T) {
   }, [key, value]);
   return [value, setValue, failed] as const;
 }
+
+export function useDraftState<T>(key: string, initial: T) {
+  const [draft,setDraft] = useDraft(key, {value:initial});
+  const setValue = (value: T | ((previous:T)=>T)) => setDraft(d=>({value: typeof value === "function" ? (value as (previous:T)=>T)(d.value) : value}));
+  return [draft.value,setValue] as const;
+}

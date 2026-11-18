@@ -9,6 +9,9 @@ export const effectNames = [
   "water",
   "success",
   "error",
+  "drop",
+  "discover",
+  "time",
 ] as const;
 export type SoundEffect = (typeof effectNames)[number];
 type AudioContextConstructor = new () => AudioContext;

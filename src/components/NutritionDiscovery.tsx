@@ -38,7 +38,7 @@ export function NutritionDiscovery({ onHint }: { onHint: (tip: string) => void }
       <div className="button-row"><button onClick={() => { setRunning(!running); sound.play("start"); }}>{running ? "إيقاف مؤقت" : "تشغيل التجربة"}</button><button onClick={() => { setRunning(false); setT(0); setDraft(d => ({ ...d, light: 1, water: 1, co2: 1 })); sound.play("step"); }}>إعادة التجربة</button></div>
       <p role="status">{!available ? "توقفت مؤشرات صنع الغذاء في النموذج لغياب عامل أساسي. بقاء شكل النبات ثابتًا لا يعني استمرار العملية." : running ? "راقب انتقال المواد ومؤشرات صنع الغذاء مع مرور الزمن الافتراضي." : "التجربة متوقفة. اختر تشغيل لمراقبة انتقال المواد."}</p>
       <p>مؤشر صنع الغذاء: {!available ? "متوقف" : Math.min(...Object.values(vars)) < .5 ? "أقل نسبيًا" : "متاح وفق العوامل المختارة"}</p>
-      <small>نموذج نوعي مبسط، لا يمثل قياسًا مخبريًا أو سرعة حقيقية. تقليل الحركة يعرض حالات متباعدة.</small>
+      <details className="experiment-information"><summary>معلومات التجربة</summary><p>الجسيمات والأسهم توضيح لعمليات مجهرية لا ترى بهذه الصورة بالعين. العرض للمقارنة وليس قياسًا مخبريًا، ويمكن مشاهدة حالات متباعدة عند تقليل الحركة.</p></details>
     </section>
     <section><h3>ثالثًا: ألاحظ وأفسر</h3>
       <label>ماذا لاحظت عند تغيير كمية الضوء أو منع وصول الماء إلى النبات؟<textarea maxLength={1500} value={draft.observation} onFocus={() => onHint("صف ما شاهدته في التجربة، وليس ما تتوقع حدوثه فقط.")} onChange={e => setDraft(d => ({ ...d, observation: e.target.value }))} /></label>

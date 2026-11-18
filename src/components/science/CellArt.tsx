@@ -43,7 +43,7 @@ export function CellArt({
                 cx={x}
                 cy={y}
                 r="25"
-                fill={i % 2 ? "#d6b975" : "#87af9a"}
+                fill={`url(#${prefix}-molecule-${i%2 ? "gold" : "green"})`}
                 stroke="#fffaf1"
                 strokeWidth="4"
               />
@@ -73,71 +73,23 @@ export function CellArt({
     );
   }
   if (id === "sexual") {
-    const meet = phase(value, 0.35, 0.7),
-      seed = phase(value, 0.7, 1);
-    return (
-      <g>
-        <path d="M380 364V200" stroke="#73966c" strokeWidth="13" />
-        <ellipse
-          cx="342"
-          cy="312"
-          rx="48"
-          ry="20"
-          fill={`url(#${prefix}-leaf)`}
-          transform="rotate(25 342 312)"
-        />
-        {Array.from({ length: 5 }, (_, i) => (
-          <ellipse
-            key={i}
-            cx="380"
-            cy="130"
-            rx="36"
-            ry="62"
-            fill="#dca99b"
-            stroke="#c88f82"
-            strokeWidth="2"
-            transform={`rotate(${i * 72} 380 198)`}
-          />
-        ))}
-        <circle cx="380" cy="198" r="40" fill="#dfbf7c" />
-        {v.gametes > 0 && (
-          <>
-            <circle
-              cx={mix(148, 367, meet)}
-              cy={mix(249, 205, meet)}
-              r={13 * phase(value, 0, 0.25)}
-              fill="#77a9bc"
-            />
-            <circle
-              cx={mix(609, 392, meet)}
-              cy={mix(249, 205, meet)}
-              r={19 * phase(value, 0, 0.25)}
-              fill="#b598ad"
-            />
-          </>
-        )}
-        {seed > 0 && (
-          <ellipse
-            cx="380"
-            cy={mix(213, 338, seed)}
-            rx={13 + seed * 11}
-            ry={18 + seed * 13}
-            fill="#af935f"
-            stroke="#8f7c51"
-            strokeWidth="3"
-          />
-        )}
-        <Label x={148} y={301}>
-          مشيج ذكري
-        </Label>
-        <Label x={607} y={301}>
-          مشيج أنثوي
-        </Label>
-        <Label x={380} y={433}>
-          {seed > 0 ? "إخصاب ثم تكون بذور" : "انتقال اللقاح يسبق الإخصاب"}
-        </Label>
-      </g>
-    );
+    const pollen = phase(value,0,.3), tube=phase(value,.3,.7), seed=phase(value,.72,1);
+    return <g>
+      <path d="M380 406V176" stroke="#638458" strokeWidth="12"/>
+      {[0,1,2,3,4].map(n=><path key={n} d="M380 203Q300 126 358 87Q408 83 380 203Z" fill={`url(#${prefix}-skin)`} stroke="#c58c84" strokeWidth="2" transform={`rotate(${n*72} 380 203)`}/>)}
+      <ellipse cx="380" cy="314" rx="49" ry="55" fill={`url(#${prefix}-leaf)`} stroke="#66845b" strokeWidth="3"/>
+      <path d="M372 296V171q8-20 16 0v125" fill="#d7d4a2" stroke="#9a9d68" strokeWidth="3"/>
+      <ellipse cx="380" cy="160" rx="26" ry="10" fill="#d2b47b"/>
+      {v.gametes>0 && <>
+        <circle cx={mix(154,380,pollen)} cy={mix(108,151,pollen)} r="10" fill="#dfbf65" stroke="#a98b3e" strokeWidth="2"/>
+        <path d={`M380 160Q386 221 379 ${160+tube*147}`} fill="none" stroke="#e8c26a" strokeWidth="5"/>
+        <ellipse cx="380" cy="316" rx={15+seed*10} ry={20+seed*15} fill={seed>0 ? `url(#${prefix}-crust)` : "#e8daca"} stroke="#94795e" strokeWidth="2"/>
+        {tube>.7 && seed===0 && <circle cx="379" cy={mix(284,312,phase(tube,.7,1))} r="4" fill="#9d7eaf"/>}
+      </>}
+      <Label x={150} y={77}>حبة لقاح</Label><Label x={552} y={163}>الميسم</Label><Arrow x1={515} y1={163} x2={410} y2={163} prefix={prefix}/>
+      <Label x={565} y={314}>{seed>0 ? "بذرة تتكون داخل المبيض" : "بويضة داخل المبيض"}</Label><Arrow x1={491} y1={318} x2={417} y2={318} prefix={prefix}/>
+      <Label x={380} y={455}>{seed>0 ? "بعد الإخصاب تتحول البويضة إلى بذرة" : tube>0 ? "أنبوب اللقاح: تمثيل مجهري داخل العضو" : "انتقال حبة اللقاح يسبق الإخصاب"}</Label>
+    </g>;
   }
   const budding = id === "budding";
   const replicate = phase(value, 0.05, 0.35),
@@ -158,6 +110,7 @@ export function CellArt({
         opacity=".55"
       />
       <g>
+        {Array.from({length:8},(_,i)=><g key={i} transform={`translate(${leftX+Math.cos(i)*57} ${229+Math.sin(i)*75}) rotate(${i*43})`}><ellipse rx="9" ry="4" fill="#8dbaae" opacity=".5"/><path d="M-5 0h10" stroke="#dce6c5" strokeWidth="1"/></g>)}
         <ellipse
           cx={leftX}
           cy="231"
@@ -167,6 +120,7 @@ export function CellArt({
           stroke="#6e9b83"
           strokeWidth="4"
         />
+        {Array.from({length:7},(_,i)=><ellipse key={i} cx={leftX+Math.cos(i)*55} cy={230+Math.sin(i)*72} rx="8" ry="4" fill="#92b7a6" opacity=".65" transform={`rotate(${i*30} ${leftX+Math.cos(i)*55} ${230+Math.sin(i)*72})`}/>)}
         <path
           d={`M${leftX - 52} 162q-30 55-5 98`}
           stroke="#ffffff88"
@@ -179,7 +133,7 @@ export function CellArt({
           cy="228"
           rx="26"
           ry="34"
-          fill="#8c9bab"
+          fill={`url(#${prefix}-nucleus)`}
           stroke="#6c8291"
           strokeWidth="3"
         />
@@ -211,7 +165,7 @@ export function CellArt({
               cy={budding ? 202 : 231}
               rx={division * 22}
               ry={division * 29}
-              fill="#8c9bab"
+              fill={`url(#${prefix}-nucleus)`}
             />
           )}
         </g>
@@ -237,7 +191,7 @@ export function CellArt({
     </g>
   );
 }
-export function AgeArt({ v, value, t }: ArtProps) {
+export function AgeArt({ v, value, t, prefix }: ArtProps) {
   const age = v.time ?? 0;
   const selected = age < 10 ? 0 : age < 20 ? 1 : age < 60 ? 2 : 3;
   return (
@@ -253,7 +207,10 @@ export function AgeArt({ v, value, t }: ArtProps) {
           h = [92, 151, 182, 169][i];
         return (
           <g key={label} opacity={selected === i ? 1 : 0.4}>
-            <circle cx={x} cy={340 - h} r="25" fill="#c8a781" />
+            <circle cx={x} cy={340 - h} r="25" fill={`url(#${prefix}-skin)`} />
+            <path d={`M${x-17} ${326-h}q17-17 34 0`} stroke="#827564" strokeWidth="7" fill="none"/>
+            <path d={`M${x-23} ${370-h}q23-13 46 0l-5 ${h-91}h-36Z`} fill={`url(#${prefix}-leaf)`}/>
+            <path d={`M${x-4} ${351-h}v10`} stroke="#bf987c" strokeWidth="8"/>
             <path
               d={`M${x} ${370 - h}v${h - 91}m0-${h - 107}-33 52m33-52 33 52M${x} 284l-24 70m24-70 24 70`}
               fill="none"

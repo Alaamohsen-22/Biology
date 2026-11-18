@@ -28,9 +28,10 @@ export function EnvironmentArt({ t, value, v, prefix }: ArtProps) {
         strokeWidth="62"
         fill="none"
       />
+      {[0,1,2].map(i=><path key={i} d={`M${380+i*72} ${273-i*22}q28 ${Math.sin(t*7+i)*3} 50-7`} stroke="#e3f2e5" opacity=".6" strokeWidth="2" fill="none"/>)}
       <path
         d="M108 129h112v91H108z"
-        fill="#d1bfa0"
+        fill={`url(#${prefix}-wood)`}
         stroke="#ac9878"
         strokeWidth="3"
       />
@@ -123,10 +124,12 @@ export function CompostArt({ t, value, v, prefix }: ArtProps) {
         width="383"
         height="314"
         rx="25"
-        fill="#dae0cb"
+        fill={`url(#${prefix}-wood)`}
         stroke="#93aa8c"
         strokeWidth="5"
       />
+      <path d="M207 111h340M207 111v280" stroke="#f1f4e4" strokeWidth="7" opacity=".7" fill="none"/>
+      {[0,1,2,3].map(i=><circle key={i} cx={173} cy={155+i*57} r="5" fill="#61775f"/>)}
       <clipPath id={`${prefix}-compostClip`}>
         <rect x="200" y="108" width="359" height="290" rx="17" />
       </clipPath>

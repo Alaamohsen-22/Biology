@@ -6,6 +6,8 @@ export function MicroArt({ t, value, v, prefix }: ArtProps) {
     y = 223 + Math.sin(t * 9) * 23;
   return (
     <g>
+      <ellipse cx="380" cy="435" rx="170" ry="12" fill="#576e60" opacity=".12"/>
+      <path d="M169 99l-48-42 17-22 52 40M590 99l48-42-17-22-52 40" stroke={`url(#${prefix}-metal)`} strokeWidth="14" fill="none"/>
       <circle
         cx="380"
         cy="229"
@@ -26,6 +28,8 @@ export function MicroArt({ t, value, v, prefix }: ArtProps) {
         <circle cx="380" cy="229" r="164" />
       </clipPath>
       <g clipPath={`url(#${prefix}-microClip)`}>
+        <path d="M231 115q96-56 204-12" stroke="#ffffff90" strokeWidth="14" fill="none"/>
+
         {Array.from({ length: 14 }, (_, i) => (
           <circle
             key={i}
@@ -101,7 +105,7 @@ export function MicroArt({ t, value, v, prefix }: ArtProps) {
               strokeWidth="4"
             />
           )}
-          <ellipse cx="-7" cy="3" rx="19" ry="24" fill="#8da0b0" />
+          <ellipse cx="-7" cy="3" rx="19" ry="24" fill={`url(#${prefix}-nucleus)`} />
           {Array.from({ length: 5 }, (_, i) => (
             <circle
               key={i}

@@ -408,7 +408,7 @@ test("automatic playback, pause, replay and speed controls operate for every sci
           fireEvent.click(
             ui.getByRole("button", { name: "إعادة ضبط المحاكاة" }),
           );
-          assert.ok(ui.getByText("0% · زمن افتراضي مسرّع"));
+          assert.equal((ui.getByRole("progressbar", {name:"تقدم التجربة"}) as HTMLProgressElement).value, 0);
           assert.equal(watched, 1);
         } finally {
           cleanup();

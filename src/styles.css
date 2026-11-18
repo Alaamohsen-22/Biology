@@ -3132,3 +3132,35 @@ body:has(.pal-guide) { padding-bottom: 0; }
  .app:has(.pal-guide) > .pal-guide { max-height: 40dvh; overflow-y: auto; overflow-x: hidden; }
  .pal-guide .guide-bubble { max-height: none; }
 }
+/* Scientific workbench: actual procedure tools, readable scenes and focused sequence. */
+.lab-prediction textarea, .lab-observations textarea { width:100%; min-height:85px; margin-block:.5rem; }
+.lab-observations { display:grid; gap:.7rem; margin-top:1rem; }
+.lab-objective { font-size:.9rem; color:var(--muted); margin: .3rem 0; }
+.lab-tools { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.65rem; margin-block:.8rem; }
+.lab-tools button { display:flex; align-items:center; gap:.7rem; text-align:right; min-height:76px; padding:.7rem; border:1px solid #a9bda5; background:linear-gradient(130deg,#fffef8,#e8eee2); border-radius:17px; color:#254d40; }
+.lab-tools button:hover, .lab-tools button:focus-visible { border-color:#4e7e60; box-shadow:0 4px 12px #32583f17; }
+.lab-tools button.used-tool { background:#deead8; }
+.lab-tools svg { flex:0 0 44px; }
+.lab-progress { display:block; width:100%; height:10px; accent-color:#4e7f60; margin-block:1rem; }
+.experiment-information { margin-block:1rem; padding:.7rem 1rem; border:1px solid #d1dbc9; border-radius:14px; }
+.experiment-information summary { min-height:44px; cursor:pointer; }
+.lab-visual .scientific-scene { margin:0; }
+.scene-realistic { position:relative; background:linear-gradient(135deg,#fdfcf5,#e8ede1); border:1px solid #d7dfcf; border-radius:22px; padding:.6rem; }
+.scene-realistic .scientific-svg { display:block; width:100%; max-height:none; min-height:240px; }
+.scene-zoom { display:block; margin-inline-start:auto; min-height:44px; padding:.45rem .8rem; position:relative; z-index:1; }
+.scene-expanded { position:fixed !important; inset:10px; z-index:100; margin:0 !important; overflow:auto; border:2px solid #739a78; box-shadow:0 0 0 100vmax #1f322dcc; }
+.scene-expanded .scientific-svg { min-width:650px; min-height:440px; max-height:75vh; }
+.scene-expanded .scene-zoom { position:sticky; top:0; }
+.scene-expanded .science-parts { position:relative; }
+.simulation-controls { flex-wrap:wrap; gap:.6rem; }
+.simulation-controls button { min-height:48px; }
+@media(max-width:700px) {
+ .lab-tools { grid-template-columns:1fr; }
+ .scene-realistic { padding:.3rem; }
+ .scene-realistic .scientific-svg { min-height:230px; }
+ .scene-realistic .science-parts { grid-template-columns:1fr; }
+ .simulation-controls button { flex:1 1 42%; }
+ .simulation-v2 { padding:.8rem; }
+}
+[data-theme="dark"] .lab-tools button { background:#2e4c3a; color:#f3f3e7; }
+[data-contrast="true"] .scene-realistic { border:2px solid currentColor; }
