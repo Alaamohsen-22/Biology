@@ -1,6 +1,6 @@
 import React from "react";
 import { JSDOM } from "jsdom";
-import { test } from "node:test";
+import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 const dom = new JSDOM("<!doctype html><html><body></body></html>", {
   url: "http://localhost/Biology/",
@@ -20,6 +20,10 @@ Object.defineProperty(globalThis, "navigator", {
 Object.assign(globalThis, {
   HTMLElement: dom.window.HTMLElement,
   IS_REACT_ACT_ENVIRONMENT: true,
+});
+beforeEach(() => {
+  for (const key of Object.keys(dom.window.localStorage))
+    if (key.startsWith("life-island-draft:")) dom.window.localStorage.removeItem(key);
 });
 const { render, fireEvent, cleanup } = await import("@testing-library/react");
 const { Simulation } = await import("../src/components/Simulation");

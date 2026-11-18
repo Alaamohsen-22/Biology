@@ -222,3 +222,18 @@ test("zero volume prevents media start and cancels a pending start", async () =>
   assert.equal(await manager.playMedia(second.audio, "music"), false);
   assert.equal(second.audio.paused, true);
 });
+
+test("long recordings own the channel and release on leaving their stage", async () => {
+  const env = environment();
+  try {
+    const manager = new SoundManager();
+    const media = pendingMedia();
+    const pending = manager.playMedia(media.audio, "narration");
+    media.resolve(); await pending;
+    assert.equal(await manager.play("water"), false);
+    assert.equal(env.events.starts, 0);
+    manager.releaseMedia(media.audio);
+    assert.equal(media.audio.paused, true);
+    assert.equal(await manager.play("water"), true);
+  } finally { env.restore(); }
+});

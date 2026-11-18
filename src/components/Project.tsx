@@ -180,6 +180,7 @@ export function Project({
             {playing ? "إيقاف تقدم الزمن" : "شاهد التحلل بزمن مسرع"}
           </button>
           <button
+            className="embroidered-nav previous"
             disabled={days === 0}
             onClick={() => {
               setPlaying(false);
@@ -190,6 +191,7 @@ export function Project({
             أسبوع افتراضي سابق
           </button>
           <button
+            className="embroidered-nav next primary"
             onClick={() => {
               setDays(Math.min(90, days + 7));
               sound.play("step");

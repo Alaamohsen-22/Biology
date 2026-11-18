@@ -164,12 +164,12 @@ export function PlantArt({
               <path d="M580 94L447 157" />
             </g>
           )}
-          {value > 0.55 && (
+          {value > 0 && t > 0.55 && (
             <>
               <Particles
                 from={[425, 173]}
                 to={[634, 147]}
-                t={phase(value, 0.55, 1)}
+                t={phase(t, 0.55, 1)}
                 color="#83b5ad"
                 r={7}
                 count={4}
@@ -177,7 +177,7 @@ export function PlantArt({
               <rect
                 x="353"
                 y="230"
-                width={phase(value, 0.55, 1) * 55}
+                width={value * 55}
                 height="24"
                 rx="8"
                 fill="#ddb85a"

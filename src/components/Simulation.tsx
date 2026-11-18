@@ -21,6 +21,7 @@ export function Simulation({
   onExperiment,
   watched,
   experimented,
+  onHint,
 }: {
   scene: Scene;
   reduced: boolean;
@@ -28,6 +29,7 @@ export function Simulation({
   onExperiment: () => void;
   watched: boolean;
   experimented: boolean;
+  onHint?: (tip: string) => void;
 }) {
   const defaults = () =>
     Object.fromEntries(
@@ -126,6 +128,7 @@ export function Simulation({
     activity.reset();
   };
   const setVariable = (key: string, value: number) => {
+    onHint?.(`غيّرت ${scene.variables.find(v => v.key === key)?.label ?? "عاملًا"} في ${scene.title}. قارن الرسم قبل التغيير وبعده، ثم شغّل التجربة لتختبر تفسيرك.`);
     setVars((previous) => ({ ...previous, [key]: value }));
     setChanged(true);
     setLogged(false);
@@ -170,6 +173,7 @@ export function Simulation({
     sound.play("step");
   };
   const play = () => {
+    onHint?.(`في تجربة ${scene.title}، راقب المرحلة الحالية وحدد ما ينتقل أو يتغير قبل وصف السبب.`);
     sound.play(running ? "click" : "start");
     if (running) {
       setRunning(false);
@@ -189,6 +193,7 @@ export function Simulation({
       className="simulation card simulation-v2"
       data-sound-scope="custom"
       aria-label={scene.title}
+      onFocusCapture={() => onHint?.(`تجربة ${scene.title}: اختر عاملًا واحدًا، وسجل ما تراه لتبني استنتاجك.`)}
     >
       <div className="section-head">
         <div>
@@ -261,11 +266,11 @@ export function Simulation({
           {running ? <Pause size={18} /> : <Play size={18} />}{" "}
           {running ? "إيقاف مؤقت" : t > 0 && t < 1 ? "استئناف" : "تشغيل"}
         </button>
-        <button onClick={previous} disabled={t <= 0}>
+        <button className="embroidered-nav previous" onClick={previous} disabled={t <= 0}>
           <SkipBack size={18} />
           خطوة سابقة
         </button>
-        <button onClick={next} disabled={t >= 1}>
+        <button className="embroidered-nav next primary" onClick={next} disabled={t >= 1}>
           <SkipForward size={18} />
           خطوة تالية
         </button>

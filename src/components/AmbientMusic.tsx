@@ -5,6 +5,7 @@ export function AmbientMusic({ enabled }: { enabled: boolean }) {
   const audio = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState(false);
+  useEffect(() => { const node = audio.current; return () => { if(node) soundManager.releaseMedia(node); }; }, []);
   useEffect(() => {
     if (!enabled) {
       audio.current?.pause();

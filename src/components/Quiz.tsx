@@ -1,3 +1,4 @@
+import { useDraft } from "../engine/drafts";
 import { useState, useRef } from "react";
 import { useSound } from "./SoundSystem";
 import type { Question } from "../data/lessons";
@@ -18,7 +19,9 @@ export function Quiz({
 }) {
   const sound = useSound();
   const scored = useRef(false);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [draft, setDraft] = useDraft(`quiz-${questions.map(q => q.id).join("-")}`, { answers: {} as Record<string, number> });
+  const answers = draft.answers;
+  const setAnswers = (answers: Record<string, number>) => setDraft({ answers });
   const [submitted, setSubmitted] = useState(false);
   const [hints, setHints] = useState<Record<string, number>>({});
   const correct = questions.filter((q) => answers[q.id] === q.answer).length;

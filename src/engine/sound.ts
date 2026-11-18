@@ -102,6 +102,8 @@ export class SoundManager {
   }
   async play(effect: SoundEffect) {
     if (!this.state.enabled || this.state.volume === 0) return false;
+    // Long recordings own the channel until paused or released.
+    if (this.media && !this.media.paused) return false;
     const now = Date.now();
     if (
       effect === this.lastEffect &&
@@ -173,7 +175,14 @@ export class SoundManager {
       return false;
     }
   }
-  async playMedia(audio: HTMLAudioElement, kind: "narration" | "music") {
+  releaseMedia(audio: HTMLAudioElement) {
+    audio.pause();
+    if (this.media === audio) {
+      this.mediaSequence++;
+      this.media = undefined;
+    }
+  }
+  async playMedia(audio: HTMLAudioElement, kind: "narration" | "music", reportError = true) {
     if (!this.state.enabled || this.state.volume === 0) return false;
     const token = ++this.mediaSequence;
     this.stop();
@@ -188,9 +197,10 @@ export class SoundManager {
         if (this.media !== audio || !this.state.enabled || this.state.volume === 0) audio.pause();
         return false;
       }
+      this.update({status: "ready", message: "الصوت جاهز"});
       return true;
     } catch {
-      if (token !== this.mediaSequence) return false;
+      if (token !== this.mediaSequence || !reportError) return false;
       this.update({
         status: "blocked",
         message: "تعذر تشغيل التسجيل. اضغط تشغيل مجددًا أو تحقق من الملف.",

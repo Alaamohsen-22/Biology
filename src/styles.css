@@ -3069,3 +3069,66 @@ footer .text-button {
     width: 100%;
   }
 }
+/* Discovery and Palestinian learning companion: existing palette retained. */
+.discovery section { margin-block: 1.3rem; padding-block: .8rem; border-top: 1px solid var(--line, #dce1d4); }
+.discovery textarea { width: 100%; min-height: 110px; margin-block: .6rem; }
+.discovery-controls { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; }
+.discovery-controls label { padding: .8rem; background: #edf1e7; color: #254c40; border-radius: 16px; }
+.discovery-controls input { width: 100%; min-height: 44px; }
+.discovery-result { padding: 1.2rem; border: 2px solid #7b9e78; border-radius: 18px; background: #819a7712; }
+.island-sound { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem; margin-block: 1rem; padding: 1rem; background: #819a7712; border-radius: 20px; }
+.island-sound button, .discovery button { min-height: 48px; }
+.embroidered-nav { position: relative; overflow: hidden; padding-inline: 1.7rem; border-radius: 16px; min-height: 48px; box-shadow: 0 4px 10px #254c4012; }
+.embroidered-nav::before, .embroidered-nav::after { content: ""; position: absolute; inset-block: 7px; width: 9px; background: repeating-linear-gradient(45deg,transparent 0 3px,#b84048 3px 5px,transparent 5px 8px), repeating-linear-gradient(-45deg,transparent 0 3px,#d8dfce 3px 5px,transparent 5px 8px); opacity: .75; pointer-events: none; }
+.embroidered-nav::before { right: 5px; } .embroidered-nav::after { left: 5px; }
+.embroidered-nav:active { transform: translateY(2px); }
+.pal-guide { position: fixed; bottom: 12px; left: 12px; z-index: 45; max-width: min(340px,calc(100vw - 24px)); }
+.guide-dock { display: flex; align-items: end; gap: .5rem; }
+.guide-dock > button:not(.guide-avatar) { padding: .5rem; font-size: .75rem; min-height: 44px; }
+.guide-avatar { width: 78px; height: 104px; padding: 0; background: #f5f2e7; border-radius: 40px 40px 20px 20px; box-shadow: 0 4px 18px #254c4020; }
+.teacher-character { width: 100%; height: 100%; }
+.guide-bubble { background: var(--surface, #fffdf5); color: var(--text, #254c40); padding: 1rem; border: 1px solid #98ad8c; border-radius: 18px; box-shadow: 0 6px 20px #254c4020; max-height: 45vh; overflow: auto; margin-bottom: .5rem; animation: guide-nudge .3s ease-out; }
+.guide-bubble button { min-height: 44px; }
+.stage-toggle { display: none; }
+body:has(.pal-guide) { padding-bottom: 120px; }
+@keyframes guide-nudge { from {transform: translateY(6px); opacity: .7;} to {transform: translateY(0);opacity: 1;} }
+@media(max-width: 700px) {
+ .discovery-controls { grid-template-columns: 1fr; gap: .5rem; }
+ .discovery .scientific-scene { margin-inline: -.5rem; }
+ .stage-toggle { display: block; width: 100%; min-height: 48px; }
+ .lesson-tabs:not(.expanded) { display: none; }
+ .lesson-tabs.expanded { display: flex; flex-wrap: wrap; }
+ .lesson-tabs.expanded button { flex: 1 1 42%; }
+ .guide-avatar { width: 54px; height: 72px; }
+ .guide-dock > button:not(.guide-avatar) { font-size: .65rem; }
+ .guide-bubble { max-width: 290px; }
+ .lesson-bottom { flex-wrap: wrap; gap: .5rem; }
+ .lesson-bottom button { flex: 1; font-size: .85rem; }
+ body:has(.pal-guide) { padding-bottom: 100px; }
+}
+[data-reduced="true"] .guide-bubble { animation: none; }
+@media(prefers-reduced-motion: reduce) { .guide-bubble { animation: none; } }
+.lesson-bottom .embroidered-nav { min-height: 48px; }
+[data-theme="dark"] .guide-bubble { background: #203a31; color: #f2f0df; }
+[data-contrast="true"] .guide-bubble, [data-contrast="true"] .discovery-controls label { border: 2px solid currentColor; }
+/* Reserve actual layout space for the assistant: it never overlays a question. */
+.app:has(.pal-guide) { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.app:has(.pal-guide) > .site-header { flex: 0 0 auto; }
+.app:has(.pal-guide) > .learning-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: clip; }
+.app:has(.pal-guide) > .pal-guide { position: relative; bottom: auto; left: auto; flex: 0 0 auto; align-self: flex-end; margin: 6px 12px; }
+body:has(.pal-guide) { padding-bottom: 0; }
+.pal-guide .guide-avatar { width: 54px; height: 72px; }
+.pal-guide .guide-bubble { max-height: min(260px, 35dvh); }
+@media(min-width: 900px) {
+ .app:has(.pal-guide) { display: grid; grid-template-columns: minmax(0,1fr) 100px; grid-template-rows: auto minmax(0,1fr); }
+ .app:has(.guide-bubble) { grid-template-columns: minmax(0,1fr) 340px; }
+ .app:has(.pal-guide) > .site-header { grid-column: 1 / -1; grid-row: 1; }
+ .app:has(.pal-guide) > .learning-scroll { grid-column: 1; grid-row: 2; }
+ .app:has(.pal-guide) > .pal-guide { grid-column: 2; grid-row: 2; align-self: end; justify-self: center; max-width: calc(100% - 16px); margin: 8px; }
+ .guide-dock { flex-direction: column; align-items: center; }
+ .guide-bubble { width: 316px; }
+}
+@media(max-width: 899px) {
+ .app:has(.pal-guide) > .pal-guide { max-height: 40dvh; overflow-y: auto; overflow-x: hidden; }
+ .pal-guide .guide-bubble { max-height: none; }
+}
