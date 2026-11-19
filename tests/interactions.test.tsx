@@ -199,6 +199,7 @@ test("concept-book journey through seven lessons, final, certificate and restore
   const { finalBank } = await import("../src/data/lessons");
   let ui = render(<App />);
   const menu = (label: string) => {
+    fireEvent.click(ui.getByRole("button",{name:/^فهرس الدرس ·/}));
     fireEvent.click(ui.getByRole("button", { name: label, exact: true }));
   };
   const next = () =>
@@ -431,6 +432,7 @@ test("all concept indices are open and visiting every lesson does not award mast
         }),
       );
       for (const { page } of lessonIndex(lesson.id).reverse()) {
+        fireEvent.click(ui.getByRole("button",{name:/^فهرس الدرس ·/}));
         const button = ui.getByRole("button", {
           name: page.title,
           exact: true,

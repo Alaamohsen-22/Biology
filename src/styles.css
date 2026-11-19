@@ -3332,12 +3332,7 @@ main:has(.orchard-intro) > .lesson-heading > p, main:has(.orchard-intro) > .less
 .single-book .lesson-heading .eyebrow {font-size:.75rem;}
 /* Concept-led pages remain inside the existing single-leaf digital book. */
 .concept-reader {max-width:1180px;margin:auto;}
-.concept-reader-layout {display:grid;grid-template-columns:220px minmax(0,1fr);gap:1.1rem;align-items:start;}
-.concept-reader .stage-toggle {display:none;}
-.concept-index {display:flex;flex-direction:column;gap:.2rem;position:sticky;top:0;padding:.6rem;border-inline-end:1px solid var(--line);}
-.concept-index button {display:flex;gap:.65rem;text-align:right;align-items:center;min-height:48px;border:0;background:transparent;box-shadow:none;padding:.65rem;}
-.concept-index button span {flex:1;}
-.concept-index button.active {background:var(--soft);color:var(--green);box-shadow:inset -3px 0 var(--green);}
+.concept-reader-layout {display:block;min-width:0;}
 .concept-leaf {min-width:0;}
 .concept-leaf-heading {display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--line);padding:.5rem 0 .8rem;margin-bottom:.75rem;color:var(--green);}
 .concept-leaf-heading small {margin-inline-start:auto;}
@@ -3377,20 +3372,12 @@ main:has(.orchard-intro) > .lesson-heading > p, main:has(.orchard-intro) > .less
 .lesson-award.earned {background:linear-gradient(135deg,var(--paper),var(--soft));}
 .concept-leaf .lesson-bottom {margin-top:1.2rem;}
 .post-remediation {margin-top:1rem;border-top:1px solid var(--line);padding-top:1rem;}
-@media(max-width:900px){
- .concept-reader-layout {display:block;}
- .concept-reader .stage-toggle {display:flex;margin-bottom:.6rem;}
- .concept-index {display:none;position:static;}
- .concept-index.expanded {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:.75rem;}
- .concept-index button {font-size:.85rem;}
-}
 @media(max-width:560px){
  .concept-explanation-visual,.infographic-grid {grid-template-columns:1fr;}
  .concept-leaf-heading small {font-size:.7rem;}
  .concept-leaf .stage-guide-bubble {font-size:.85rem;padding:.6rem;}
  .concept-leaf .stage-guide-avatar {width:52px;min-width:52px;}
  .lesson-award {padding:1rem .5rem;}
- .concept-index.expanded {gap:.2rem;}
  .single-book .lesson-heading h1 {font-size:1.35rem;}
 }
 @media print{.lesson-award.earned{position:absolute;inset:0;width:100%;background:white;color:#23483b;}.concept-index,.concept-leaf-heading,.stage-guide,.lesson-bottom,.post-remediation{display:none!important;}}
@@ -3406,3 +3393,98 @@ main:has(.orchard-intro) > .lesson-heading > p, main:has(.orchard-intro) > .less
  .learning-scroll,.single-book,.single-book:not(.is-cover) .book-sheet,.single-book:not(.is-cover) .book-page-content {height:auto!important;max-height:none!important;overflow:visible!important;transform:none!important;box-shadow:none!important;}
  .lesson-award.earned {position:relative;inset:auto;break-inside:avoid;min-height:150mm;}
 }
+/* Full-width reading leaf. The contents panel is a portal, never a grid column. */
+.single-book:not(.is-cover) {padding:clamp(6px,1.3vw,18px);padding-top:6px;}
+.single-book:not(.is-cover) .book-sheet {max-width:1320px;border-radius:22px 9px 9px 22px;border-inline-end:7px solid #9b9d78;box-shadow:-5px 5px 0 #d7d1b7,-9px 9px 0 #e8e1c9,0 14px 30px #263f3720;}
+.single-book:not(.is-cover) main {max-width:1260px;padding:clamp(14px,2.2vw,30px);min-width:0;}
+.book-toolbar {max-width:1320px;min-width:0;padding-block:.3rem .65rem;}
+.book-toolbar>span {min-width:0;}
+.book-toolbar-navigation {flex-shrink:0;}
+.single-book:not(.is-cover) .book-page-content {scrollbar-gutter:stable;overflow-x:hidden;scroll-padding-block:1rem;}
+.single-book:not(.is-cover) footer {padding:.7rem 1.4rem;border-top:1px solid var(--line);font-size:.75rem;}
+.concept-reader {width:100%;max-width:1160px;min-width:0;}
+.concept-reader-layout,.concept-leaf {width:100%;min-width:0;}
+.book-contents-toggle {display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;min-height:48px;text-align:right;padding:.7rem 1rem;margin-bottom:1rem;border:1px solid #b8c4a9;background:var(--paper);border-radius:13px;font-weight:700;line-height:1.6;white-space:normal;}
+.book-contents-toggle::after {content:'☰';font-size:1.2rem;flex:0 0 auto;color:var(--green);}
+.book-contents-toggle[aria-expanded="true"] {outline:2px solid #718c68;}
+.book-contents-backdrop {position:fixed;inset:0;z-index:1200;background:#142b2380;display:flex;justify-content:flex-start;direction:rtl;padding:16px;backdrop-filter:blur(3px);}
+.book-contents-drawer {display:flex;flex-direction:column;width:min(390px,100%);max-height:100%;background:var(--paper);color:var(--ink);border:1px solid #a8b896;border-radius:22px;box-shadow:-14px 0 60px #10291e40;overflow:hidden;animation:contents-enter .2s ease-out;}
+.book-contents-drawer>header {display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-shrink:0;padding:1rem;border-bottom:1px solid var(--line);}
+.book-contents-drawer>header>div {display:flex;align-items:center;gap:.6rem;min-width:0;}
+.book-contents-drawer h2 {font-size:1.15rem;margin:0;}
+.book-contents-drawer>header button {width:44px;height:44px;padding:.5rem;flex-shrink:0;}
+.book-contents-list {display:flex;flex-direction:column;gap:.35rem;overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:.8rem;}
+.book-contents-list button {display:flex;align-items:center;gap:.7rem;flex-shrink:0;width:100%;min-height:50px;white-space:normal;text-align:right;border:1px solid transparent;background:transparent;box-shadow:none;padding:.7rem .85rem;border-radius:12px;line-height:1.65;}
+.book-contents-list button>span {flex:1;min-width:0;}
+.book-contents-list button>svg {flex-shrink:0;}
+.book-contents-list button.active {background:var(--soft);border-color:#a4b99b;box-shadow:inset -4px 0 #597e56;}
+.drawer-note {margin:0;padding:.65rem 1rem;font-size:.75rem;border-top:1px solid var(--line);flex-shrink:0;color:var(--muted);}
+@keyframes contents-enter {from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:none;}}
+.concept-leaf-heading {flex-wrap:wrap;line-height:1.7;}
+.concept-leaf-heading>svg {flex-shrink:0;}
+.concept-leaf-heading small {flex-shrink:0;}
+.concept-leaf :is(p,h1,h2,h3,label,button,legend,summary) {word-break:normal;overflow-wrap:break-word;hyphens:none;}
+.concept-leaf :is(fieldset,.options,.question,.concept-explanation-visual,.nutrition-goal-grid,.infographic-grid,.lab-tools,.variable-grid) {min-width:0;}
+.concept-leaf p {line-height:1.9;}
+.concept-leaf button {min-height:46px;white-space:normal;}
+.concept-leaf .stage-guide {align-items:flex-end;max-width:780px;margin:1.2rem auto .8rem;padding-top:.7rem;border-top:1px solid var(--line);}
+.concept-leaf .stage-guide-bubble {flex:1;min-width:0;max-width:none;}
+.concept-leaf .stage-guide-avatar {flex:0 0 60px;height:82px;}
+.concept-leaf .simulation-v2 {padding:clamp(12px,2vw,24px);width:100%;min-width:0;overflow:visible;border-radius:18px;}
+.concept-leaf .simulation-v2 .lab-visual {width:100%;max-width:none;margin:.6rem 0;min-width:0;}
+.concept-leaf .simulation-v2 .scientific-svg {width:100%;height:auto;min-height:0;max-height:min(520px,60dvh);aspect-ratio:760/474;}
+.concept-leaf .simulation-controls {display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.6rem;padding:.8rem 0;margin:0;}
+.concept-leaf .simulation-controls button {min-height:48px;font-size:.95rem;padding:.6rem .9rem;}
+.concept-leaf .simulation-v2 .segmented {display:flex;flex-wrap:wrap;width:100%;gap:.4rem;}
+.concept-leaf .simulation-v2 .segmented button {flex:1 1 220px;min-height:48px;font-size:.95rem;}
+.concept-leaf .lab-tools {grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));}
+.concept-leaf .lab-tools button {min-height:76px;font-size:.95rem;}
+.concept-leaf .variable-grid {grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:.8rem;}
+.concept-leaf .lab-step-header {flex-wrap:wrap;gap:.5rem;}
+.concept-leaf .lab-step-header p {flex:1 1 260px;margin:0;}
+.concept-leaf .lesson-bottom {padding-top:1rem;border-top:1px solid var(--line);gap:.8rem;}
+.concept-leaf .lesson-bottom button {font-size:.95rem;min-height:48px;}
+.single-book .book-sheet.turn-forward {animation:reading-turn-forward .48s cubic-bezier(.2,.65,.3,1);}
+.single-book .book-sheet.turn-backward {animation:reading-turn-backward .48s cubic-bezier(.2,.65,.3,1);}
+@keyframes reading-turn-forward {0%{transform:perspective(1800px) rotateY(-17deg);filter:brightness(.92);opacity:.5;}100%{transform:perspective(1800px) rotateY(0);filter:none;opacity:1;}}
+@keyframes reading-turn-backward {0%{transform:perspective(1800px) rotateY(17deg);filter:brightness(.92);opacity:.5;}100%{transform:perspective(1800px) rotateY(0);filter:none;opacity:1;}}
+@media(max-width:650px){
+ .single-book:not(.is-cover) {padding:4px 5px 9px;}
+ .single-book:not(.is-cover) main {padding:14px 12px;}
+ .single-book:not(.is-cover) .book-sheet {border-inline-end-width:3px;border-radius:15px 5px 5px 15px;}
+ .book-toolbar {display:grid;grid-template-columns:auto auto;gap:.35rem;}
+ .book-toolbar>span:nth-child(2) {grid-column:1/-1;grid-row:2;max-width:100%;white-space:normal;font-size:.8rem;}
+ .book-page-number {justify-self:end;}
+ .book-contents-backdrop {padding:8px;}
+ .book-contents-drawer {width:min(380px,100%);border-radius:17px;}
+ .concept-explanation-visual,.infographic-grid {grid-template-columns:1fr;}
+ .concept-leaf .simulation-v2 {padding:10px 0;border:0;box-shadow:none;background:transparent;}
+ .concept-leaf .simulation-controls button {flex:1 1 42%;font-size:.9rem;padding:.6rem;}
+ .concept-leaf .simulation-v2 .segmented button {flex-basis:45%;font-size:.88rem;padding:.6rem;}
+ .concept-leaf .stage-guide-avatar {flex-basis:48px;width:48px;min-width:48px;height:68px;}
+ .concept-leaf .stage-guide-bubble {font-size:.9rem;}
+ .concept-leaf .lesson-bottom button {flex:1 1 35%;font-size:.9rem;}
+ .concept-leaf .lesson-bottom>span {font-size:.8rem;}
+ .book-contents-toggle {font-size:.95rem;}
+}
+[data-reduced="true"] .book-contents-drawer {animation:none;}
+@media(prefers-reduced-motion:reduce){.book-contents-drawer{animation:none;}}
+@media print{.book-contents-toggle,.book-contents-backdrop{display:none!important;}}
+/* Enlarged diagrams live outside the book's clipping and perspective context. */
+.scene-expanded {z-index:1400!important;background:var(--paper);padding:clamp(10px,2vw,24px);border-radius:18px;max-width:none;width:auto;}
+.scene-expanded .scene-zoom {z-index:2;background:var(--paper);font-size:1rem;}
+.scene-expanded .science-parts {display:flex;flex-wrap:wrap;gap:.6rem;}
+.scene-expanded .science-parts button {min-height:46px;}
+/* Experiment pages prioritize the experiment; the book toolbar already names the lesson/concept. */
+.concept-reader.is-experiment .lesson-heading,.concept-reader.is-experiment .concept-leaf-heading {display:none;}
+.concept-reader.is-experiment .book-contents-toggle {margin-bottom:.6rem;min-height:44px;padding:.5rem .8rem;}
+.concept-reader.is-experiment .simulation-v2 {padding-top:.4rem;}
+.concept-reader.is-experiment .simulation-v2 .section-head {margin:0 0 .4rem;gap:.6rem;}
+.concept-reader.is-experiment .simulation-v2 .section-head .eyebrow {display:none;}
+.concept-reader.is-experiment .simulation-v2 .section-head h2 {margin:0;font-size:1.3rem;line-height:1.6;}
+.concept-reader.is-experiment .simulation-v2 .lab-objective {margin:.2rem 0;font-size:.86rem;line-height:1.65;}
+.concept-reader.is-experiment .simulation-v2 .inquiry-note {margin-bottom:.4rem;padding:.3rem 0;}
+.concept-reader.is-experiment .simulation-v2 .segmented {margin:.4rem 0;}
+.concept-reader.is-experiment .simulation-v2 .lab-step-header {padding:.5rem .65rem;margin:.4rem 0;}
+.concept-reader.is-experiment .simulation-v2 .lab-step-header p {font-size:.88rem;line-height:1.65;}
+@media(max-width:650px){.concept-reader.is-experiment .simulation-v2 .section-head h2{font-size:1.15rem;}.concept-reader.is-experiment .book-contents-toggle{font-size:.86rem;}}
