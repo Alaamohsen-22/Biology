@@ -39,6 +39,9 @@ export class SoundManager {
   private lastEffect = "";
   private media?: HTMLAudioElement;
   private mediaSequence = 0;
+  private bed?: HTMLAudioElement;
+  private bedSequence = 0;
+  private mediaEvents?: () => void;
   private mediaKind: "narration" | "music" = "narration";
   constructor(private base = import.meta.env?.BASE_URL ?? "/Biology/") {}
   subscribe = (listener: () => void) => {
@@ -72,6 +75,8 @@ export class SoundManager {
       this.gain.gain.value = level * (narrationPlaying ? 0.18 : 0.9);
     }
     if (this.fallback) this.fallback.volume = level * 0.9;
+    if (this.bed && (!enabled || level === 0)) { this.bedSequence++; this.bed.pause(); }
+    this.applyBedVolume();
     if (this.media) {
       if (!enabled) this.media.pause();
       this.media.muted = !enabled;
@@ -178,11 +183,39 @@ export class SoundManager {
       return false;
     }
   }
+  private applyBedVolume = () => {
+    if (!this.bed) return;
+    const narrating = this.mediaKind === "narration" && this.media && !this.media.paused;
+    this.bed.muted = !this.state.enabled;
+    this.bed.volume = this.state.enabled ? this.state.volume * (narrating ? 0.025 : 0.22) : 0;
+  };
+  async playBed(audio: HTMLAudioElement) {
+    if (!this.state.enabled || this.state.volume === 0) return false;
+    if(this.bed && this.bed !== audio) this.bed.pause();
+    this.bed = audio;
+    const token = ++this.bedSequence;
+    this.applyBedVolume();
+    try {
+      await audio.play();
+      if(token !== this.bedSequence || this.bed !== audio || !this.state.enabled || this.state.volume === 0) {
+        if(this.bed !== audio || !this.state.enabled || this.state.volume === 0) audio.pause();
+        return false;
+      }
+      return true;
+    } catch { return false; }
+  }
+  releaseBed(audio: HTMLAudioElement) {
+    audio.pause();
+    if(this.bed === audio) { this.bedSequence++; this.bed = undefined; }
+  }
   releaseMedia(audio: HTMLAudioElement) {
     audio.pause();
     if (this.media === audio) {
       this.mediaSequence++;
       this.media = undefined;
+      this.mediaEvents?.();
+      this.mediaEvents = undefined;
+      this.applyBedVolume();
     }
   }
   async playMedia(audio: HTMLAudioElement, kind: "narration" | "music", reportError = true) {
@@ -190,8 +223,17 @@ export class SoundManager {
     const token = ++this.mediaSequence;
     this.stop();
     if (this.media && this.media !== audio) this.media.pause();
+    this.mediaEvents?.();
     this.media = audio;
     this.mediaKind = kind;
+    audio.addEventListener?.("play", this.applyBedVolume);
+    audio.addEventListener?.("pause", this.applyBedVolume);
+    audio.addEventListener?.("ended", this.applyBedVolume);
+    this.mediaEvents = () => {
+      audio.removeEventListener?.("play", this.applyBedVolume);
+      audio.removeEventListener?.("pause", this.applyBedVolume);
+      audio.removeEventListener?.("ended", this.applyBedVolume);
+    };
     audio.muted = false;
     audio.volume = this.state.volume * (kind === "music" ? 0.22 : 1);
     try {
@@ -200,6 +242,7 @@ export class SoundManager {
         if (this.media !== audio || !this.state.enabled || this.state.volume === 0) audio.pause();
         return false;
       }
+      this.applyBedVolume();
       this.update({status: "ready", message: "الصوت جاهز"});
       return true;
     } catch {

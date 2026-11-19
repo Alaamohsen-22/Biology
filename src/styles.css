@@ -3164,3 +3164,72 @@ body:has(.pal-guide) { padding-bottom: 0; }
 }
 [data-theme="dark"] .lab-tools button { background:#2e4c3a; color:#f3f3e7; }
 [data-contrast="true"] .scene-realistic { border:2px solid currentColor; }
+/* Nutrition introduction only: a living Palestinian olive orchard. */
+.orchard-intro { overflow:hidden; border:1px solid #bac6a3; border-radius:24px; background:#edf0da; color:#264e3d; box-shadow:0 12px 35px #35523813; }
+.orchard-heading { padding:1.4rem 1.6rem 1rem; background:linear-gradient(120deg,#e0ead2,#f2e9cb); }
+.orchard-heading h2 { font-size:clamp(1.5rem,2.5vw,2.2rem); line-height:1.65; margin:.2rem 0; }
+.orchard-heading p { margin:0; line-height:1.9; }
+.orchard-panorama { position:relative; background:#a9d8eb; overflow:hidden; }
+.olive-orchard-art { display:block; width:100%; height:auto; }
+.orchard-hit { cursor:pointer; }
+.orchard-hit:focus-visible { outline:4px solid #a84944; outline-offset:6px; }
+.orchard-canopy { transform-origin:590px 375px; }
+.orchard-clouds { animation:orchard-cloud-drift 25s ease-in-out infinite alternate; }
+.orchard-birds { animation:orchard-bird-drift 16s ease-in-out infinite alternate; }
+.orchard-sunbeams { animation:orchard-light 8s ease-in-out infinite; transform-origin:853px 91px; }
+.active-sun .orchard-sunbeams { animation:orchard-light-selected 2s ease-out; }
+.leaves-discovered { animation:orchard-leaf-touch 1.5s ease-in-out; }
+.roots-discovered { animation:orchard-root-touch 1.5s ease-out; }
+.orchard-guide { position:absolute; left:2%; bottom:12%; display:flex; align-items:flex-end; width:31%; max-width:270px; gap:.4rem; }
+.orchard-guide-character { flex:0 0 60px; height:90px; }
+.orchard-bubble { border:1px solid #aab997; border-radius:18px 18px 4px 18px; padding:.7rem; background:#fffdf1eb; font-size:.78rem; box-shadow:0 5px 16px #35523f20; }
+.orchard-bubble p { margin:0; line-height:1.9; }
+.orchard-bubble button { min-height:44px; padding:.2rem; font-size:.7rem; }
+.orchard-guide.collapsed { width:auto; }
+.orchard-explore { padding:1rem 1.4rem; background:#e3ead2; }
+.orchard-explore-title { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; }
+.orchard-explore-title h3 { margin:0 0 .5rem; }
+.orchard-explore-title > span { font-size:.8rem; }
+.orchard-part-buttons { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.6rem; }
+.orchard-part-buttons button { min-height:48px; border:1px solid #92aa7f; background:#f6f5e8; color:#2d543f; border-radius:14px; }
+.orchard-part-buttons .selected { background:#315e45; color:#fffdf0; }
+.orchard-fact { min-height:4rem; padding:1rem .2rem .2rem; line-height:1.9; font-weight:600; }
+.orchard-prediction { margin:1.4rem; padding:1rem; border:1px solid #b8c19e; border-radius:18px; background:#f7f4e5; min-width:0; }
+.orchard-prediction legend { font-weight:700; padding-inline:.4rem; }
+.orchard-prediction > p { font-size:.85rem; }
+.orchard-prediction label { display:flex; align-items:center; gap:.7rem; padding:.85rem; border:1px solid #d1d6bb; background:#fffdf3; border-radius:14px; margin:.6rem 0; cursor:pointer; min-height:56px; line-height:1.9; }
+.orchard-prediction input { accent-color:#486f4e; width:20px; height:20px; flex:0 0 20px; }
+.orchard-prediction label.chosen { border-color:#668955; background:#e6edd7; }
+.orchard-prediction-feedback { color:#345a3e; padding:.7rem; border-radius:12px; background:#dfe9d0; }
+.orchard-audio { display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; padding:.6rem 1.4rem; }
+.orchard-audio button { min-height:48px; background:#f9f5e7; color:#355b43; border:1px solid #b4bea0; }
+.orchard-audio span { font-size:.8rem; line-height:1.8; }
+.orchard-teacher { padding:.5rem 1.4rem; }
+.orchard-next-hint { font-size:.8rem; line-height:1.9; padding:0 1.4rem; }
+.orchard-navigation { display:flex; justify-content:space-between; flex-wrap:wrap; gap:.6rem; padding:1rem 1.4rem 1.4rem; }
+.orchard-navigation button { min-height:52px; }
+@keyframes orchard-cloud-drift { to {transform:translateX(30px);} }
+@keyframes orchard-bird-drift { to {transform:translate(34px,-8px);} }
+@keyframes orchard-light { 50% {opacity:.6;transform:rotate(3deg);} }
+@keyframes orchard-light-selected { 50% {opacity:1;transform:rotate(7deg);} }
+@keyframes orchard-leaf-touch { 25%,75% {transform:rotate(-1deg);} 50% {transform:rotate(1deg);} }
+@keyframes orchard-root-touch { 40% {filter:brightness(1.4);} }
+.orchard-intro[data-reduced="true"] *, [data-reduced="true"] .orchard-intro * { animation:none !important; transition:none !important; }
+@media(prefers-reduced-motion:reduce) { .orchard-intro * { animation:none !important; } }
+@media(max-width:700px) {
+ .orchard-heading { padding:1rem; }
+ .orchard-guide { position:relative; left:auto; bottom:auto; width:100%; max-width:none; padding:.7rem; background:#dce7c6; align-items:center; }
+ .orchard-guide-character { flex-basis:54px; height:80px; }
+ .orchard-bubble { font-size:.82rem; flex:1; }
+ .orchard-explore { padding:.9rem; }
+ .orchard-prediction { margin:.9rem; padding:.8rem; }
+ .orchard-prediction label { font-size:.9rem; padding:.7rem; }
+ .orchard-audio { padding:.6rem .9rem; }
+ .orchard-navigation { padding:.9rem; }
+ .orchard-navigation button { width:100%; }
+}
+[data-contrast="true"] .orchard-part-buttons button, [data-contrast="true"] .orchard-prediction label { border:2px solid #2f523c; }
+main:has(.orchard-intro) > .lesson-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem; padding:0; margin:0 0 1rem; }
+main:has(.orchard-intro) > .lesson-heading h1 { font-size:1.5rem; margin:0; }
+main:has(.orchard-intro) > .lesson-heading h1 > span { font-size:1.6rem; }
+main:has(.orchard-intro) > .lesson-heading > p, main:has(.orchard-intro) > .lesson-heading > .eyebrow { display:none; }

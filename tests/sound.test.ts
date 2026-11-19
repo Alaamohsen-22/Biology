@@ -237,3 +237,20 @@ test("long recordings own the channel and release on leaving their stage", async
     assert.equal(await manager.play("water"), true);
   } finally { env.restore(); }
 });
+
+test("orchard background ducks for teacher narration and restores after pause without changing other playback",async()=>{
+ const manager=new SoundManager();
+ const media=()=>{
+  const events=new EventTarget();
+  return {paused:true,volume:1,muted:false,addEventListener:events.addEventListener.bind(events),removeEventListener:events.removeEventListener.bind(events),play(){this.paused=false;events.dispatchEvent(new Event('play'));return Promise.resolve();},pause(){this.paused=true;events.dispatchEvent(new Event('pause'));}} as unknown as HTMLAudioElement;
+ };
+ const bed=media(),voice=media();
+ assert.equal(await manager.playBed(bed),true);
+ const ordinary=bed.volume;
+ await manager.playMedia(voice,'narration');
+ assert.ok(bed.volume<ordinary/4);
+ assert.equal(bed.paused,false);
+ voice.pause();assert.equal(bed.volume,ordinary);
+ manager.configure(false);assert.equal(bed.paused,true);assert.equal(bed.volume,0);
+ manager.releaseMedia(voice);manager.releaseBed(bed);
+});

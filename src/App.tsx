@@ -1,3 +1,4 @@
+import { OliveOrchardIntro } from "./components/OliveOrchardIntro";
 import { NutritionDiscovery } from "./components/NutritionDiscovery";
 import { PalestinianGuide } from "./components/PalestinianGuide";
 import { IslandSound } from "./components/IslandSound";
@@ -626,7 +627,8 @@ export default function App() {
                 ))}
               </aside>
               <div className="lesson-content">
-                {tab === 0 && (
+                {tab === 0 && active === 1 && <OliveOrchardIntro enabled={settings.sound && settings.volume > 0} reduced={settings.reduced} teacherText={lesson.story} onBack={()=>go("map")} onPre={()=>setTab(1)}/>}
+                {tab === 0 && active !== 1 && (
                   <section className="card story-card">
                     <span className="big-emoji">{lesson.icon}</span>
                     <span className="eyebrow">سؤال تبدأ به المغامرة</span>
@@ -940,7 +942,7 @@ export default function App() {
                     </button>
                   </section>
                 )}
-                <div className="lesson-bottom">
+                {!(active === 1 && tab === 0) && <div className="lesson-bottom">
                   <button className="embroidered-nav previous" disabled={tab === 0} onClick={() => setTab(tab - 1)}>
                     <ArrowLeft size={16} style={{ transform: "rotate(180deg)" }} />
                     المرحلة السابقة
@@ -955,7 +957,7 @@ export default function App() {
                   >
                     تابع الاستكشاف <ArrowLeft size={16} />
                   </button>
-                </div>
+                </div>}
               </div>
             </div>
           </>
@@ -1220,7 +1222,7 @@ export default function App() {
         </button>
       </footer>
       </div>
-      {page !== "cover" && <PalestinianGuide name={progress.name} character={assets.companion ? (import.meta.env?.BASE_URL ?? "/Biology/") + assets.companion : undefined} context={`${page}-${active}-${tab}`} hints={[
+      {page !== "cover" && !(page === "lesson" && active === 1 && tab === 0) && <PalestinianGuide name={progress.name} character={assets.companion ? (import.meta.env?.BASE_URL ?? "/Biology/") + assets.companion : undefined} context={`${page}-${active}-${tab}`} hints={[
         page === "lesson" ? (((tab === 3 && active === 1) || tab === 5) && discoveryHint ? discoveryHint : [
           `أهلًا! اقرأ موقف ${lesson.title}، وحدد السؤال الذي تريد استكشافه.`,
           `اختبر معرفتك السابقة حول ${lesson.title}؛ هذه النتيجة للتشخيص وليست للإتقان.`,
