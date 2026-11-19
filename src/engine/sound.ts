@@ -15,6 +15,9 @@ export const effectNames = [
   "book-open",
   "page-turn",
   "diagnostic-result",
+  "bubble",
+  "combine",
+  "separate",
 ] as const;
 export type SoundEffect = (typeof effectNames)[number];
 type AudioContextConstructor = new () => AudioContext;

@@ -23,9 +23,12 @@ Object.assign(globalThis, {
 });
 beforeEach(() => {
   for (const key of Object.keys(dom.window.localStorage))
-    if (key.startsWith("life-island-draft:")) dom.window.localStorage.removeItem(key);
+    if (key.startsWith("life-island-draft:"))
+      dom.window.localStorage.removeItem(key);
 });
-const { render, fireEvent, cleanup } = await import("@testing-library/react");
+const { render, fireEvent, cleanup, within } = await import(
+  "@testing-library/react"
+);
 const { Simulation } = await import("../src/components/Simulation");
 const { Quiz } = await import("../src/components/Quiz");
 const { Matching, Ordering, Formative } = await import(
@@ -172,8 +175,7 @@ for (const lesson of lessons) {
     cleanup();
   });
 }
-test("complete learner journey through seven stations, compost, final, certificate, and restored dashboard", async () => {
-  const { within } = await import("@testing-library/react");
+test("concept-book journey through seven lessons, final, certificate and restored reading position", async () => {
   Object.defineProperty(globalThis, "localStorage", {
     value: dom.window.localStorage,
     configurable: true,
@@ -192,177 +194,139 @@ test("complete learner journey through seven stations, compost, final, certifica
     configurable: true,
   });
   const { default: App } = await import("../src/App");
-  const ui = render(<App />);
-  const answerQuiz = (qs: ReturnType<typeof bank>) => {
-    if(qs[0]?.id.startsWith("nutrition-start")) {
-      for(let i=0;i<qs.length;i++) {
-        const q=qs[i];
-        const input=ui.container.querySelectorAll<HTMLInputElement>(`input[name="${q.id}"]`)[q.answer];
-        assert.ok(input);fireEvent.click(input);
-        if(i<qs.length-1)fireEvent.click(ui.getByRole("button",{name:"التالي",exact:true}));
-      }
-      fireEvent.click(ui.getByRole("button",{name:"إنهاء الاختبار",exact:true}));return;
-    }
-    for (const q of qs) {
+  const { curriculum } = await import("../src/data/curriculum");
+  const { lessonPages } = await import("../src/engine/conceptBook");
+  const { finalBank } = await import("../src/data/lessons");
+  let ui = render(<App />);
+  const menu = (label: string) => {
+    fireEvent.click(ui.getByRole("button", { name: label, exact: true }));
+  };
+  const next = () =>
+    fireEvent.click(
+      ui.getByRole("button", { name: "الصفحة التالية في الكتاب", exact: true }),
+    );
+  const answer = (
+    qs: ReturnType<typeof bank>,
+    diagnostic = false,
+    paged = true,
+  ) => {
+    qs.forEach((q, i) => {
       const input = ui.container.querySelectorAll<HTMLInputElement>(
         `input[name="${q.id}"]`,
       )[q.answer];
-      assert.ok(input);
+      assert.ok(input, q.id);
       fireEvent.click(input);
-    }
-    fireEvent.click(ui.getByRole("button", { name: /تصحيح الاختبار/ }));
-  };
-  const sortItems = (items: string[]) => {
-    if (ui.container.querySelector(".card-ordering")) {
-      const scope = within(
-        ui.container.querySelector<HTMLElement>(".card-ordering")!,
-      );
-      for (const item of items)
-        fireEvent.click(scope.getByRole("button", { name: new RegExp(item) }));
-      fireEvent.click(scope.getByRole("button", { name: /تحقق من الترتيب/ }));
-      return;
-    }
-    for (let idx = 0; idx < items.length; idx++) {
-      let current = Array.from(ui.container.querySelectorAll("li b")).findIndex(
-        (x) => x.textContent === items[idx],
-      );
-      while (current > idx) {
+      if (paged && i < qs.length - 1)
         fireEvent.click(
-          ui.getByRole("button", { name: `تقديم ${items[idx]}` }),
+          ui.getByRole("button", {
+            name: diagnostic ? "التالي" : "السؤال التالي",
+            exact: true,
+          }),
         );
-        current--;
-      }
-    }
-    fireEvent.click(ui.getByRole("button", { name: /تحقق من الترتيب/ }));
+    });
+    fireEvent.click(
+      ui.getByRole("button", {
+        name: diagnostic ? "إنهاء الاختبار" : /تصحيح الاختبار/,
+        exact: diagnostic,
+      }),
+    );
   };
   try {
-    fireEvent.click(ui.getByRole("button", { name: /افتح الكتاب/ }));
+    fireEvent.click(ui.getByRole("button", { name: "افتح الكتاب" }));
     fireEvent.change(ui.getByLabelText("اسم المستكشف"), {
       target: { value: "مستكشف الاختبار" },
     });
     fireEvent.click(ui.getByRole("button", { name: /إلى الجزيرة/ }));
-    fireEvent.click(ui.getByRole("button", { name: /المحطة 1 التغذية/ }));
+    fireEvent.click(
+      ui.getByRole("button", { name: "المحطة 1 التغذية: متاحة" }),
+    );
     for (const lesson of lessons) {
-      fireEvent.click(
-        ui.getByRole("button", { name: /^02\s*الاختبار القبلي$/, exact: false }),
-      );
-      answerQuiz(bank(lesson, "pre"));
-      fireEvent.click(
-        ui.getByRole("button", { name: /المختبر/, exact: false }),
-      );
-      for (const simulation of ui.container.querySelectorAll<HTMLElement>(
-        ".simulation",
-      )) {
-        const scope = within(simulation);
-        const scene =
-          lesson.scenes[
-            Array.from(ui.container.querySelectorAll(".simulation")).indexOf(
-              simulation,
-            )
-          ];
-        for (let i = 0; i < scene.stages.length; i++)
-          fireEvent.click(scope.getByRole("button", { name: /خطوة تالية/ }));
-        fireEvent.click(scope.getByRole("button", { name: /جرّب بنفسك/ }));
-        const variable = scene.variables[0];
-        fireEvent.change(scope.getAllByRole("slider")[0], {
-          target: {
-            value:
-              Number(
-                (scope.getAllByRole("slider")[0] as HTMLInputElement).value,
-              ) === variable.max
-                ? variable.min
-                : variable.max,
-          },
-        });
-        fireEvent.click(
-          scope.getByRole("button", { name: "تشغيل", exact: true }),
-        );
-        for (let i = 0; i < scene.stages.length; i++)
-          fireEvent.click(scope.getByRole("button", { name: /خطوة تالية/ }));
-        fireEvent.click(scope.getByRole("button", { name: /تسجيل الملاحظة/ }));
-        fireEvent.change(scope.getByLabelText("ما الاستنتاج المناسب؟"), {
-          target: { value: "model" },
-        });
-        fireEvent.click(
-          scope.getByRole("button", { name: /اعتماد الاستنتاج/ }),
-        );
+      menu("الاختبار القبلي");
+      answer(bank(lesson, "pre"), true);
+      fireEvent.click(ui.getByRole("button", { name: "ابدأ رحلة التعلم" }));
+      for (const concept of curriculum[lesson.id - 1].topics) {
+        menu(concept.title);
+        assert.ok(ui.getByText(concept.definition));
+        next();
+        for (const sceneId of concept.scenes) {
+          const scene = lesson.scenes.find((s) => s.id === sceneId)!;
+          await ui.findByRole("heading", { name: scene.title, exact: true });
+          const scope = within(
+            ui.container.querySelector<HTMLElement>(".simulation")!,
+          );
+          for (let i = 0; i < scene.stages.length; i++)
+            fireEvent.click(scope.getByRole("button", { name: /خطوة تالية/ }));
+          fireEvent.click(scope.getByRole("button", { name: /جرّب بنفسك/ }));
+          const variable = scene.variables[0],
+            slider = scope.getAllByRole("slider")[0] as HTMLInputElement;
+          fireEvent.change(slider, {
+            target: {
+              value:
+                Number(slider.value) === variable.max
+                  ? variable.min
+                  : variable.max,
+            },
+          });
+          fireEvent.click(
+            scope.getByRole("button", { name: "تشغيل", exact: true }),
+          );
+          for (let i = 0; i < scene.stages.length; i++)
+            fireEvent.click(scope.getByRole("button", { name: /خطوة تالية/ }));
+          fireEvent.click(
+            scope.getByRole("button", { name: /تسجيل الملاحظة/ }),
+          );
+          fireEvent.change(scope.getByLabelText("ما الاستنتاج المناسب؟"), {
+            target: { value: "model" },
+          });
+          fireEvent.click(
+            scope.getByRole("button", { name: /اعتماد الاستنتاج/ }),
+          );
+          next();
+        }
+        fireEvent.click(ui.getAllByRole("radio")[concept.check.answer]);
+        fireEvent.click(ui.getByRole("button", { name: "تحقق من فهمي" }));
       }
-      fireEvent.click(
-        ui.getByRole("button", { name: /الأنشطة/, exact: false }),
+      menu("إنفوجرافيك الدرس");
+      assert.ok(ui.getByRole("region", { name: `إنفوجرافيك ${lesson.title}` }));
+      assert.equal(
+        ui.container.querySelector(".lesson-infographic audio"),
+        null,
       );
-      if (lesson.id === 5) {
-        ["الكليتان", "الحالبان", "المثانة", "الإحليل"].forEach((x, i) =>
-          fireEvent.change(ui.getByLabelText(`اسم العضو في الموضع ${i + 1}`), {
-            target: { value: x },
-          }),
-        );
-        fireEvent.click(
-          ui.getByRole("button", { name: /تحقق من تركيب النموذج/ }),
-        );
-      }
-      const selects = ui
-        .getAllByRole("combobox")
-        .filter((s) => !s.getAttribute("aria-label")?.startsWith("اسم العضو"));
-      lesson.pairs.forEach((pair, i) =>
-        fireEvent.change(selects[i], { target: { value: pair[1] } }),
+      menu("الاختبار البعدي");
+      answer(bank(lesson, "post"));
+      menu("شهادة الإنجاز");
+      assert.ok(
+        ui.getByRole("heading", { name: `شهادة مستكشف ${lesson.title}` }),
       );
-      fireEvent.click(ui.getByRole("button", { name: /تحقق من المطابقة/ }));
-      sortItems(lesson.order);
-      fireEvent.click(ui.getByRole("button", { name: /تقويم تكويني/ }));
-      fireEvent.click(ui.getAllByRole("radio")[lesson.questions[2].answer]);
-      fireEvent.click(ui.getByRole("button", { name: /تحقق وحاول/ }));
-      fireEvent.click(ui.getByRole("button", { name: /الاختبار البعدي/ }));
-      answerQuiz(bank(lesson, "post"));
-      fireEvent.click(ui.getByRole("button", { name: /الغلق/ }));
-      assert.ok(ui.getByText(`وسام مستكشف ${lesson.title}`));
-      fireEvent.click(
-        ui.getByRole("button", {
-          name: lesson.id < 7 ? /إلى المحطة التالية/ : /إلى المهمة الكبرى/,
-        }),
-      );
+      fireEvent.click(ui.getByRole("button", { name: "تابع رحلتك" }));
     }
-    fireEvent.click(ui.getByLabelText("قشور خضار"));
-    fireEvent.click(ui.getByLabelText("أوراق جافة"));
-    fireEvent.click(ui.getByRole("button", { name: /شغّل وقارن النتيجة/ }));
-    sortItems([
-      "تجهيز حاوية بفتحات تهوية",
-      "إضافة طبقات من بقايا خضراء ومواد جافة",
-      "ترطيب باعتدال وتقليب ومتابعة",
-      "انتظار التحلل ومقارنة التغيرات",
-    ]);
-    fireEvent.change(ui.getByLabelText("لماذا تتغير البقايا؟"), {
-      target: { value: "microbes" },
-    });
-    fireEvent.change(ui.getByLabelText("ما السلوك المناسب؟"), {
-      target: { value: "safe" },
-    });
-    fireEvent.click(ui.getByRole("button", { name: /قيّم مشروعي/ }));
-    fireEvent.click(ui.getByRole("button", { name: /تحدي الوحدة/ }));
-    const { finalBank } = await import("../src/data/lessons");
-    answerQuiz(finalBank());
+    answer(finalBank());
     fireEvent.click(ui.getByRole("button", { name: /شهادتي/ }));
     assert.ok(ui.getByRole("heading", { name: "شهادة مستكشف أسرار الحياة" }));
-    assert.ok(ui.getByRole("heading", { name: "مستكشف الاختبار" }));
     const saved = JSON.parse(
       dom.window.localStorage.getItem("life-island-progress-v1")!,
     );
     assert.equal(saved.final, 100);
-    assert.equal(saved.project, 100);
+    assert.equal(saved.project, undefined);
     assert.equal(Object.keys(saved.lessons).length, 7);
+    for (const lesson of curriculum)
+      assert.equal(
+        saved.lessons[lesson.id].conceptChecks.length,
+        lesson.topics.length,
+      );
     cleanup();
-    const restored = render(<App />);
-    fireEvent.click(restored.getByRole("button", { name: /رحلة إنجازي/ }));
-    assert.ok(restored.getByText("رحلة مستكشف الاختبار"));
+    ui = render(<App />);
+    fireEvent.click(ui.getByRole("button", { name: /متابعة آخر صفحة/ }));
+    assert.ok(ui.getByRole("heading", { name: "شهادة مستكشف التكاثر" }));
     assert.equal(
-      restored
-        .getByRole("button", { name: /شهادة المستكشف/ })
-        .hasAttribute("disabled"),
-      false,
+      ui.container.querySelectorAll('[data-testid="single-book-page"]').length,
+      1,
     );
   } finally {
     cleanup();
   }
 });
+
 test("automatic playback, pause, replay and speed controls operate for every scientific scene", async () => {
   const { act } = await import("@testing-library/react");
   const originalSet = dom.window.setInterval;
@@ -417,7 +381,14 @@ test("automatic playback, pause, replay and speed controls operate for every sci
           fireEvent.click(
             ui.getByRole("button", { name: "إعادة ضبط المحاكاة" }),
           );
-          assert.equal((ui.getByRole("progressbar", {name:"تقدم التجربة"}) as HTMLProgressElement).value, 0);
+          assert.equal(
+            (
+              ui.getByRole("progressbar", {
+                name: "تقدم التجربة",
+              }) as HTMLProgressElement
+            ).value,
+            0,
+          );
           assert.equal(watched, 1);
         } finally {
           cleanup();
@@ -429,12 +400,12 @@ test("automatic playback, pause, replay and speed controls operate for every sci
     globalThis.clearInterval = originalGlobalClear;
   }
 });
-test("all seven stations and ten stages are open before any assessment; visiting never awards mastery", async () => {
+test("all concept indices are open and visiting every lesson does not award mastery or erase legacy scores", async () => {
   const { initialProgress, emptyLesson } = await import(
     "../src/engine/progress"
   );
   const { default: App } = await import("../src/App");
-  const { stages } = await import("../src/data/lessons");
+  const { lessonIndex } = await import("../src/engine/conceptBook");
   const initial = {
     ...initialProgress(),
     name: "متعلم حر",
@@ -448,51 +419,50 @@ test("all seven stations and ten stages are open before any assessment; visiting
   );
   dom.window.localStorage.setItem(
     "life-island-settings-v1",
-    JSON.stringify({ sound: false, reduced: true, unlock: false }),
+    JSON.stringify({ sound: false, reduced: true }),
   );
   const ui = render(<App />);
   try {
-    fireEvent.click(ui.getByRole("button", { name: /افتح الكتاب/ }));
+    fireEvent.click(ui.getByRole("button", { name: "افتح الكتاب" }));
     for (const lesson of [...lessons].reverse()) {
-      const pin = ui.getByRole("button", {
-        name: `المحطة ${lesson.id} ${lesson.title}: متاحة`,
-      });
-      assert.equal(pin.hasAttribute("disabled"), false);
-      fireEvent.click(pin);
-      for (const index of [9, 0, 8, 1, 7, 2, 6, 3, 5, 4]) {
-        fireEvent.click(
-          ui.getByRole("button", {
-            name: new RegExp(`^0?${index + 1}\\s*${stages[index]}$`),
-          }),
+      fireEvent.click(
+        ui.getByRole("button", {
+          name: `المحطة ${lesson.id} ${lesson.title}: متاحة`,
+        }),
+      );
+      for (const { page } of lessonIndex(lesson.id).reverse()) {
+        const button = ui.getByRole("button", {
+          name: page.title,
+          exact: true,
+        });
+        assert.equal(button.hasAttribute("disabled"), false);
+        fireEvent.click(button);
+        assert.equal(
+          ui.container.querySelectorAll('[data-testid="single-book-page"]')
+            .length,
+          1,
         );
-        if (lesson.id === 1 && index === 0) {
-          assert.equal(ui.getByRole("button", {name:"اكتشف معرفتك السابقة"}).hasAttribute("disabled"), false);
-          const directPre = ui.getByRole("button", {name:/^02\s*الاختبار القبلي$/});
-          assert.equal(directPre.hasAttribute("disabled"),false);
-          fireEvent.click(directPre);
-          assert.ok(ui.getByText(bank(lesson,"pre")[0].text));
-          continue;
-        }
-        if(lesson.id === 1 && index === 1) {
-          const goals=ui.getByRole("button",{name:/^03\s*الأهداف$/});
-          assert.equal(goals.hasAttribute("disabled"),false);fireEvent.click(goals);assert.ok(ui.getByRole("heading",{name:"أهداف رحلتك"}));continue;
-        }
-        const next = ui.getByRole("button", { name: /تابع الاستكشاف/ });
-        const prev = ui.getByRole("button", { name: "المرحلة السابقة" });
-        assert.equal(next.hasAttribute("disabled"), index === 9);
-        assert.equal(prev.hasAttribute("disabled"), index === 0);
-        if (index < 9) {
-          fireEvent.click(next);
-          assert.ok(ui.getByText(`${index + 2} / 10`));
-          fireEvent.click(ui.getByRole("button", { name: "المرحلة السابقة" }));
-        }
       }
-      fireEvent.click(ui.getByRole("button", { name: /العودة للخريطة/ }));
+      assert.equal(
+        ui.queryByRole("button", { name: "الأنشطة", exact: true }),
+        null,
+      );
+      assert.equal(
+        ui.queryByRole("button", { name: "المختبر", exact: true }),
+        null,
+      );
+      assert.equal(
+        ui.queryByRole("button", { name: "تقويم تكويني", exact: true }),
+        null,
+      );
+      fireEvent.click(
+        ui.getByRole("button", { name: "العودة إلى الفهرس", exact: true }),
+      );
     }
-    fireEvent.click(ui.getByRole("button", { name: /مهمة الدبال/ }));
-    assert.ok(ui.getByRole("heading", { name: /حاوية التحلل الافتراضية/ }));
-    fireEvent.click(ui.getByRole("button", { name: /تحدي الوحدة/ }));
-    assert.ok(ui.getByRole("heading", { name: "الاختبار البعدي الشامل" }));
+    assert.equal(
+      ui.queryByRole("button", { name: "مهمة الدبال", exact: true }),
+      null,
+    );
     fireEvent.click(ui.getByRole("button", { name: /رحلة إنجازي/ }));
     assert.equal(
       ui

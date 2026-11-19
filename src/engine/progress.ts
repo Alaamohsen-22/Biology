@@ -5,6 +5,7 @@ export type LessonProgress = {
   watched: string[];
   experimented: string[];
   formative: boolean;
+  conceptChecks?: string[];
   attempts: number;
   goalResults?: Record<number, boolean>;
   completedAt?: string;
@@ -41,7 +42,18 @@ export function isMastered(
   p: LessonProgress | undefined,
   threshold: number,
   sceneIds: string[],
+  conceptIds?: string[],
 ) {
+  if (
+    conceptIds?.length &&
+    p?.pre !== undefined &&
+    (p?.post ?? 0) >= threshold &&
+    conceptIds.every((id) => p?.conceptChecks?.includes(id)) &&
+    sceneIds.every(
+      (id) => p?.watched.includes(id) && p?.experimented.includes(id),
+    )
+  )
+    return true;
   return (
     !!p &&
     p.pre !== undefined &&
@@ -80,6 +92,12 @@ export function parseProgress(input: unknown): Progress {
         (s) => typeof s !== "string",
       ) ||
       typeof l.formative !== "boolean" ||
+      (l.conceptChecks !== undefined &&
+        (!Array.isArray(l.conceptChecks) ||
+          l.conceptChecks.some(
+            (id) =>
+              typeof id !== "string" || !/^concept-[1-7]-[a-z-]+$/.test(id),
+          ))) ||
       !Number.isInteger(l.attempts) ||
       l.attempts < 0 ||
       (l.pre !== undefined && !bounded(l.pre)) ||
@@ -99,8 +117,24 @@ export function lessonCompletion(
   p: LessonProgress | undefined,
   scenes: string[],
   threshold: number,
+  conceptIds?: string[],
 ) {
   if (!p) return 0;
+  if (conceptIds?.length) {
+    if (isMastered(p, threshold, scenes, conceptIds)) return 100;
+    const done = (list: string[]) =>
+      scenes.filter((id) => list.includes(id)).length /
+      Math.max(1, scenes.length);
+    return Math.round(
+      (p.pre !== undefined ? 10 : 0) +
+        done(p.watched) * 20 +
+        done(p.experimented) * 20 +
+        (conceptIds.filter((id) => p.conceptChecks?.includes(id)).length /
+          conceptIds.length) *
+          30 +
+        ((p.post ?? 0) >= threshold ? 20 : 0),
+    );
+  }
   const count = (list: string[]) =>
     scenes.filter((id) => list.includes(id)).length /
     Math.max(1, scenes.length);

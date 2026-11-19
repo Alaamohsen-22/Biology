@@ -3330,3 +3330,79 @@ main:has(.orchard-intro) > .lesson-heading > p, main:has(.orchard-intro) > .less
 .single-book .lesson-heading h1 > span {width:44px;height:44px;font-size:1.7rem;border-radius:12px;}
 .single-book .lesson-heading p {margin:0;}
 .single-book .lesson-heading .eyebrow {font-size:.75rem;}
+/* Concept-led pages remain inside the existing single-leaf digital book. */
+.concept-reader {max-width:1180px;margin:auto;}
+.concept-reader-layout {display:grid;grid-template-columns:220px minmax(0,1fr);gap:1.1rem;align-items:start;}
+.concept-reader .stage-toggle {display:none;}
+.concept-index {display:flex;flex-direction:column;gap:.2rem;position:sticky;top:0;padding:.6rem;border-inline-end:1px solid var(--line);}
+.concept-index button {display:flex;gap:.65rem;text-align:right;align-items:center;min-height:48px;border:0;background:transparent;box-shadow:none;padding:.65rem;}
+.concept-index button span {flex:1;}
+.concept-index button.active {background:var(--soft);color:var(--green);box-shadow:inset -3px 0 var(--green);}
+.concept-leaf {min-width:0;}
+.concept-leaf-heading {display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--line);padding:.5rem 0 .8rem;margin-bottom:.75rem;color:var(--green);}
+.concept-leaf-heading small {margin-inline-start:auto;}
+.concept-leaf .stage-guide {margin:.5rem 0 1rem;}
+.concept-leaf .stage-guide-avatar {width:65px;min-width:65px;}
+.concept-leaf .stage-guide-bubble {max-width:560px;}
+.concept-explanation h2,.lesson-opening h2 {font-size:clamp(1.4rem,3vw,2rem);margin:.5rem 0 1rem;}
+.scientific-definition {font-size:1.1rem;background:var(--soft);padding:1rem;border-inline-start:4px solid #62916b;border-radius:0 14px 14px 0;}
+.scientific-definition b {display:block;color:var(--green);margin-bottom:.35rem;}
+.teacher-explanation {line-height:1.95;max-width:75ch;}
+.concept-explanation-visual {display:grid;grid-template-columns:1.1fr 1fr;align-items:center;gap:1rem;margin:1rem 0;}
+.concept-map {margin:0;padding:.85rem;background:linear-gradient(120deg,var(--soft),var(--paper));border-radius:18px;text-align:center;}
+.concept-map figcaption {display:flex;justify-content:center;gap:.45rem;font-weight:700;color:var(--green);margin-bottom:.6rem;}
+.concept-map ol {padding:0;margin:0;list-style:none;display:grid;gap:.25rem;}
+.concept-map li {display:grid;justify-items:center;gap:.25rem;}
+.map-node {display:flex;align-items:center;justify-content:center;gap:.4rem;background:var(--paper);padding:.6rem .8rem;border:1px solid var(--line);border-radius:12px;min-width:75%;}
+.real-life-example h3 {margin:.3rem 0;}
+.real-life-example {padding:.5rem;line-height:1.9;}
+.source-note {font-size:.75rem;color:var(--muted);margin-top:.75rem;}
+.lesson-opening {text-align:center;}
+.lesson-opening-art {display:block;width:100%;max-height:310px;margin:.5rem auto;border-radius:22px;}
+.lesson-opening>p {font-size:1.2rem;line-height:1.8;}
+.lesson-goals .nutrition-goal-grid {margin-top:1rem;}
+.concept-check {padding:.6rem 0;}
+.concept-check .options label {min-height:58px;font-size:1.05rem;}
+.lesson-summary details {border-bottom:1px solid var(--line);padding:.8rem;}
+.lesson-summary summary {cursor:pointer;font-weight:700;}
+.lesson-summary button {margin-top:1rem;}
+.lesson-infographic {background:var(--paper);padding:.75rem;position:relative;border-block:5px solid #719567;border-radius:18px;}
+.lesson-infographic header {text-align:center;margin-bottom:1rem;}
+.infographic-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;}
+.infographic-grid article {border-bottom:1px solid var(--line);padding:.5rem;break-inside:avoid;}
+.infographic-grid article p {line-height:1.8;margin:.65rem 0;font-size:.9rem;}
+.concept-map.compact {font-size:.85rem;}
+.lesson-award {text-align:center;padding:1.5rem;border:5px double #9fae83;border-radius:22px;background:var(--paper);}
+.lesson-award .requirements {text-align:right;}
+.lesson-award.earned {background:linear-gradient(135deg,var(--paper),var(--soft));}
+.concept-leaf .lesson-bottom {margin-top:1.2rem;}
+.post-remediation {margin-top:1rem;border-top:1px solid var(--line);padding-top:1rem;}
+@media(max-width:900px){
+ .concept-reader-layout {display:block;}
+ .concept-reader .stage-toggle {display:flex;margin-bottom:.6rem;}
+ .concept-index {display:none;position:static;}
+ .concept-index.expanded {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:.75rem;}
+ .concept-index button {font-size:.85rem;}
+}
+@media(max-width:560px){
+ .concept-explanation-visual,.infographic-grid {grid-template-columns:1fr;}
+ .concept-leaf-heading small {font-size:.7rem;}
+ .concept-leaf .stage-guide-bubble {font-size:.85rem;padding:.6rem;}
+ .concept-leaf .stage-guide-avatar {width:52px;min-width:52px;}
+ .lesson-award {padding:1rem .5rem;}
+ .concept-index.expanded {gap:.2rem;}
+ .single-book .lesson-heading h1 {font-size:1.35rem;}
+}
+@media print{.lesson-award.earned{position:absolute;inset:0;width:100%;background:white;color:#23483b;}.concept-index,.concept-leaf-heading,.stage-guide,.lesson-bottom,.post-remediation{display:none!important;}}
+.branch-map ol {grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;}
+.branch-map li:first-child {grid-column:1/-1;position:relative;padding-bottom:.5rem;border-bottom:2px solid #9ab18c;}
+.branch-map li:not(:first-child) {border-top:0;}
+.branch-map .map-node {min-width:0;width:100%;box-sizing:border-box;}
+.inquiry-note {padding:.6rem 0;border-bottom:1px solid var(--line);margin-bottom:.7rem;}
+.inquiry-note summary {cursor:pointer;color:var(--green);font-size:.85rem;}
+.inquiry-note textarea {min-height:60px;}
+@media print{
+ .book-toolbar,.book-turn-edge,.lesson-award button {display:none!important;}
+ .learning-scroll,.single-book,.single-book:not(.is-cover) .book-sheet,.single-book:not(.is-cover) .book-page-content {height:auto!important;max-height:none!important;overflow:visible!important;transform:none!important;box-shadow:none!important;}
+ .lesson-award.earned {position:relative;inset:auto;break-inside:avoid;min-height:150mm;}
+}

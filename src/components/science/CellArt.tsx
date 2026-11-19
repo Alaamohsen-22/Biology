@@ -25,32 +25,39 @@ export function CellArt({
           stroke="#cbd6c3"
           strokeWidth="3"
         />
-        <g stroke="#94b09a" strokeWidth="6" opacity={1 - spread}>
-          {Array.from({ length: 6 }, (_, i) => (
-            <path
-              key={i}
-              d={`M380 222L${380 + Math.cos((i * Math.PI) / 3) * 55} ${222 + Math.sin((i * Math.PI) / 3) * 55}`}
-            />
-          ))}
+        <g stroke="#94b09a" strokeWidth="8" opacity={1 - spread}>
+          <path d="M300 180H460V260H300Z" />
         </g>
-        {Array.from({ length: 6 }, (_, i) => {
-          const a = (i * Math.PI) / 3,
-            x = 380 + Math.cos(a) * (53 + spread * 147),
-            y = 222 + Math.sin(a) * (53 + spread * 71);
+        {[0, 1, 2, 3].map((i) => {
+          const x = 380 + (i % 2 ? 1 : -1) * (80 + spread * 125),
+            y = 222 + (i < 2 ? -1 : 1) * (38 + spread * 38);
           return (
             <g key={i}>
-              <circle
-                cx={x}
-                cy={y}
-                r="25"
-                fill={`url(#${prefix}-molecule-${i%2 ? "gold" : "green"})`}
-                stroke="#fffaf1"
-                strokeWidth="4"
+              <rect
+                x={x - 58}
+                y={y - 26}
+                width="116"
+                height="52"
+                rx="12"
+                fill={i % 2 ? "#e6cc89" : "#a8c49b"}
+                stroke="#6c8b6c"
+                strokeWidth="3"
               />
-              <circle cx={x - 7} cy={y - 7} r="6" fill="#ffffff50" />
+              <text
+                x={x}
+                y={y + 5}
+                textAnchor="middle"
+                fontSize="16"
+                fill="#243e35"
+              >
+                حمض أميني
+              </text>
             </g>
           );
         })}
+        <Label x={380} y={105}>
+          {spread < 0.4 ? "سلسلة بروتينية: وحدات مترابطة" : "وحدات أبسط منفصلة"}
+        </Label>
         <Label x={380} y={46}>
           {v.build
             ? "البناء: تجميع وحدات أبسط"
@@ -73,23 +80,93 @@ export function CellArt({
     );
   }
   if (id === "sexual") {
-    const pollen = phase(value,0,.3), tube=phase(value,.3,.7), seed=phase(value,.72,1);
-    return <g>
-      <path d="M380 406V176" stroke="#638458" strokeWidth="12"/>
-      {[0,1,2,3,4].map(n=><path key={n} d="M380 203Q300 126 358 87Q408 83 380 203Z" fill={`url(#${prefix}-skin)`} stroke="#c58c84" strokeWidth="2" transform={`rotate(${n*72} 380 203)`}/>)}
-      <ellipse cx="380" cy="314" rx="49" ry="55" fill={`url(#${prefix}-leaf)`} stroke="#66845b" strokeWidth="3"/>
-      <path d="M372 296V171q8-20 16 0v125" fill="#d7d4a2" stroke="#9a9d68" strokeWidth="3"/>
-      <ellipse cx="380" cy="160" rx="26" ry="10" fill="#d2b47b"/>
-      {v.gametes>0 && <>
-        <circle cx={mix(154,380,pollen)} cy={mix(108,151,pollen)} r="10" fill="#dfbf65" stroke="#a98b3e" strokeWidth="2"/>
-        <path d={`M380 160Q386 221 379 ${160+tube*147}`} fill="none" stroke="#e8c26a" strokeWidth="5"/>
-        <ellipse cx="380" cy="316" rx={15+seed*10} ry={20+seed*15} fill={seed>0 ? `url(#${prefix}-crust)` : "#e8daca"} stroke="#94795e" strokeWidth="2"/>
-        {tube>.7 && seed===0 && <circle cx="379" cy={mix(284,312,phase(tube,.7,1))} r="4" fill="#9d7eaf"/>}
-      </>}
-      <Label x={150} y={77}>حبة لقاح</Label><Label x={552} y={163}>الميسم</Label><Arrow x1={515} y1={163} x2={410} y2={163} prefix={prefix}/>
-      <Label x={565} y={314}>{seed>0 ? "بذرة تتكون داخل المبيض" : "بويضة داخل المبيض"}</Label><Arrow x1={491} y1={318} x2={417} y2={318} prefix={prefix}/>
-      <Label x={380} y={455}>{seed>0 ? "بعد الإخصاب تتحول البويضة إلى بذرة" : tube>0 ? "أنبوب اللقاح: تمثيل مجهري داخل العضو" : "انتقال حبة اللقاح يسبق الإخصاب"}</Label>
-    </g>;
+    const pollen = phase(value, 0, 0.3),
+      tube = phase(value, 0.3, 0.7),
+      seed = phase(value, 0.72, 1);
+    return (
+      <g>
+        <path d="M380 406V176" stroke="#638458" strokeWidth="12" />
+        {[0, 1, 2, 3, 4].map((n) => (
+          <path
+            key={n}
+            d="M380 203Q300 126 358 87Q408 83 380 203Z"
+            fill={`url(#${prefix}-skin)`}
+            stroke="#c58c84"
+            strokeWidth="2"
+            transform={`rotate(${n * 72} 380 203)`}
+          />
+        ))}
+        <ellipse
+          cx="380"
+          cy="314"
+          rx="49"
+          ry="55"
+          fill={`url(#${prefix}-leaf)`}
+          stroke="#66845b"
+          strokeWidth="3"
+        />
+        <path
+          d="M372 296V171q8-20 16 0v125"
+          fill="#d7d4a2"
+          stroke="#9a9d68"
+          strokeWidth="3"
+        />
+        <ellipse cx="380" cy="160" rx="26" ry="10" fill="#d2b47b" />
+        {v.gametes > 0 && (
+          <>
+            <circle
+              cx={mix(154, 380, pollen)}
+              cy={mix(108, 151, pollen)}
+              r="10"
+              fill="#dfbf65"
+              stroke="#a98b3e"
+              strokeWidth="2"
+            />
+            <path
+              d={`M380 160Q386 221 379 ${160 + tube * 147}`}
+              fill="none"
+              stroke="#e8c26a"
+              strokeWidth="5"
+            />
+            <ellipse
+              cx="380"
+              cy="316"
+              rx={15 + seed * 10}
+              ry={20 + seed * 15}
+              fill={seed > 0 ? `url(#${prefix}-crust)` : "#e8daca"}
+              stroke="#94795e"
+              strokeWidth="2"
+            />
+            {tube > 0.7 && seed === 0 && (
+              <circle
+                cx="379"
+                cy={mix(284, 312, phase(tube, 0.7, 1))}
+                r="4"
+                fill="#9d7eaf"
+              />
+            )}
+          </>
+        )}
+        <Label x={150} y={77}>
+          حبة لقاح
+        </Label>
+        <Label x={552} y={163}>
+          الميسم
+        </Label>
+        <Arrow x1={515} y1={163} x2={410} y2={163} prefix={prefix} />
+        <Label x={565} y={314}>
+          {seed > 0 ? "بذرة تتكون داخل المبيض" : "بويضة داخل المبيض"}
+        </Label>
+        <Arrow x1={491} y1={318} x2={417} y2={318} prefix={prefix} />
+        <Label x={380} y={455}>
+          {seed > 0
+            ? "بعد الإخصاب تتحول البويضة إلى بذرة"
+            : tube > 0
+              ? "أنبوب اللقاح: تمثيل مجهري داخل العضو"
+              : "انتقال حبة اللقاح يسبق الإخصاب"}
+        </Label>
+      </g>
+    );
   }
   const budding = id === "budding";
   const replicate = phase(value, 0.05, 0.35),
@@ -110,7 +187,15 @@ export function CellArt({
         opacity=".55"
       />
       <g>
-        {Array.from({length:8},(_,i)=><g key={i} transform={`translate(${leftX+Math.cos(i)*57} ${229+Math.sin(i)*75}) rotate(${i*43})`}><ellipse rx="9" ry="4" fill="#8dbaae" opacity=".5"/><path d="M-5 0h10" stroke="#dce6c5" strokeWidth="1"/></g>)}
+        {Array.from({ length: 8 }, (_, i) => (
+          <g
+            key={i}
+            transform={`translate(${leftX + Math.cos(i) * 57} ${229 + Math.sin(i) * 75}) rotate(${i * 43})`}
+          >
+            <ellipse rx="9" ry="4" fill="#8dbaae" opacity=".5" />
+            <path d="M-5 0h10" stroke="#dce6c5" strokeWidth="1" />
+          </g>
+        ))}
         <ellipse
           cx={leftX}
           cy="231"
@@ -120,7 +205,18 @@ export function CellArt({
           stroke="#6e9b83"
           strokeWidth="4"
         />
-        {Array.from({length:7},(_,i)=><ellipse key={i} cx={leftX+Math.cos(i)*55} cy={230+Math.sin(i)*72} rx="8" ry="4" fill="#92b7a6" opacity=".65" transform={`rotate(${i*30} ${leftX+Math.cos(i)*55} ${230+Math.sin(i)*72})`}/>)}
+        {Array.from({ length: 7 }, (_, i) => (
+          <ellipse
+            key={i}
+            cx={leftX + Math.cos(i) * 55}
+            cy={230 + Math.sin(i) * 72}
+            rx="8"
+            ry="4"
+            fill="#92b7a6"
+            opacity=".65"
+            transform={`rotate(${i * 30} ${leftX + Math.cos(i) * 55} ${230 + Math.sin(i) * 72})`}
+          />
+        ))}
         <path
           d={`M${leftX - 52} 162q-30 55-5 98`}
           stroke="#ffffff88"
@@ -208,9 +304,21 @@ export function AgeArt({ v, value, t, prefix }: ArtProps) {
         return (
           <g key={label} opacity={selected === i ? 1 : 0.4}>
             <circle cx={x} cy={340 - h} r="25" fill={`url(#${prefix}-skin)`} />
-            <path d={`M${x-17} ${326-h}q17-17 34 0`} stroke="#827564" strokeWidth="7" fill="none"/>
-            <path d={`M${x-23} ${370-h}q23-13 46 0l-5 ${h-91}h-36Z`} fill={`url(#${prefix}-leaf)`}/>
-            <path d={`M${x-4} ${351-h}v10`} stroke="#bf987c" strokeWidth="8"/>
+            <path
+              d={`M${x - 17} ${326 - h}q17-17 34 0`}
+              stroke="#827564"
+              strokeWidth="7"
+              fill="none"
+            />
+            <path
+              d={`M${x - 23} ${370 - h}q23-13 46 0l-5 ${h - 91}h-36Z`}
+              fill={`url(#${prefix}-leaf)`}
+            />
+            <path
+              d={`M${x - 4} ${351 - h}v10`}
+              stroke="#bf987c"
+              strokeWidth="8"
+            />
             <path
               d={`M${x} ${370 - h}v${h - 91}m0-${h - 107}-33 52m33-52 33 52M${x} 284l-24 70m24-70 24 70`}
               fill="none"

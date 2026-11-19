@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [feature/single-page-book-opening]
+    branches: ['feature/**']
 permissions:
   contents: read
 concurrency:

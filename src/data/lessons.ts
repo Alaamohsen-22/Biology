@@ -1,4 +1,4 @@
-import { nutritionDiagnostic } from "./nutritionOpening";
+import { diagnostics } from "./diagnostics";
 export type Question = {
   id: string;
   text: string;
@@ -1491,14 +1491,12 @@ export function bank(
   kind: "pre" | "post",
   retry = 0,
 ): Question[] {
-  if (kind === "pre" && lesson.id === 1) return nutritionDiagnostic.map(item=>({
+  if (kind === "pre") return diagnostics[lesson.id].map(item=>({
     id:item.id, text:item.text, options:item.options.map(o=>o.text),
     answer:item.options.findIndex(o=>o.id===item.correctId), why:"هذا السؤال لتحديد المعرفة السابقة.", goal:0, format:"choice",
   }));
   const chosen =
-    kind === "pre"
-      ? lesson.questions.slice(0, 5)
-      : retry % 2 === 1
+    retry % 2 === 1
         ? parallel[lesson.id]
         : lesson.questions.slice(5);
   return chosen.map((item, i) => {
