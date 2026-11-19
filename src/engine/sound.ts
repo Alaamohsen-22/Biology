@@ -12,8 +12,6 @@ export const effectNames = [
   "drop",
   "discover",
   "time",
-  "book-open",
-  "page-turn",
   "diagnostic-result",
   "bubble",
   "combine",

@@ -175,7 +175,7 @@ for (const lesson of lessons) {
     cleanup();
   });
 }
-test("concept-book journey through seven lessons, final, certificate and restored reading position", async () => {
+test("interactive classroom journey through seven lessons, final, certificate and restored reading position", async () => {
   Object.defineProperty(globalThis, "localStorage", {
     value: dom.window.localStorage,
     configurable: true,
@@ -195,16 +195,20 @@ test("concept-book journey through seven lessons, final, certificate and restore
   });
   const { default: App } = await import("../src/App");
   const { curriculum } = await import("../src/data/curriculum");
-  const { lessonPages } = await import("../src/engine/conceptBook");
+  const { lessonPages } = await import("../src/engine/lessonFlow");
   const { finalBank } = await import("../src/data/lessons");
   let ui = render(<App />);
   const menu = (label: string) => {
-    fireEvent.click(ui.getByRole("button",{name:/^فهرس الدرس ·/}));
+    const toggle = ui.getByRole("button", { name: /محتويات الدرس/ });
+    if (toggle.getAttribute("aria-expanded") === "false")
+      fireEvent.click(toggle);
     fireEvent.click(ui.getByRole("button", { name: label, exact: true }));
   };
   const next = () =>
     fireEvent.click(
-      ui.getByRole("button", { name: "الصفحة التالية في الكتاب", exact: true }),
+      within(
+        ui.getByRole("navigation", { name: "التنقل بين أجزاء الدرس" }),
+      ).getByRole("button", { name: "التالي", exact: true }),
     );
   const answer = (
     qs: ReturnType<typeof bank>,
@@ -233,7 +237,7 @@ test("concept-book journey through seven lessons, final, certificate and restore
     );
   };
   try {
-    fireEvent.click(ui.getByRole("button", { name: "افتح الكتاب" }));
+    fireEvent.click(ui.getByRole("button", { name: "ابدأ المغامرة" }));
     fireEvent.change(ui.getByLabelText("اسم المستكشف"), {
       target: { value: "مستكشف الاختبار" },
     });
@@ -317,10 +321,10 @@ test("concept-book journey through seven lessons, final, certificate and restore
       );
     cleanup();
     ui = render(<App />);
-    fireEvent.click(ui.getByRole("button", { name: /متابعة آخر صفحة/ }));
+    fireEvent.click(ui.getByRole("button", { name: /متابعة التعلم/ }));
     assert.ok(ui.getByRole("heading", { name: "شهادة مستكشف التكاثر" }));
     assert.equal(
-      ui.container.querySelectorAll('[data-testid="single-book-page"]').length,
+      ui.container.querySelectorAll('[data-testid="classroom-content"]').length,
       1,
     );
   } finally {
@@ -406,7 +410,7 @@ test("all concept indices are open and visiting every lesson does not award mast
     "../src/engine/progress"
   );
   const { default: App } = await import("../src/App");
-  const { lessonIndex } = await import("../src/engine/conceptBook");
+  const { lessonIndex } = await import("../src/engine/lessonFlow");
   const initial = {
     ...initialProgress(),
     name: "متعلم حر",
@@ -424,7 +428,7 @@ test("all concept indices are open and visiting every lesson does not award mast
   );
   const ui = render(<App />);
   try {
-    fireEvent.click(ui.getByRole("button", { name: "افتح الكتاب" }));
+    fireEvent.click(ui.getByRole("button", { name: "ابدأ المغامرة" }));
     for (const lesson of [...lessons].reverse()) {
       fireEvent.click(
         ui.getByRole("button", {
@@ -432,7 +436,9 @@ test("all concept indices are open and visiting every lesson does not award mast
         }),
       );
       for (const { page } of lessonIndex(lesson.id).reverse()) {
-        fireEvent.click(ui.getByRole("button",{name:/^فهرس الدرس ·/}));
+        const toggle = ui.getByRole("button", { name: /محتويات الدرس/ });
+        if (toggle.getAttribute("aria-expanded") === "false")
+          fireEvent.click(toggle);
         const button = ui.getByRole("button", {
           name: page.title,
           exact: true,
@@ -440,7 +446,7 @@ test("all concept indices are open and visiting every lesson does not award mast
         assert.equal(button.hasAttribute("disabled"), false);
         fireEvent.click(button);
         assert.equal(
-          ui.container.querySelectorAll('[data-testid="single-book-page"]')
+          ui.container.querySelectorAll('[data-testid="classroom-content"]')
             .length,
           1,
         );
@@ -458,7 +464,9 @@ test("all concept indices are open and visiting every lesson does not award mast
         null,
       );
       fireEvent.click(
-        ui.getByRole("button", { name: "العودة إلى الفهرس", exact: true }),
+        within(
+          ui.container.querySelector<HTMLElement>(".lesson-heading")!,
+        ).getByRole("button", { name: "العودة إلى الجزيرة", exact: true }),
       );
     }
     assert.equal(

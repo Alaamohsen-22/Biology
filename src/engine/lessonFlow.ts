@@ -49,40 +49,6 @@ export function lessonIndex(lessonId: number) {
 export function conceptCheckIds(lessonId: number) {
   return curriculum[lessonId - 1].topics.map((c) => c.check.id);
 }
-export function conceptBookNumber(
-  page: string,
-  lesson: number,
-  index: number,
-  diagnostic: number,
-) {
-  if (page === "cover") return 0;
-  const total = curriculum.reduce(
-    (n, l) => n + lessonPages(l.id).length + 5,
-    2,
-  );
-  if (page === "lesson")
-    return (
-      2 +
-      curriculum
-        .slice(0, lesson - 1)
-        .reduce((n, l) => n + lessonPages(l.id).length + 5, 0) +
-      index +
-      (index === 1 ? diagnostic : index > 1 ? 5 : 0)
-    );
-  return (
-    (
-      {
-        name: 1,
-        map: 1,
-        final: total,
-        dashboard: total + 1,
-        guide: total + 2,
-        teacher: total + 3,
-        certificate: total + 4,
-      } as Record<string, number>
-    )[page] ?? 1
-  );
-}
 export function validReadingLocation(
   value: unknown,
 ): value is { lesson: number; index: number } {

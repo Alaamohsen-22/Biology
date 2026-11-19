@@ -147,8 +147,8 @@ test("browser policy and missing files surface actionable errors rather than sil
     }
   }
 });
-test("all nineteen effects are local, lightweight nonempty PCM WAV files", async () => {
-  assert.equal(effectNames.length, 19);
+test("all seventeen effects are local, lightweight nonempty PCM WAV files", async () => {
+  assert.equal(effectNames.length, 17);
   for (const name of effectNames) {
     const bytes = await readFile(
       new URL(`../public/audio/effects/${name}.wav`, import.meta.url),
