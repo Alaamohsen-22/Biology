@@ -28,10 +28,11 @@ export function CardOrdering({
   reduced?: boolean;
   title?: string;
 }) {
-  const [pool, setPool] = useState(() => shuffledCards(items.length));
-  const [draft,setDraft] = useDraft(`ordering-${items.join("|")}`, {chosen: [] as number[]});
+  const [draft,setDraft] = useDraft(`ordering-${items.join("|")}`, {pool:shuffledCards(items.length),chosen: [] as number[]});
+  const pool=draft.pool;
+  const setPool=(pool:number[])=>setDraft(d=>({...d,pool}));
   const chosen = draft.chosen;
-  const setChosen = (chosen: number[]) => setDraft({chosen});
+  const setChosen = (chosen: number[]) => setDraft(d=>({...d,chosen}));
   const sound = useSound();
   const feedback = useActivityFeedback(allowSound);
   const id = useId();

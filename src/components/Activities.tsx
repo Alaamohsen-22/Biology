@@ -1,4 +1,4 @@
-import { useDraft } from "../engine/drafts";
+import { useDraft, useDraftState } from "../engine/drafts";
 import { useState } from "react";
 import type { Lesson, Question } from "../data/lessons";
 import { CardOrdering } from "./CardOrdering";
@@ -17,7 +17,7 @@ export function Matching({
   const [draft,setDraft] = useDraft(`matching-${lesson.id}`, { answers: {} as Record<string,string> });
   const answers = draft.answers;
   const setAnswers = (answers: Record<string,string>) => setDraft({answers});
-  const [tries, setTries] = useState(0);
+  const [tries, setTries] = useDraftState(`matching-tries-${lesson.id}`,0);
   const [ok, setOk] = useState(done);
   const feedback = useActivityFeedback();
   const sound = useSound();
@@ -135,7 +135,7 @@ export function Formative({
   const choice = draft.choice;
   const setChoice = (choice: number) => setDraft({choice});
   const [ok, setOk] = useState(done);
-  const [tries, setTries] = useState(0);
+  const [tries, setTries] = useDraftState(`formative-tries-${question.id}`,0);
   const feedback = useActivityFeedback();
   const sound = useSound();
   return (
@@ -213,7 +213,7 @@ export function UrinaryAssembly({
   const chosen = draft.chosen;
   const setChosen = (chosen: string[]) => setDraft({chosen});
   const [checked, setChecked] = useState(done);
-  const [tries, setTries] = useState(0);
+  const [tries, setTries] = useDraftState("assembly-tries",0);
   const feedback = useActivityFeedback();
   const sound = useSound();
   return (

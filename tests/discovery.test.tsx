@@ -40,13 +40,12 @@ test('discovery keeps prediction before experiment, reveals comparison only on r
 });
 test('guide gives progressive contextual hints and can be dismissed, hidden and restored',()=>{
  const ui=render(<PalestinianGuide name="نور" context="growth" hints={['راقب نمو الشتلة','قارن الحجم بمرور الزمن']}/>);
- try {fireEvent.click(ui.getByLabelText('تلميحات المساعدة الفلسطينية'));
-  assert.ok(ui.getByText('راقب نمو الشتلة')); fireEvent.click(ui.getByText('أعطني تلميحًا'));
+ try {assert.ok(ui.getByText('راقب نمو الشتلة')); fireEvent.click(ui.getByText('أعطني تلميحًا'));
   assert.ok(ui.getByText('قارن الحجم بمرور الزمن')); fireEvent.click(ui.getByText('فهمت، شكرًا'));
   fireEvent.click(ui.getByText('إخفاء المساعدة')); assert.ok(ui.getByText('إظهار المساعدة'));
   fireEvent.click(ui.getByText('إظهار المساعدة')); assert.ok(ui.getByLabelText('تلميحات المساعدة الفلسطينية'));
   ui.rerender(<PalestinianGuide name="نور" context="movement" hints={['راقب الأهداب','قارن وسائل الحركة']}/>);
-  fireEvent.click(ui.getByLabelText('تلميحات المساعدة الفلسطينية')); assert.ok(ui.getByText('راقب الأهداب'));
+  assert.ok(ui.getByText('راقب الأهداب'));
  }finally{cleanup();}
 });
 test('island attempts playback once, offers fallback after rejection and releases audio on leaving',async()=>{

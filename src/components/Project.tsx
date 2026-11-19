@@ -25,7 +25,7 @@ export function Project({
   const [ordered, setOrdered] = useDraftState("compost-ordered", false);
   const [interpret, setInterpret] = useDraftState("compost-interpret", "");
   const [environment, setEnvironment] = useDraftState("compost-environment", "");
-  const [ran, setRan] = useState(false);
+  const [ran, setRan] = useDraftState("compost-ran",false);
   const [message, setMessage] = useState("");
   const [playing, setPlaying] = useState(false);
   useEffect(() => {

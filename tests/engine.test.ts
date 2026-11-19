@@ -129,3 +129,47 @@ test("untrusted backup data is rejected", () => {
     parseProgress({ version: 1, name: "x", lessons: { 8: emptyLesson() } }),
   );
 });
+test("concept-book mastery replaces deleted tasks with checks and preserves earned legacy mastery", async () => {
+  const { conceptCheckIds } = await import("../src/engine/conceptBook");
+  for (const lesson of lessons) {
+    const ids = lesson.scenes.map((s) => s.id),
+      checks = conceptCheckIds(lesson.id);
+    const p = {
+      ...emptyLesson(),
+      pre: 0,
+      post: 71,
+      watched: ids,
+      experimented: ids,
+      conceptChecks: checks,
+    };
+    assert.equal(isMastered(p, 70, ids, checks), true);
+    assert.equal(
+      isMastered({ ...p, conceptChecks: checks.slice(1) }, 70, ids, checks),
+      false,
+    );
+    assert.equal(
+      isMastered({ ...p, experimented: [] }, 70, ids, checks),
+      false,
+    );
+    assert.equal(isMastered({ ...p, post: 69 }, 70, ids, checks), false);
+    assert.equal(
+      isMastered(
+        {
+          ...p,
+          conceptChecks: [],
+          formative: true,
+          activities: ["match", "order", "assemble"],
+        },
+        70,
+        ids,
+        checks,
+      ),
+      true,
+    );
+    assert.deepEqual(
+      parseProgress({ ...initialProgress(), lessons: { [lesson.id]: p } })
+        .lessons[lesson.id].conceptChecks,
+      checks,
+    );
+  }
+});

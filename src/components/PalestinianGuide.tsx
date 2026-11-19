@@ -1,4 +1,6 @@
-import { useEffect, useId, useState } from "react";
+import { welcomedStages } from "../engine/guideWelcome";
+import { GuideMedia } from "./GuideMedia";
+import { useEffect, useId, useState, useRef, useCallback } from "react";
 export function TeacherCharacter() {
   const id = useId().replace(/:/g, "");
   return <svg viewBox="0 0 120 160" role="img" aria-label="مساعدة تعليمية فلسطينية خيالية بثوب مطرز" className="teacher-character">
@@ -11,10 +13,14 @@ export function TeacherCharacter() {
 }
 export function PalestinianGuide({ name, context, hints, character }: { name: string; context: string; hints: string[]; character?: string }) {
   const [open,setOpen] = useState(false), [hidden,setHidden] = useState(false), [level,setLevel] = useState(0);
+  const [cue,setCue]=useState("");
+  const previous=useRef<string|null>(null);
+  const receiveCue=useCallback((text:string)=>setCue(text),[]);
+  useEffect(()=>{if(previous.current===context)return;previous.current=context;const first=!welcomedStages.has(context);welcomedStages.add(context);if(!hidden)setOpen(first);setCue("");},[context]);
   useEffect(() => { setLevel(0); }, [context, hints[0]]);
   return <aside className={`pal-guide ${hidden ? 'is-hidden' : ''}`} aria-label="المساعدة الفلسطينية">
-    {hidden ? <button onClick={() => setHidden(false)}>إظهار المساعدة</button> : <>
-      {open && <div className="guide-bubble" key={context}><b>{name ? `${name}،` : "يا مستكشف،"} فكرة تساعدك</b><p aria-live="polite">{hints[Math.min(level,hints.length-1)]}</p><div className="button-row"><button onClick={() => setLevel(n => Math.min(n+1,hints.length-1))}>أعطني تلميحًا</button><button onClick={() => setOpen(false)}>فهمت، شكرًا</button></div><small>مساعدة مكتوبة · دون محادثة أو صوت آلي</small></div>}
+    {hidden ? <button onClick={() => {setHidden(false);setOpen(true);}}>إظهار المساعدة</button> : <>
+      {open && <div className="guide-bubble" key={context}><b>{name ? `${name}،` : "يا مستكشف،"} فكرة تساعدك</b><p aria-live="polite">{cue||hints[Math.min(level,hints.length-1)]}</p><div className="button-row"><button onClick={() => setLevel(n => Math.min(n+1,hints.length-1))}>أعطني تلميحًا</button><button onClick={() => setOpen(false)}>فهمت، شكرًا</button></div><small>مساعدة مكتوبة</small><GuideMedia context={context} onCue={receiveCue}/></div>}
       <div className="guide-dock"><button className="guide-avatar" aria-label="تلميحات المساعدة الفلسطينية" aria-expanded={open} onClick={() => setOpen(!open)}>{character ? <img src={character} alt="الشخصية الفلسطينية المرفقة" className="teacher-character" /> : <TeacherCharacter />}</button><button onClick={() => {setHidden(true);setOpen(false);}}>إخفاء المساعدة</button></div>
     </>}
   </aside>;

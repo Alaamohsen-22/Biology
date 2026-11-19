@@ -1,10 +1,11 @@
+import {useDraftState} from "../engine/drafts";
 import { useState } from "react";
 import type { Lesson } from "../data/lessons";
 import { simulate } from "../engine/models";
 import { ScientificScene } from "./science/ScientificScene";
 import { useSound } from "./SoundSystem";
 export function ObservationPreview({ lesson }: { lesson: Lesson }) {
-  const [stage, setStage] = useState(0);
+  const [stage, setStage] = useDraftState(`observation-stage-${lesson.id}`,0);
   const sound = useSound();
   const scene = lesson.scenes[0];
   const vars = Object.fromEntries(

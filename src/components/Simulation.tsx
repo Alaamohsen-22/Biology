@@ -1,5 +1,10 @@
-import { useDraft } from "../engine/drafts";
-import { labProtocols, simulationCue, labObjectives, initialLabMaterials } from "../data/labProtocols";
+import { useDraft, useDraftState } from "../engine/drafts";
+import {
+  labProtocols,
+  simulationCue,
+  labObjectives,
+  initialLabMaterials,
+} from "../data/labProtocols";
 import { LabTool } from "./LabTool";
 import { soundManager } from "../engine/sound";
 import { useEffect, useRef, useState } from "react";
@@ -42,21 +47,47 @@ export function Simulation({
         v.key === "time" && v.initial === 0 && v.max === 100 ? 100 : v.initial,
       ]),
     );
-  const [draft,setDraft] = useDraft(`lab-${scene.id}`, { prediction: "", observation: "", inference: "", explained: false });
-  const [toolHint,setToolHint] = useState("");
-  const [toolStep,setToolStep] = useState(0);
-  const [vars, setVars] = useState<Variables>(defaults);
+  const [draft, setDraft] = useDraft(`lab-${scene.id}`, {
+    prediction: "",
+    observation: "",
+    inference: "",
+    explained: false,
+  });
+  const [toolHint, setToolHint] = useState("");
+  const [toolStep, setToolStep] = useDraftState(`scene-${scene.id}-tools`, 0);
+  const [vars, setVars] = useDraftState<Variables>(
+    `scene-${scene.id}-vars`,
+    defaults(),
+  );
   useEffect(() => () => soundManager.stop(), []);
-  const [mode, setMode] = useState<"watch" | "try">("watch");
-  const [t, setT] = useState(0);
+  const [mode, setMode] = useDraftState<"watch" | "try">(
+    `scene-${scene.id}-mode`,
+    "watch",
+  );
+  const [t, setT] = useDraftState(`scene-${scene.id}-time`, 0);
   const [running, setRunning] = useState(false);
-  const [speed, setSpeed] = useState(1);
-  const [changed, setChanged] = useState(false);
-  const [logged, setLogged] = useState(false);
-  const [conclusion, setConclusion] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [preview, setPreview] = useState(false);
-  const [completedRun, setCompletedRun] = useState(false);
+  const [speed, setSpeed] = useDraftState(`scene-${scene.id}-speed`, 1);
+  const [changed, setChanged] = useDraftState(
+    `scene-${scene.id}-changed`,
+    false,
+  );
+  const [logged, setLogged] = useDraftState(`scene-${scene.id}-logged`, false);
+  const [conclusion, setConclusion] = useDraftState(
+    `scene-${scene.id}-conclusion`,
+    "",
+  );
+  const [feedback, setFeedback] = useDraftState(
+    `scene-${scene.id}-feedback`,
+    "",
+  );
+  const [preview, setPreview] = useDraftState(
+    `scene-${scene.id}-preview`,
+    false,
+  );
+  const [completedRun, setCompletedRun] = useDraftState(
+    `scene-${scene.id}-completed-run`,
+    false,
+  );
   const started = useRef(false);
   const reported = useRef(false);
   const sound = useSound();
@@ -107,24 +138,40 @@ export function Simulation({
           ...vars,
           ...(scene.id === "age" ? { time: (vars.time ?? 0) * t } : {}),
         };
-  const result = simulate(scene.id, effective, scene.id === "iodine" ? Math.max(0,(t-.5)/.25) : t);
+  const result = simulate(
+    scene.id,
+    effective,
+    scene.id === "iodine" ? Math.max(0, (t - 0.5) / 0.25) : t,
+  );
   const step = Math.max(
     0,
     Math.min(scene.stages.length - 1, Math.ceil(t * scene.stages.length) - 1),
   );
   const cueTime = useRef(0);
   useEffect(() => {
-    if (!running) { cueTime.current=t; return; }
-    if(scene.id==="iodine") {
-      const cues=[.34,.41,.48,.7].filter(at=>at>cueTime.current && at<=t);
-      if(cues.length && effective.iodine) sound.play(cues[cues.length-1]===.7 ? "discover" : "drop");
-    } else if(t>=1 && cueTime.current<1) sound.play("discover");
-    cueTime.current=t;
-  }, [t,running,scene.id,effective.iodine]);
+    if (!running) {
+      cueTime.current = t;
+      return;
+    }
+    if (scene.id === "iodine") {
+      const cues = [0.34, 0.41, 0.48, 0.7].filter(
+        (at) => at > cueTime.current && at <= t,
+      );
+      if (cues.length && effective.iodine)
+        sound.play(cues[cues.length - 1] === 0.7 ? "discover" : "drop");
+    } else if (t >= 1 && cueTime.current < 1) sound.play("discover");
+    cueTime.current = t;
+  }, [t, running, scene.id, effective.iodine]);
   const previousStage = useRef(0);
   useEffect(() => {
-    if (running && scene.id !== "iodine" && step > 0 && step !== previousStage.current) {
-      sound.play(simulationCue(scene.id,t));
+    if (
+      running &&
+      scene.id !== "iodine" &&
+      step > 0 &&
+      step !== previousStage.current
+    ) {
+      if (scene.id !== "yeast" || result.value > 0.02)
+        sound.play(simulationCue(scene.id, t, effective));
     }
     previousStage.current = step;
   }, [step, running, scene.id]);
@@ -142,7 +189,9 @@ export function Simulation({
     activity.reset();
   };
   const setVariable = (key: string, value: number) => {
-    onHint?.(`غيّرت ${scene.variables.find(v => v.key === key)?.label ?? "عاملًا"} في ${scene.title}. قارن الرسم قبل التغيير وبعده، ثم شغّل التجربة لتختبر تفسيرك.`);
+    onHint?.(
+      `غيّرت ${scene.variables.find((v) => v.key === key)?.label ?? "عاملًا"} في ${scene.title}. قارن الرسم قبل التغيير وبعده، ثم شغّل التجربة لتختبر تفسيرك.`,
+    );
     setVars((previous) => ({ ...previous, [key]: value }));
     setChanged(true);
     setLogged(false);
@@ -172,7 +221,11 @@ export function Simulation({
           scene.stages.length,
       ),
     );
-    sound.play(t >= (scene.stages.length-1)/scene.stages.length ? "discover" : "step");
+    sound.play(
+      t >= (scene.stages.length - 1) / scene.stages.length
+        ? "discover"
+        : "step",
+    );
   };
   const previous = () => {
     setRunning(false);
@@ -187,7 +240,9 @@ export function Simulation({
     sound.play("step");
   };
   const play = () => {
-    onHint?.(`في تجربة ${scene.title}، راقب المرحلة الحالية وحدد ما ينتقل أو يتغير قبل وصف السبب.`);
+    onHint?.(
+      `في تجربة ${scene.title}، راقب المرحلة الحالية وحدد ما ينتقل أو يتغير قبل وصف السبب.`,
+    );
     sound.play(running ? "click" : "start");
     if (running) {
       setRunning(false);
@@ -207,7 +262,11 @@ export function Simulation({
       className="simulation card simulation-v2"
       data-sound-scope="custom"
       aria-label={scene.title}
-      onFocusCapture={() => onHint?.(`تجربة ${scene.title}: اختر عاملًا واحدًا، وسجل ما تراه لتبني استنتاجك.`)}
+      onFocusCapture={() =>
+        onHint?.(
+          `تجربة ${scene.title}: اختر عاملًا واحدًا، وسجل ما تراه لتبني استنتاجك.`,
+        )
+      }
     >
       <div className="section-head">
         <div>
@@ -217,9 +276,20 @@ export function Simulation({
         </div>
         <FlaskConical size={28} />
       </div>
-      <label className="lab-prediction">أتوقع: ماذا سيحدث عند تغيير أحد عوامل هذه التجربة؟
-        <textarea maxLength={800} value={draft.prediction} onChange={e => setDraft(d => ({...d,prediction:e.target.value}))} placeholder="أتوقع أن… لأن…" />
-      </label>
+      <details className="inquiry-note">
+        <summary>توقعي قبل التجربة · اختياري</summary>
+        <label className="lab-prediction">
+          أتوقع: ماذا سيحدث عند تغيير أحد عوامل هذه التجربة؟
+          <textarea
+            maxLength={800}
+            value={draft.prediction}
+            onChange={(e) =>
+              setDraft((d) => ({ ...d, prediction: e.target.value }))
+            }
+            placeholder="أتوقع أن… لأن…"
+          />
+        </label>
+      </details>
       <div className="segmented" role="group" aria-label="وضع المحاكاة">
         <button
           aria-pressed={mode === "watch"}
@@ -240,7 +310,7 @@ export function Simulation({
           onClick={() => {
             reset();
             setMode("try");
-            setVars({...defaults(), ...initialLabMaterials[scene.id]});
+            setVars({ ...defaults(), ...initialLabMaterials[scene.id] });
             setChanged(false);
             sound.play("select");
           }}
@@ -253,7 +323,16 @@ export function Simulation({
         <span className="pill">
           الخطوة {step + 1} / {scene.stages.length}
         </span>
-        <p aria-live="polite">{mode === "try" && scene.id.startsWith("micro") ? ["أجهز العينة المختارة.","ألاحظ شكل الجسم وزوائده.","أراقب الحركة وتغير الموضع.","أقارن وسيلة الدفع."][step] : scene.stages[step]}</p>
+        <p aria-live="polite">
+          {mode === "try" && scene.id.startsWith("micro")
+            ? [
+                "أجهز العينة المختارة.",
+                "ألاحظ شكل الجسم وزوائده.",
+                "أراقب الحركة وتغير الموضع.",
+                "أقارن وسيلة الدفع.",
+              ][step]
+            : scene.stages[step]}
+        </p>
         <span
           className={`play-state ${running ? "running" : ""}`}
           role="status"
@@ -284,19 +363,27 @@ export function Simulation({
           {running ? <Pause size={18} /> : <Play size={18} />}{" "}
           {running ? "إيقاف مؤقت" : t > 0 && t < 1 ? "استئناف" : "تشغيل"}
         </button>
-        {t > 0 && <button className="embroidered-nav previous" onClick={previous}>
-          <SkipBack size={18} />
-          خطوة سابقة
-        </button>}
-        {t < 1 && <button className="embroidered-nav next primary" onClick={next}>
-          <SkipForward size={18} />
-          خطوة تالية
-        </button>}
+        {t > 0 && (
+          <button className="embroidered-nav previous" onClick={previous}>
+            <SkipBack size={18} />
+            خطوة سابقة
+          </button>
+        )}
+        {t < 1 && (
+          <button className="embroidered-nav next primary" onClick={next}>
+            <SkipForward size={18} />
+            خطوة تالية
+          </button>
+        )}
         <button
           aria-label="إعادة ضبط المحاكاة"
           onClick={() => {
             reset();
-            setVars(mode === "try" ? {...defaults(),...initialLabMaterials[scene.id]} : defaults());
+            setVars(
+              mode === "try"
+                ? { ...defaults(), ...initialLabMaterials[scene.id] }
+                : defaults(),
+            );
             setChanged(false);
             sound.play("move");
           }}
@@ -319,15 +406,47 @@ export function Simulation({
           </select>
         </label>
       </div>
-      {mode === "try" && <div className="experiment-tools">          <div className="section-head">
+      {mode === "try" && (
+        <div className="experiment-tools">
+          {" "}
+          <div className="section-head">
             <h3>أدوات التجربة</h3>
             <span className="pill">غيّر عاملًا واحدًا وقارن</span>
           </div>
-          <div className="lab-tools">{labProtocols[scene.id].map((action,i)=><button key={action.label} className={i<toolStep ? "used-tool" : ""} onClick={() => {
-            setVars(v=>({...v,...action.patch}));setChanged(true);setT(0);setLogged(false);setCompletedRun(false);setConclusion("");setFeedback("");setPreview(false);reported.current=false;started.current=false;activity.reset();setToolStep(i+1);
-            sound.play(action.sound);onHint?.(`${action.label}: راقب ما يتغير وقارن بالتجربة السابقة.`);
-            if(i===labProtocols[scene.id].length-1){started.current=true;setRunning(true);}else setRunning(false);
-          }}><LabTool type={action.tool}/><span>{action.label}</span>{i<toolStep && <b>✓</b>}</button>)}</div>
+          <div className="lab-tools">
+            {labProtocols[scene.id].map((action, i) => (
+              <button
+                key={action.label}
+                className={i < toolStep ? "used-tool" : ""}
+                onClick={() => {
+                  setVars((v) => ({ ...v, ...action.patch }));
+                  setChanged(true);
+                  setT(0);
+                  setLogged(false);
+                  setCompletedRun(false);
+                  setConclusion("");
+                  setFeedback("");
+                  setPreview(false);
+                  reported.current = false;
+                  started.current = false;
+                  activity.reset();
+                  setToolStep(i + 1);
+                  sound.play(action.sound);
+                  onHint?.(
+                    `${action.label}: راقب ما يتغير وقارن بالتجربة السابقة.`,
+                  );
+                  if (i === labProtocols[scene.id].length - 1) {
+                    started.current = true;
+                    setRunning(true);
+                  } else setRunning(false);
+                }}
+              >
+                <LabTool type={action.tool} />
+                <span>{action.label}</span>
+                {i < toolStep && <b>✓</b>}
+              </button>
+            ))}
+          </div>
           <h3>غيّر ظروف التجربة</h3>
           <div className="variables">
             {scene.variables.map((v) => (
@@ -367,37 +486,107 @@ export function Simulation({
               </label>
             ))}
           </div>
-</div>}
-      <button className="lab-hint" onClick={()=>{const hint=`في ${scene.title} غيّر ${scene.variables[0].label} فقط، ثم قارن بين البداية والنهاية.`;setToolHint(hint);onHint?.(hint);sound.play("tool");}}>أعطني تلميحًا للتجربة</button>
-      {toolHint && <p className="hint" role="status">{toolHint}</p>}
-      <progress className="lab-progress" max={1} value={t} aria-label="تقدم التجربة" />
-      <details className="experiment-information"><summary>معلومات التجربة</summary>
+        </div>
+      )}
+      <button
+        className="lab-hint"
+        onClick={() => {
+          const hint = `في ${scene.title} غيّر ${scene.variables[0].label} فقط، ثم قارن بين البداية والنهاية.`;
+          setToolHint(hint);
+          onHint?.(hint);
+          sound.play("tool");
+        }}
+      >
+        أعطني تلميحًا للتجربة
+      </button>
+      {toolHint && (
+        <p className="hint" role="status">
+          {toolHint}
+        </p>
+      )}
+      <progress
+        className="lab-progress"
+        max={1}
+        value={t}
+        aria-label="تقدم التجربة"
+      />
+      <details className="experiment-information">
+        <summary>معلومات التجربة</summary>
         <p>{result.detail}</p>
-        <p>الجسيمات والمسارات والأسهم تمثيلات تعليمية لعمليات مجهرية؛ لا تُرى بهذه الصورة بالعين المجردة. النتائج للمقارنة والتفسير، لا لقياس مخبري دقيق.</p>
-        <p>الزمن مضغوط في تجارب النمو والعفن والنتح والتكاثر والدبال. عند تقليل الحركة تُعرض حالات متباعدة.</p>
+        <p>
+          الجسيمات والمسارات والأسهم تمثيلات تعليمية لعمليات مجهرية؛ لا تُرى
+          بهذه الصورة بالعين المجردة. النتائج للمقارنة والتفسير، لا لقياس مخبري
+          دقيق.
+        </p>
+        <p>
+          الزمن مضغوط في تجارب النمو والعفن والنتح والتكاثر والدبال. عند تقليل
+          الحركة تُعرض حالات متباعدة.
+        </p>
       </details>
-      {t >= 1 && <p className="lab-result" role="status">{result.label}</p>}
-      <div className="lab-observations">
-        <label>ماذا لاحظت في هذه التجربة؟<textarea maxLength={800} value={draft.observation} onChange={e => setDraft(d => ({...d,observation:e.target.value}))} /></label>
-        <label>ما استنتاجك من المقارنة؟<textarea maxLength={800} value={draft.inference} onChange={e => setDraft(d => ({...d,inference:e.target.value}))} /></label>
-        <button onClick={() => { setDraft(d=>({...d,explained:!d.explained})); sound.play("check"); }}>اكتشف التفسير العلمي</button>
-        {draft.explained && <p className="hint">{t >= 1 ? `${result.label}. ${result.detail}` : "نفّذ التجربة أولًا، ثم قارن النتيجة بتوقعك."}</p>}
-      </div>
+      {t >= 1 && (
+        <p className="lab-result" role="status">
+          {result.label}
+        </p>
+      )}
+      <details className="inquiry-note">
+        <summary>ملاحظاتي وتفسيري · اختياري</summary>
+        <div className="lab-observations">
+          <label>
+            ماذا لاحظت في هذه التجربة؟
+            <textarea
+              maxLength={800}
+              value={draft.observation}
+              onChange={(e) =>
+                setDraft((d) => ({ ...d, observation: e.target.value }))
+              }
+            />
+          </label>
+          <label>
+            ما استنتاجك من المقارنة؟
+            <textarea
+              maxLength={800}
+              value={draft.inference}
+              onChange={(e) =>
+                setDraft((d) => ({ ...d, inference: e.target.value }))
+              }
+            />
+          </label>
+          <button
+            onClick={() => {
+              setDraft((d) => ({ ...d, explained: !d.explained }));
+              sound.play("check");
+            }}
+          >
+            اكتشف التفسير العلمي
+          </button>
+          {draft.explained && (
+            <p className="hint">
+              {t >= 1
+                ? `${result.label}. ${result.detail}`
+                : "نفّذ التجربة أولًا، ثم قارن النتيجة بتوقعك."}
+            </p>
+          )}
+        </div>
+      </details>
       {mode === "watch" ? (
-        <p className="lab-instruction">شاهد ماذا يحدث، ثم جرّب أدوات التجربة بنفسك.</p>
+        <p className="lab-instruction">
+          شاهد ماذا يحدث، ثم جرّب أدوات التجربة بنفسك.
+        </p>
       ) : (
         <div className="experiment-workbench">
           {preview && (
-            <p className="hint">
-              تم إعداد الأدوات. ابدأ التجربة لترى النتيجة.
-            </p>
+            <p className="hint">تم إعداد الأدوات. ابدأ التجربة لترى النتيجة.</p>
           )}
           <div className="experiment-notes">
             <h3>دفتر المستكشف</h3>
             <p>
               غيّر متغيرًا، ثم شغّل النموذج حتى النهاية وسجل ملاحظتك واستنتاجك.
             </p>
-            {(!changed || !completedRun) && <p className="muted">غيّر عاملًا وشغّل التجربة حتى النهاية لتسجيل الملاحظة.</p>}
+            {(!changed || !completedRun) && (
+              <p className="muted">
+                غيّر عاملًا وشغّل التجربة حتى النهاية لتسجيل الملاحظة.
+              </p>
+            )}
             <button
               disabled={!changed || !completedRun}
               onClick={() => {
@@ -440,7 +629,11 @@ export function Simulation({
                   onClick={() => {
                     const correct = conclusion === "model";
                     activity.check(correct, () => onExperiment());
-                    onHint?.(correct ? `أحسنت في تجربة ${scene.title}! راجع الدليل الذي اعتمدت عليه، ثم قارن بإعداد آخر.` : `راجع الملاحظة في تجربة ${scene.title}. هل استندت إلى ما شاهدته أم افترضت قياسًا لم تنفذه؟`);
+                    onHint?.(
+                      correct
+                        ? `أحسنت في تجربة ${scene.title}! راجع الدليل الذي اعتمدت عليه، ثم قارن بإعداد آخر.`
+                        : `راجع الملاحظة في تجربة ${scene.title}. هل استندت إلى ما شاهدته أم افترضت قياسًا لم تنفذه؟`,
+                    );
                     setFeedback(
                       correct
                         ? "أحسنت، سُجلت التجربة والاستنتاج."
