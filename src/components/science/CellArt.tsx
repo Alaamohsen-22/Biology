@@ -25,7 +25,7 @@ export function CellArt({
           stroke="#cbd6c3"
           strokeWidth="3"
         />
-        <g stroke="#94b09a" strokeWidth="8" opacity={1 - spread}>
+        <g stroke="#94b09a" strokeWidth="8" fill="none" opacity={1 - spread}>
           <path d="M300 180H460V260H300Z" />
         </g>
         {[0, 1, 2, 3].map((i) => {

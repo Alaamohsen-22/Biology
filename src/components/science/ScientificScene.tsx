@@ -1,5 +1,6 @@
 import { Materials } from "./Materials";
-import { useId, useState, useRef } from "react";
+import { createPortal } from "react-dom";
+import { useId, useState, useRef, useEffect } from "react";
 import type { Variables } from "../../engine/models";
 import { PlantArt, VegetativeArt } from "./PlantArt";
 import { IodineArt, YeastArt, RespirationArt, MoldArt } from "./LabArt";
@@ -226,11 +227,22 @@ export function ScientificScene({
   compact?: boolean;
 }) {
   const prefix = useId().replace(/:/g, "");
-  const [expanded,setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const zoomButton = useRef<HTMLButtonElement>(null);
+  const wasExpanded = useRef(false);
+  useEffect(() => {
+    if (expanded || wasExpanded.current)
+      zoomButton.current?.focus({ preventScroll: true });
+    wasExpanded.current = expanded;
+  }, [expanded]);
   const [part, setPart] = useState<number | null>(null);
   const sound = useSound();
-  const info = scienceCatalog[id.startsWith("micro") ? ["micro","micro-euglena","micro-amoeba"][vars.organism ?? 0] : id];
+  const info =
+    scienceCatalog[
+      id.startsWith("micro")
+        ? ["micro", "micro-euglena", "micro-amoeba"][vars.organism ?? 0]
+        : id
+    ];
   if (!info) throw Error(`Missing scientific artwork: ${id}`);
   const props = { t, value: Math.max(0, Math.min(1, value)), v: vars, prefix };
   const art =
@@ -263,12 +275,46 @@ export function ScientificScene({
     ) : (
       <PlantArt id={id} {...props} />
     );
-  return (
-    <figure className={`scientific-scene scene-realistic ${expanded ? "scene-expanded" : ""}`} data-science-id={id} role={expanded ? "dialog" : undefined} aria-modal={expanded || undefined} aria-label={expanded ? info.title : undefined} onKeyDown={e=>{
-      if(e.key==="Escape"){setExpanded(false);zoomButton.current?.focus();}
-      if(expanded && e.key==="Tab") { const buttons=[...e.currentTarget.querySelectorAll<HTMLButtonElement>("button")];const first=buttons[0],last=buttons[buttons.length-1];if(e.shiftKey && document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first?.focus();} }
-    }}>
-      <button ref={zoomButton} className="scene-zoom" data-sound="handled" aria-expanded={expanded} onClick={()=>{setExpanded(!expanded);sound.play("tool");}}>{expanded ? "إغلاق التكبير" : "تكبير الرسم"}</button>
+  const figure = (
+    <figure
+      className={`scientific-scene scene-realistic ${expanded ? "scene-expanded" : ""}`}
+      data-science-id={id}
+      role={expanded ? "dialog" : undefined}
+      aria-modal={expanded || undefined}
+      aria-label={expanded ? info.title : undefined}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          setExpanded(false);
+          zoomButton.current?.focus();
+        }
+        if (expanded && e.key === "Tab") {
+          const buttons = [
+            ...e.currentTarget.querySelectorAll<HTMLButtonElement>("button"),
+          ];
+          const first = buttons[0],
+            last = buttons[buttons.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last?.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first?.focus();
+          }
+        }
+      }}
+    >
+      <button
+        ref={zoomButton}
+        className="scene-zoom"
+        data-sound="handled"
+        aria-expanded={expanded}
+        onClick={() => {
+          setExpanded(!expanded);
+          sound.play("tool");
+        }}
+      >
+        {expanded ? "إغلاق التكبير" : "تكبير الرسم"}
+      </button>
       <svg
         viewBox="0 0 760 474"
         role="img"
@@ -277,7 +323,7 @@ export function ScientificScene({
       >
         <title>{info.title}</title>
         <defs>
-          <Materials prefix={prefix}/>
+          <Materials prefix={prefix} />
           <linearGradient id={`${prefix}-leaf`} x2="1" y2="1">
             <stop stopColor="#a0b97f" />
             <stop offset="1" stopColor="#5f8b6c" />
@@ -317,7 +363,9 @@ export function ScientificScene({
         </defs>
         <rect width="760" height="474" rx="25" fill={`url(#${prefix}-light)`} />
         <rect width="760" height="474" rx="25" fill={`url(#${prefix}-grid)`} />
-        <g className="science-model" filter={`url(#${prefix}-depth)`}>{art}</g>
+        <g className="science-model" filter={`url(#${prefix}-depth)`}>
+          {art}
+        </g>
       </svg>
       {!compact && (
         <>
@@ -350,4 +398,5 @@ export function ScientificScene({
       )}
     </figure>
   );
+  return expanded ? createPortal(figure, document.body) : figure;
 }

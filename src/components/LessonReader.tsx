@@ -1,3 +1,4 @@
+import { BookContentsDrawer } from "./BookContentsDrawer";
 import { forwardRef, useState, useEffect, lazy, Suspense } from "react";
 import {
   Leaf,
@@ -143,7 +144,7 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
           ? CheckCircle2
           : BookOpen;
     return (
-      <div className="concept-reader">
+      <div className={`concept-reader ${current.kind === "experiment" ? "is-experiment" : ""}`}>
         <header className="lesson-heading">
           <button className="text-button" onClick={onBack}>
             <Map size={17} />
@@ -156,59 +157,60 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
         </header>
         <div className="concept-reader-layout">
           <button
-            className="stage-toggle"
-            aria-controls="concept-index"
+            className="book-contents-toggle"
+            aria-controls={menu ? "concept-index" : undefined}
             aria-expanded={menu}
             onClick={() => setMenu(!menu)}
           >
             فهرس الدرس · {current.title}
           </button>
-          <aside
-            id="concept-index"
-            className={`concept-index ${menu ? "expanded" : ""}`}
-            aria-label="فهرس مفاهيم الدرس"
-          >
-            {lessonIndex(lesson.id).map(({ page, index: i }) => {
-              const active =
-                current.concept !== undefined
-                  ? current.concept === page.concept
-                  : index === i;
-              const icon =
-                page.kind === "goals"
-                  ? Target
-                  : page.kind === "certificate"
-                    ? Trophy
-                    : page.kind === "post"
-                      ? Flag
-                      : page.kind === "infographic"
-                        ? Network
-                        : BookOpen;
-              const ItemIcon = icon;
-              const done =
-                page.concept !== undefined
-                  ? progress.conceptChecks?.includes(
-                      data.topics[page.concept].check.id,
-                    )
-                  : page.kind === "pre"
-                    ? progress.pre !== undefined
-                    : page.kind === "post"
-                      ? progress.post !== undefined
-                      : false;
-              return (
-                <button
-                  key={page.id}
-                  aria-label={page.title}
-                  aria-current={active ? "page" : undefined}
-                  className={active ? "active" : ""}
-                  onClick={() => go(i)}
-                >
-                  <ItemIcon size={18} />
-                  <span>{page.title}</span>
-                  {done && <CheckCircle2 size={15} aria-label="منجز" />}
-                </button>
-              );
-            })}
-          </aside>
+          {menu && (
+            <BookContentsDrawer
+              title={lesson.title}
+              onClose={() => setMenu(false)}
+            >
+              {lessonIndex(lesson.id).map(({ page, index: i }) => {
+                const active =
+                  current.concept !== undefined
+                    ? current.concept === page.concept
+                    : index === i;
+                const icon =
+                  page.kind === "goals"
+                    ? Target
+                    : page.kind === "certificate"
+                      ? Trophy
+                      : page.kind === "post"
+                        ? Flag
+                        : page.kind === "infographic"
+                          ? Network
+                          : BookOpen;
+                const ItemIcon = icon;
+                const done =
+                  page.concept !== undefined
+                    ? progress.conceptChecks?.includes(
+                        data.topics[page.concept].check.id,
+                      )
+                    : page.kind === "pre"
+                      ? progress.pre !== undefined
+                      : page.kind === "post"
+                        ? progress.post !== undefined
+                        : false;
+                return (
+                  <button
+                    key={page.id}
+                    aria-label={page.title}
+                    aria-current={active ? "page" : undefined}
+                    className={active ? "active" : ""}
+                    onClick={() => go(i)}
+                  >
+                    <ItemIcon size={18} />
+                    <span>{page.title}</span>
+                    {done && <CheckCircle2 size={15} aria-label="منجز" />}
+                  </button>
+                );
+              })}
+            </BookContentsDrawer>
+          )}
           <div className="concept-leaf" key={current.id}>
             {current.kind !== "intro" && (
               <div className="concept-leaf-heading">
@@ -225,16 +227,6 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
                 )}
               </div>
             )}
-            {!(current.kind === "intro" && lesson.id === 1) &&
-              current.kind !== "pre" &&
-              current.kind !== "infographic" && (
-                <StageGuide
-                  context={`book-${lesson.id}-${current.id}`}
-                  text={help || note}
-                  hints={concept?.hints}
-                  notice={help}
-                />
-              )}
             {current.kind === "intro" &&
               (lesson.id === 1 ? (
                 <OliveOrchardIntro
@@ -367,6 +359,16 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
                   )}
               </Suspense>
             )}
+            {!(current.kind === "intro" && lesson.id === 1) &&
+              current.kind !== "pre" &&
+              current.kind !== "infographic" && (
+                <StageGuide
+                  context={`book-${lesson.id}-${current.id}`}
+                  text={help || note}
+                  hints={concept?.hints}
+                  notice={help}
+                />
+              )}
             {current.kind === "check" && concept && (
               <ConceptCheck
                 question={concept.check}
