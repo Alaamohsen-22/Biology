@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 const dom=new JSDOM('<html><body></body></html>',{url:'http://localhost/Biology/'});
 for(const [key,value]of Object.entries({window:dom.window,document:dom.window.document,navigator:dom.window.navigator,HTMLElement:dom.window.HTMLElement}))Object.defineProperty(globalThis,key,{value,configurable:true});
 Object.assign(globalThis,{IS_REACT_ACT_ENVIRONMENT:true});
+Object.defineProperty(dom.window,'AnimationEvent',{value:dom.window.Event,configurable:true});
 const {render,fireEvent,cleanup}=await import('@testing-library/react');
 const {nutritionDiagnostic,diagnosticScore,nutritionOpeningGoals}=await import('../src/data/nutritionOpening');
 const {NutritionDiagnostic}=await import('../src/components/NutritionDiagnostic');
@@ -83,4 +84,23 @@ test('diagnostic question turns keep the live form mounted and page number synch
  function DiagnosticBook(){const [page,setPage]=React.useState(0);return <BookFrame pageKey={`diagnostic-${page}`} contentKey="nutrition-pre" pageNumber={3+page} title="الاختبار القبلي" cover={false} reduced onIndex={()=>{}}><NutritionDiagnostic onPage={setPage} onFinish={()=>{}} onLearn={()=>{}} onIntro={()=>{}}/></BookFrame>;}
  const ui=render(<DiagnosticBook/>);
  try{for(let i=0;i<5;i++){assert.ok(ui.getByLabelText(`صفحة الكتاب ${3+i}`));assert.ok(ui.getByText(nutritionDiagnostic[i].text));fireEvent.click(ui.getByText(nutritionDiagnostic[i].options[0].text));if(i<4)fireEvent.click(ui.getByRole('button',{name:'التالي',exact:true}));}fireEvent.click(ui.getByLabelText('انتقل إلى السؤال 1'));assert.equal((ui.getAllByRole('radio')[0] as HTMLInputElement).checked,true);}finally{cleanup();}
+});
+test('page-edge swipes ignore vertical scrolling and activity dragging, support RTL and cancel safely',()=>{
+ // jsdom has no PointerEvent; supply pointer coordinates just as a browser does.
+ const pointer=(node:Element,type:string,x:number,y:number,id=1)=>{const event=new dom.window.Event(type,{bubbles:true});Object.defineProperties(event,{clientX:{value:x},clientY:{value:y},pointerId:{value:id}});fireEvent(node,event);};
+ let next=0,previous=0;
+ const ui=render(<BookFrame pageKey="lab" pageNumber={12} title="المختبر" cover={false} reduced onIndex={()=>{}} onNext={()=>next++} onPrevious={()=>previous++}><button>أداة تجربة</button></BookFrame>);
+ try{
+  const edge=ui.container.querySelector('.book-turn-edge')!;
+  pointer(edge,'pointerdown',20,30);pointer(edge,'pointerup',100,180);assert.equal(next,0);
+  const tool=ui.getByRole('button',{name:'أداة تجربة'});pointer(tool,'pointerdown',20,30);pointer(tool,'pointerup',150,30);assert.equal(next,0);
+  pointer(edge,'pointerdown',20,30);pointer(edge,'pointerup',100,35);assert.equal(next,1);
+  pointer(edge,'pointerdown',100,30);pointer(edge,'pointerup',20,35);assert.equal(previous,1);
+  pointer(edge,'pointerdown',20,30);pointer(edge,'pointercancel',20,30);pointer(edge,'pointerup',150,30);assert.equal(next,1);
+ }finally{cleanup();}
+});
+test('activity animations do not interrupt the book turn animation',()=>{
+ const props={pageKey:'intro',pageNumber:2,title:'التغذية',cover:false,reduced:false,onIndex:()=>{},children:<div data-testid="animated-activity">نشاط</div>};
+ const ui=render(<BookFrame {...props}/>);
+ try{ui.rerender(<BookFrame {...props} pageKey="pre" pageNumber={3}/>);const sheet=ui.getByTestId('single-book-page');assert.match(sheet.className,/turn-forward/);fireEvent.animationEnd(ui.getByTestId('animated-activity'));assert.match(sheet.className,/turn-forward/);fireEvent.animationEnd(sheet);assert.match(sheet.className,/turn-none/);}finally{cleanup();}
 });
