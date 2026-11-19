@@ -1,16 +1,9 @@
 import { useEffect, useId, useState } from "react";
-export type OrchardPart = "roots" | "leaves" | "sun";
-export const orchardFacts: Record<OrchardPart,string> = {
- roots: "تمتص الجذور الماء والأملاح المعدنية من التربة",
- leaves: "تؤدي الأوراق دورًا مهمًا في صنع الغذاء",
- sun: "يوفر ضوء الشمس الطاقة اللازمة للبناء الضوئي",
-};
-export function OliveOrchardScene({active,pulse,onExplore}:{active:OrchardPart|null;pulse:number;onExplore:(part:OrchardPart)=>void}) {
+export function OliveOrchardScene() {
  const id=useId().replace(/:/g,"");
  const [narrow,setNarrow]=useState(()=>window.matchMedia?.("(max-width: 700px)").matches ?? false);
  useEffect(()=>{const q=window.matchMedia?.("(max-width: 700px)");if(!q)return;const sync=()=>setNarrow(q.matches);q.addEventListener?.("change",sync);return()=>q.removeEventListener?.("change",sync);},[]);
- const activate=(part:OrchardPart)=>(event:React.KeyboardEvent<SVGGElement>)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();onExplore(part);}};
- return <svg className={`olive-orchard-art active-${active ?? 'none'}`} viewBox={narrow ? "270 0 730 650" : "0 0 1000 650"} aria-label="بستان زيتون فلسطيني تفاعلي قرب نابلس: شمس وجبال ومصاطب حجرية وشجرة بجذور واضحة" role="group">
+ return <svg className="olive-orchard-art" viewBox={narrow ? "270 0 730 650" : "0 0 1000 650"} aria-label="بستان زيتون فلسطيني قرب نابلس: شمس وجبال ومصاطب حجرية وشجرة بجذور واضحة" role="img">
   <defs>
    <linearGradient id={`${id}-sky`} x2="0" y2="1"><stop stopColor="#a9d8eb"/><stop offset="1" stopColor="#edf2c9"/></linearGradient>
    <linearGradient id={`${id}-hill`} x2=".3" y2="1"><stop stopColor="#8eae68"/><stop offset="1" stopColor="#557f57"/></linearGradient>
@@ -35,9 +28,8 @@ export function OliveOrchardScene({active,pulse,onExplore}:{active:OrchardPart|n
   <path d="M0 608Q420 511 1000 585V650H0Z" fill="#a19a78"/>
   {Array.from({length:27},(_,i)=>{const x=i*39-10,y=599-Math.sin(i/10)*53;return <path key={i} d={`M${x} ${y}l36-3 4 29-38 4Z`} fill={`url(#${id}-stone)`} stroke="#969070" strokeWidth="1.4"/>;})}
   <g className="orchard-birds" stroke="#526b62" strokeWidth="2" fill="none"><path d="M136 151q11-13 21 0 10-13 20 0M303 109q8-11 17 0 9-11 17 0M732 157q9-11 18 0 9-11 18 0"/></g>
-  <g className="orchard-sunbeams" key={`ray-${active==='sun'?pulse:0}`}><path d="M853 91L713 384 561 421Z" fill="#fff4ac" opacity=".13"/><path d="M853 91L584 309 506 356Z" fill="#fff6b9" opacity=".18"/><path d="M853 91L778 450 687 476Z" fill="#fff4b0" opacity=".1"/></g>
-  <g role="button" tabIndex={0} aria-label="استكشف الشمس" aria-pressed={active==='sun'} className="orchard-hit orchard-sun" onClick={()=>onExplore('sun')} onKeyDown={activate('sun')}>
-   <circle cx="853" cy="91" r="88" fill="transparent"/>
+  <g className="orchard-sunbeams"><path d="M853 91L713 384 561 421Z" fill="#fff4ac" opacity=".13"/><path d="M853 91L584 309 506 356Z" fill="#fff6b9" opacity=".18"/><path d="M853 91L778 450 687 476Z" fill="#fff4b0" opacity=".1"/></g>
+  <g className="orchard-sun">
    <g className="orchard-sun-rays" stroke="#efd27b" strokeWidth="5" strokeLinecap="round">{Array.from({length:12},(_,n)=><path key={n} d="M853 30V13" transform={`rotate(${n*30} 853 91)`}/>)}</g>
    <circle cx="853" cy="91" r="44" fill={`url(#${id}-sun)`}/>
   </g>
@@ -48,15 +40,14 @@ export function OliveOrchardScene({active,pulse,onExplore}:{active:OrchardPart|n
    <path d="M554 545q27-103 8-217l-91-87 17-16 97 70 43-105 22 9-35 141q8 109 32 201Z" fill={`url(#${id}-trunk)`}/>
    <path d="M575 532q17-100-1-198m12 78q21-74 35-108m-36 84q-1-49-40-86" stroke="#d2c39b" strokeWidth="4" opacity=".48" fill="none"/>
   </g>
-  <g role="button" tabIndex={0} aria-label="استكشف الأوراق" aria-pressed={active==='leaves'} className="orchard-hit" onClick={()=>onExplore('leaves')} onKeyDown={activate('leaves')}>
-   <g key={`leaves-${active==='leaves'?pulse:0}`} className={`orchard-canopy ${active==='leaves'?'leaves-discovered':''}`}>
+  <g>
+   <g className="orchard-canopy">
     <path d="M390 321q-44-73 28-116 12-78 94-66 51-58 107-12 91-23 109 54 69 17 65 87 34 76-59 99-88 24-158-9-80 38-133-9Z" fill={`url(#${id}-crown)`} filter={`url(#${id}-shadow)`}/>
     {Array.from({length:135},(_,n)=>{const angle=n*2.39996,rad=Math.sqrt((n+.5)/135);const x=587+Math.cos(angle)*rad*190,y=251+Math.sin(angle)*rad*106;return <g key={n} transform={`translate(${x} ${y}) rotate(${n*37})`}><path d="M-12 0Q0-8 13 0Q0 8-12 0Z" fill={['#c5ceaa','#90aa81','#587e65','#b4c49d','#6e9475'][n%5]} opacity=".8"/><path d="M-8 0h16" stroke="#d3d8b6" opacity=".5" strokeWidth=".8"/>{n%9===0 && <ellipse cx="3" cy="9" rx="3.5" ry="5" fill="#465b3e"/>}</g>;})}
    </g>
   </g>
-  <g role="button" tabIndex={0} aria-label="استكشف الجذور" aria-pressed={active==='roots'} className="orchard-hit" onClick={()=>onExplore('roots')} onKeyDown={activate('roots')}>
-   <ellipse cx="590" cy="557" rx="150" ry="73" fill="transparent"/>
-   <g key={`roots-${active==='roots'?pulse:0}`} className={active==='roots'?'roots-discovered':''} stroke={`url(#${id}-trunk)`} fill="none" strokeLinecap="round"><path d="M579 512q-7 52-74 70m82-65q-7 66 67 78m-61-72q-14 62-54 83m59-75q24 30 80 35" strokeWidth="13"/><path d="M535 569l-40 26m54-11-29 25m103-38 59 26m-47-5 21 20m-70-33-11 39" strokeWidth="4"/></g>
+  <g>
+   <g  stroke={`url(#${id}-trunk)`} fill="none" strokeLinecap="round"><path d="M579 512q-7 52-74 70m82-65q-7 66 67 78m-61-72q-14 62-54 83m59-75q24 30 80 35" strokeWidth="13"/><path d="M535 569l-40 26m54-11-29 25m103-38 59 26m-47-5 21 20m-70-33-11 39" strokeWidth="4"/></g>
   </g>
   {[366,411,752,794,871].map((x,n)=><g key={x} transform={`translate(${x} ${534+(n%2)*31})`}><path d="M0 0l-4-16m4 16 7-13" stroke="#6f8c57" strokeWidth="2"/><circle cx="-4" cy="-17" r="3" fill={n%2?'#c7766b':'#e2d891'}/></g>)}
  </svg>;

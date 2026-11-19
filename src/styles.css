@@ -3233,3 +3233,100 @@ main:has(.orchard-intro) > .lesson-heading { display:flex; align-items:center; j
 main:has(.orchard-intro) > .lesson-heading h1 { font-size:1.5rem; margin:0; }
 main:has(.orchard-intro) > .lesson-heading h1 > span { font-size:1.6rem; }
 main:has(.orchard-intro) > .lesson-heading > p, main:has(.orchard-intro) > .lesson-heading > .eyebrow { display:none; }
+/* Single-page digital book. No spread or mirrored second page is rendered. */
+.app:has(.single-book:not(.is-cover)):not(:has(.pal-guide)) { height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+.app:has(.single-book:not(.is-cover)) > .site-header { flex:0 0 auto; }
+.app:has(.single-book:not(.is-cover)) > .learning-scroll { min-height:0; flex:1 1 auto; overflow:hidden; }
+.single-book:not(.is-cover) { height:100%; min-height:0; display:flex; flex-direction:column; padding:.5rem 1rem 1rem; background:linear-gradient(120deg,#dce4cf,#eee8d5); perspective:1800px; }
+.book-toolbar { display:flex; justify-content:space-between; align-items:center; gap:.6rem; flex:0 0 auto; max-width:1200px; width:100%; margin:0 auto; padding:.15rem .5rem .45rem; font-size:.8rem; }
+.book-toolbar button { min-height:44px; }
+.book-sheet { position:relative; }
+.single-book:not(.is-cover) .book-sheet { min-height:0; flex:1 1 auto; width:100%; max-width:1200px; margin:0 auto; border:1px solid #b9b79e; border-radius:18px 8px 8px 18px; box-shadow:-5px 5px 0 #dad6bd,-8px 9px 0 #e7e1cc,0 12px 30px #32442e22; background:#fffdf4; overflow:hidden; transform-origin:right center; backface-visibility:hidden; }
+.single-book:not(.is-cover) .book-sheet::before { content:""; position:absolute; inset:0 0 0 auto; width:13px; background:linear-gradient(90deg,transparent,#74654318); pointer-events:none; z-index:1; }
+.single-book:not(.is-cover) .book-page-content { height:100%; overflow:auto; overscroll-behavior:contain; }
+.single-book:not(.is-cover) main { margin:0 auto; padding:1rem 1.4rem; width:100%; max-width:1200px; }
+.single-book:not(.is-cover) footer { margin:0; padding:1rem 1.4rem; }
+.book-turn-edge { position:absolute; top:12px; bottom:12px; width:13px; z-index:2; touch-action:pan-y; }
+.book-turn-edge.left { left:0; } .book-turn-edge.right { right:0; }
+.turn-forward { animation:book-forward .32s ease-out; }
+.turn-backward { animation:book-backward .32s ease-out; }
+.turn-opening { animation:book-opening .48s ease-out; }
+@keyframes book-forward { from { transform:rotateY(-9deg) translateX(-12px); opacity:.65; } to {transform:rotateY(0);opacity:1;} }
+@keyframes book-backward { from {transform:rotateY(9deg) translateX(12px);opacity:.65;} to {transform:rotateY(0);opacity:1;} }
+@keyframes book-opening { from { transform:rotateY(-16deg) scale(.97);opacity:.4; } to {transform:rotateY(0);opacity:1;} }
+.stage-guide { display:flex; align-items:center; gap:.7rem; margin:.8rem 0; }
+.stage-guide-avatar { border:0; padding:0; background:transparent; width:62px; height:86px; flex:0 0 62px; }
+.stage-guide-bubble { padding:.8rem 1rem; border:1px solid #aabd9e; border-radius:18px; background:#f5f3e5; box-shadow:0 3px 10px #41503b0c; font-size:.9rem; }
+.stage-guide-bubble p { margin:0; line-height:1.9; }
+.stage-guide-bubble button { min-height:44px; }
+.orchard-guide.stage-guide { align-items:flex-end; margin:0; }
+.orchard-guide.stage-guide .stage-guide-bubble { font-size:.78rem; padding:.6rem; background:#fffdf1ee; }
+.orchard-guide.stage-guide .stage-guide-avatar { width:54px; height:80px; flex-basis:54px; }
+.nutrition-diagnostic, .diagnostic-result, .nutrition-goals { padding:1rem; border-radius:20px; background:linear-gradient(140deg,#f7f4e7,#ecf0df); }
+.nutrition-diagnostic h2, .nutrition-goals h2, .diagnostic-result h2 { margin:.3rem 0 .8rem; font-size:1.7rem; }
+.olive-question-progress { display:flex; justify-content:center; gap:.7rem; margin-block:.7rem; }
+.olive-question-progress button { position:relative; padding:0; border:0; background:transparent; width:52px; height:48px; }
+.olive-question-progress svg { width:48px; height:38px; fill:#d5d8c5; color:#9aab8b; }
+.olive-question-progress .answered svg { fill:#c7c1a3; }
+.olive-question-progress .current svg { fill:#7f9671; }
+.olive-question-progress span { position:absolute; top:14px; right:22px; font-size:.8rem; color:#344e35; }
+.olive-question-progress .current span { color:white; }
+.diagnostic-question { border:0; padding:0; min-width:0; }
+.diagnostic-question legend { font-size:1.3rem; font-weight:700; line-height:1.8; padding:.7rem 0; margin-bottom:.6rem; }
+.diagnostic-question label { display:flex; align-items:center; gap:.8rem; cursor:pointer; border:2px solid #d0d0bc; border-radius:18px; padding:1rem; margin:.6rem 0; background:#fffdf5; min-height:64px; transition:transform .15s ease,background .15s ease; }
+.diagnostic-question label:active { transform:scale(.99); }
+.diagnostic-question .selected-answer { background:#f2e9d1; border-color:#b29a62; box-shadow:0 3px 12px #97855518; }
+.diagnostic-question input { width:22px; height:22px; accent-color:#9b804f; }
+.answer-letter { background:#e9e7db; border-radius:10px; padding:.25rem .65rem; }
+.diagnostic-warning { padding:1rem; border-radius:12px; border:1px solid #b7a45d; background:#f5eac8; }
+.diagnostic-nav { display:flex; flex-wrap:wrap; gap:.6rem; justify-content:space-between; margin-top:1rem; }
+.diagnostic-nav button { min-height:48px; }
+.diagnostic-result { text-align:center; }
+.diagnostic-result .stage-guide { justify-content:center; text-align:right; }
+.diagnostic-score { width:150px; height:150px; padding:12px; margin:1rem auto; border-radius:50%; background:conic-gradient(#819b75 var(--diagnostic-score),#e2e2ce 0); }
+.diagnostic-score strong { display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; border-radius:50%; background:#fffdf2; font-size:2.5rem; }
+.diagnostic-score small { font-size:1rem; }
+.nutrition-goal-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; }
+.nutrition-goal { display:flex; gap:.8rem; align-items:center; padding:1rem; border:1px solid #c6d1b7; border-radius:18px; background:#fffdf5; animation:goal-arrive .35s ease-out both; animation-delay:var(--goal-delay); }
+.nutrition-goal > span { flex:0 0 48px; width:48px; height:48px; display:grid; place-items:center; background:#e4ead8; border-radius:14px; color:#4c6f4e; }
+.nutrition-goal p { margin:0; font-size:1rem; line-height:1.9; }
+@keyframes goal-arrive { from {opacity:0;transform:translateY(5px);} to {opacity:1;transform:none;} }
+.guide-media video { max-width:100%; max-height:210px; }
+.guide-media button { font-size:.75rem; }
+[data-reduced="true"] .book-sheet, [data-reduced="true"] .nutrition-goal, [data-reduced="true"] .diagnostic-question label { animation:none !important; transition:none !important; }
+@media(prefers-reduced-motion:reduce) { .book-sheet,.nutrition-goal { animation:none !important; } }
+@media(max-width:700px) {
+ .single-book:not(.is-cover) { padding:.3rem .35rem .6rem; }
+ .single-book:not(.is-cover) main { padding:.8rem .9rem; }
+ .book-toolbar { font-size:.7rem; }
+ .book-toolbar > span:nth-child(2) { max-width:45%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+ .book-turn-edge { width:10px; }
+ .nutrition-diagnostic,.diagnostic-result,.nutrition-goals { padding:.7rem; }
+ .nutrition-goal-grid { grid-template-columns:1fr; }
+ .diagnostic-question legend { font-size:1.15rem; }
+ .diagnostic-question label { padding:.8rem; gap:.5rem; }
+ .olive-question-progress { gap:.2rem; }
+ .stage-guide-avatar { width:48px; flex-basis:48px; height:68px; }
+ .stage-guide-bubble { font-size:.85rem; padding:.6rem; }
+ .orchard-guide.stage-guide { width:100%; }
+ .diagnostic-nav button { flex:1 1 40%; }
+}
+[data-theme="dark"] .single-book:not(.is-cover) .book-sheet { background:#21382f; color:#f1f1df; }
+[data-theme="dark"] .nutrition-diagnostic,[data-theme="dark"] .diagnostic-result,[data-theme="dark"] .nutrition-goals { background:#263d32; color:#f1f1df; }
+[data-theme="dark"] .diagnostic-question label,[data-theme="dark"] .nutrition-goal,[data-theme="dark"] .stage-guide-bubble { background:#304637; color:#f1f1df; }
+.book-toolbar-navigation { display:flex; align-items:center; gap:.2rem; }
+.book-toolbar-navigation > button { min-width:44px; min-height:44px; padding:.4rem; }
+@media(max-width:700px) { .book-toolbar { flex-wrap:wrap; } .book-toolbar > span:nth-child(2) { max-width:45%; } }
+.single-book:not(.is-cover) .lesson-layout { display:block; }
+.single-book:not(.is-cover) .stage-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; min-height:48px; margin-bottom:.7rem; }
+.single-book:not(.is-cover) .lesson-tabs:not(.expanded) { display:none; }
+.single-book:not(.is-cover) .lesson-tabs.expanded { position:static; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); width:100%; margin-bottom:1rem; }
+.nutrition-diagnostic,.nutrition-goals,.diagnostic-result { max-width:900px; margin-inline:auto; }
+@media(max-width:700px) { .single-book:not(.is-cover) .lesson-tabs.expanded { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+/* Keep the book's lesson title compact so the learning page remains prominent. */
+.single-book .lesson-heading {display:flex;align-items:center;flex-wrap:wrap;gap:.5rem 1rem;padding:.5rem 0;margin:0 0 .75rem;}
+.single-book .lesson-heading > .text-button {margin:0;}
+.single-book .lesson-heading h1 {font-size:1.65rem;margin:0;gap:.5rem;}
+.single-book .lesson-heading h1 > span {width:44px;height:44px;font-size:1.7rem;border-radius:12px;}
+.single-book .lesson-heading p {margin:0;}
+.single-book .lesson-heading .eyebrow {font-size:.75rem;}

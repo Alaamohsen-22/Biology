@@ -194,6 +194,15 @@ test("complete learner journey through seven stations, compost, final, certifica
   const { default: App } = await import("../src/App");
   const ui = render(<App />);
   const answerQuiz = (qs: ReturnType<typeof bank>) => {
+    if(qs[0]?.id.startsWith("nutrition-start")) {
+      for(let i=0;i<qs.length;i++) {
+        const q=qs[i];
+        const input=ui.container.querySelectorAll<HTMLInputElement>(`input[name="${q.id}"]`)[q.answer];
+        assert.ok(input);fireEvent.click(input);
+        if(i<qs.length-1)fireEvent.click(ui.getByRole("button",{name:"التالي",exact:true}));
+      }
+      fireEvent.click(ui.getByRole("button",{name:"إنهاء الاختبار",exact:true}));return;
+    }
     for (const q of qs) {
       const input = ui.container.querySelectorAll<HTMLInputElement>(
         `input[name="${q.id}"]`,
@@ -227,7 +236,7 @@ test("complete learner journey through seven stations, compost, final, certifica
     fireEvent.click(ui.getByRole("button", { name: /تحقق من الترتيب/ }));
   };
   try {
-    fireEvent.click(ui.getByRole("button", { name: /ابدأ المغامرة/ }));
+    fireEvent.click(ui.getByRole("button", { name: /افتح الكتاب/ }));
     fireEvent.change(ui.getByLabelText("اسم المستكشف"), {
       target: { value: "مستكشف الاختبار" },
     });
@@ -443,7 +452,7 @@ test("all seven stations and ten stages are open before any assessment; visiting
   );
   const ui = render(<App />);
   try {
-    fireEvent.click(ui.getByRole("button", { name: /أكمل مغامرتك/ }));
+    fireEvent.click(ui.getByRole("button", { name: /افتح الكتاب/ }));
     for (const lesson of [...lessons].reverse()) {
       const pin = ui.getByRole("button", {
         name: `المحطة ${lesson.id} ${lesson.title}: متاحة`,
@@ -457,12 +466,16 @@ test("all seven stations and ten stages are open before any assessment; visiting
           }),
         );
         if (lesson.id === 1 && index === 0) {
-          assert.equal(ui.getByRole("button", {name:"ابدأ الاختبار القبلي"}).hasAttribute("disabled"), true);
+          assert.equal(ui.getByRole("button", {name:"اكتشف معرفتك السابقة"}).hasAttribute("disabled"), false);
           const directPre = ui.getByRole("button", {name:/^02\s*الاختبار القبلي$/});
           assert.equal(directPre.hasAttribute("disabled"),false);
           fireEvent.click(directPre);
-          assert.ok(ui.getByText("2 / 10"));
+          assert.ok(ui.getByText(bank(lesson,"pre")[0].text));
           continue;
+        }
+        if(lesson.id === 1 && index === 1) {
+          const goals=ui.getByRole("button",{name:/^03\s*الأهداف$/});
+          assert.equal(goals.hasAttribute("disabled"),false);fireEvent.click(goals);assert.ok(ui.getByRole("heading",{name:"أهداف رحلتك"}));continue;
         }
         const next = ui.getByRole("button", { name: /تابع الاستكشاف/ });
         const prev = ui.getByRole("button", { name: "المرحلة السابقة" });

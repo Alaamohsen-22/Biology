@@ -18,11 +18,12 @@ export function Quiz({
   onFinish: (score: number, goals: Record<number, boolean>) => void;
 }) {
   const sound = useSound();
-  const scored = useRef(false);
-  const [draft, setDraft] = useDraft(`quiz-${questions.map(q => q.id).join("-")}`, { answers: {} as Record<string, number> });
+  const [draft, setDraft] = useDraft(`quiz-${questions.map(q => q.id).join("-")}`, { answers: {} as Record<string, number>, submitted:false });
   const answers = draft.answers;
-  const setAnswers = (answers: Record<string, number>) => setDraft({ answers });
-  const [submitted, setSubmitted] = useState(false);
+  const setAnswers = (answers: Record<string, number>) => setDraft(d=>({...d,answers}));
+  const submitted=draft.submitted;
+  const setSubmitted=(submitted:boolean)=>setDraft(d=>({...d,submitted}));
+  const scored=useRef(submitted);
   const [hints, setHints] = useState<Record<string, number>>({});
   const correct = questions.filter((q) => answers[q.id] === q.answer).length;
   const finish = () => {
@@ -139,6 +140,7 @@ export function Quiz({
           </div>
         </div>
       )}
+      {submitted && <button onClick={()=>{scored.current=false;setSubmitted(false);setHints({});}}>إعادة الاختبار</button>}
       <p className="muted">
         {Object.keys(answers).length} / {questions.length} إجابات مسجلة{" "}
         {submitted && <ArrowLeft size={16} />}

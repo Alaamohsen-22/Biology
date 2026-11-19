@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { useDraft } from "../engine/drafts";
+import { useDraft, useDraftState } from "../engine/drafts";
 import { simulate } from "../engine/models";
 import { ScientificScene } from "./science/ScientificScene";
 import { useSound } from "./SoundSystem";
 export const discoveryConclusion = "يستخدم النبات الأخضر الماء وثاني أكسيد الكربون والطاقة الضوئية لصنع غذائه بعملية البناء الضوئي، وينتج عنها الأكسجين";
 export function NutritionDiscovery({ onHint }: { onHint: (tip: string) => void }) {
   const [draft, setDraft, failed] = useDraft("nutrition-discovery-v1", { prediction: "", fixed: "", observation: "", conclusion: "", revealed: false, light: 1, water: 1, co2: 1 });
-  const [t, setT] = useState(0);
+  const [t, setT] = useDraftState("nutrition-discovery-clock",0);
   const [running, setRunning] = useState(false);
   const sound = useSound();
   const vars = { light: draft.light, water: draft.water, co2: draft.co2 };

@@ -1,3 +1,7 @@
+import { BookFrame } from "./components/BookFrame";
+import { NutritionDiagnostic, type DiagnosticNavigation } from "./components/NutritionDiagnostic";
+import { NutritionGoals } from "./components/NutritionGoals";
+import { bookPageNumber } from "./engine/bookNavigation";
 import { OliveOrchardIntro } from "./components/OliveOrchardIntro";
 import { NutritionDiscovery } from "./components/NutritionDiscovery";
 import { PalestinianGuide } from "./components/PalestinianGuide";
@@ -125,6 +129,8 @@ export default function App() {
   const [page, setPage] = useState("cover");
   const [active, setActive] = useState(1);
   const [tab, setTab] = useState(0);
+  const [diagnosticPage,setDiagnosticPage] = useState(0);
+  const diagnosticRef = useRef<DiagnosticNavigation>(null);
   const [hintState, setHintState] = useState({key: "", tip: ""});
   const hintKey = `${page}-${active}-${tab}`;
   const discoveryHint = hintState.key === hintKey ? hintState.tip : "";
@@ -224,6 +230,19 @@ export default function App() {
     a.click();
     URL.revokeObjectURL(url);
   };
+  const bookNumber = bookPageNumber(page,active,tab,diagnosticPage);
+  const bookNext = () => {
+    if(page === "lesson") {
+      if(active === 1 && tab === 1){diagnosticRef.current?.next();return;}
+      if(tab<9)setTab(tab+1);else if(active<7)openLesson(active+1);else go("project");
+    }else if(page==="map")openLesson(1);else if(page==="project")go("final");else if(page==="final")go("dashboard");
+  };
+  const bookPrevious = () => {
+    if(page === "lesson") {
+      if(active===1 && tab===1){diagnosticRef.current?.previous();return;}
+      if(tab>0)setTab(tab-1);else if(active>1){openLesson(active-1);setTab(9);}else go("map");
+    }else if(page==="project"){openLesson(7);setTab(9);}else if(page==="final")go("project");else if(page==="map"||page==="name")go("cover");else go("map");
+  };
   return (
     <div
       className="app"
@@ -287,6 +306,7 @@ export default function App() {
         </div>
       </header>
       <div className="learning-scroll" id="learning-scroll">
+      <BookFrame contentKey={`${page}-${active}-${tab}`} pageKey={`${page}-${active}-${tab}-${page==="lesson"&&active===1&&tab===1?diagnosticPage:""}`} pageNumber={bookNumber} title={page==="lesson"?`${lesson.title} · ${stages[tab]}`:page==="map"?"فهرس الجزيرة":"جزيرة أسرار الحياة"} cover={page==="cover"} reduced={settings.reduced} resultPage={page==="lesson"&&active===1&&tab===1&&diagnosticPage===5} onNext={!["lesson","map","project","final"].includes(page)||(page==="lesson"&&active===1&&tab===1&&diagnosticPage===4)?undefined:bookNext} onPrevious={bookPrevious} onIndex={()=>go(progress.name?"map":"name")}>
       <main id="main" tabIndex={-1}>
         <SoundNotice />
         {notice && (
@@ -321,7 +341,7 @@ export default function App() {
                     className="primary large"
                     onClick={() => go(progress.name ? "map" : "name")}
                   >
-                    {progress.name ? "أكمل مغامرتك" : "ابدأ المغامرة"}
+                    افتح الكتاب
                     <ArrowLeft size={20} />
                   </button>
                   <button className="text-button" onClick={() => go("guide")}>
@@ -612,8 +632,8 @@ export default function App() {
               </p>
             </header>
             <div className="lesson-layout">
-              <button className="stage-toggle" aria-expanded={stagesOpen} onClick={() => setStagesOpen(!stagesOpen)}>مراحل الدرس · {stages[tab]}</button>
-              <aside className={`lesson-tabs ${stagesOpen ? "expanded" : ""}`} aria-label="مراحل الدرس">
+              <button className="stage-toggle" aria-expanded={stagesOpen} aria-controls="lesson-stage-menu" onClick={() => setStagesOpen(!stagesOpen)}>مراحل الدرس · {stages[tab]}</button>
+              <aside id="lesson-stage-menu" className={`lesson-tabs ${stagesOpen ? "expanded" : ""}`} aria-label="مراحل الدرس">
                 {stages.map((s, i) => (
                   <button
                     key={s}
@@ -645,7 +665,8 @@ export default function App() {
                     </button>
                   </section>
                 )}
-                {tab === 1 && (
+                {tab === 1 && active === 1 && <NutritionDiagnostic ref={diagnosticRef} onPage={setDiagnosticPage} onIntro={()=>setTab(0)} onLearn={()=>setTab(2)} onFinish={value=>patchLesson(1,{pre:value})}/>}
+                {tab === 1 && active !== 1 && (
                   <>
                     {lp.pre !== undefined && (
                       <p className="hint">
@@ -663,7 +684,8 @@ export default function App() {
                     />
                   </>
                 )}
-                {tab === 2 && (
+                {tab === 2 && active === 1 && <NutritionGoals/>}
+                {tab === 2 && active !== 1 && (
                   <section>
                     <span className="eyebrow">
                       في نهاية هذه المحطة ستتمكن من…
@@ -942,20 +964,21 @@ export default function App() {
                     </button>
                   </section>
                 )}
-                {!(active === 1 && tab === 0) && <div className="lesson-bottom">
-                  <button className="embroidered-nav previous" disabled={tab === 0} onClick={() => setTab(tab - 1)}>
+                {!(active === 1 && (tab === 0 || tab === 1)) && <div className="lesson-bottom">
+                  <button className="embroidered-nav previous" aria-label="المرحلة السابقة" disabled={tab === 0} onClick={() => setTab(tab - 1)}>
                     <ArrowLeft size={16} style={{ transform: "rotate(180deg)" }} />
-                    المرحلة السابقة
+                    السابق
                   </button>
                   <span>
                     {tab + 1} / {stages.length}
                   </span>
                   <button
                     className="primary embroidered-nav next"
+                    aria-label="تابع الاستكشاف"
                     disabled={tab === stages.length - 1}
                     onClick={() => setTab(tab + 1)}
                   >
-                    تابع الاستكشاف <ArrowLeft size={16} />
+                    التالي <ArrowLeft size={16} />
                   </button>
                 </div>}
               </div>
@@ -1221,19 +1244,20 @@ export default function App() {
           دليل المعلمة وتوثيق المحتوى <BookOpen size={15} />
         </button>
       </footer>
+      </BookFrame>
       </div>
-      {page !== "cover" && !(page === "lesson" && active === 1 && tab === 0) && <PalestinianGuide name={progress.name} character={assets.companion ? (import.meta.env?.BASE_URL ?? "/Biology/") + assets.companion : undefined} context={`${page}-${active}-${tab}`} hints={[
+      {page !== "cover" && !(page === "lesson" && active === 1 && tab <= 2) && <PalestinianGuide name={progress.name} character={assets.companion ? (import.meta.env?.BASE_URL ?? "/Biology/") + assets.companion : undefined} context={`${page}-${active}-${tab}`} hints={[
         page === "lesson" ? (((tab === 3 && active === 1) || tab === 5) && discoveryHint ? discoveryHint : [
           `أهلًا! اقرأ موقف ${lesson.title}، وحدد السؤال الذي تريد استكشافه.`,
           `اختبر معرفتك السابقة حول ${lesson.title}؛ هذه النتيجة للتشخيص وليست للإتقان.`,
           `اختر هدفًا من أهداف ${lesson.title}، وابحث لاحقًا عن دليل يوضح فهمك له.`,
-          `اكتب توقعك حول ${lesson.title} قبل التجربة، ثم قارن بما تلاحظه.`,
-          `اربط شرح ${lesson.title} بمثال من بيئتك، وحدد ما يحتاج توضيحًا.`,
+          `تأمل العناصر، وتفاعل معها، ثم لاحظ ما يحدث في ${lesson.title}.`,
+          `لنكتشف الآن مفاهيم ${lesson.title} العلمية خطوة بخطوة.`,
           `في مختبر ${lesson.title} غيّر عاملًا واحدًا، وقارن النتائج قبل تفسيرها.`,
-          `في أنشطة ${lesson.title} اقرأ البطاقات، ثم اختبر العلاقات أو التسلسل.`,
-          `استند إلى دليل من ${lesson.title}؛ عند الخطأ راجع التلميح وأعد المحاولة.`,
-          `هذا تقويم ${lesson.title}. فكّر في الهدف الذي يقيسه كل سؤال.`,
-          `لخص ما تعلمته عن ${lesson.title}، وراجع متطلبات الإتقان الفعلية.`,
+          `أظهر مهاراتك، وحاول إنجاز هذا التحدي في ${lesson.title}!`,
+          `لنتأكد معًا مما تعلمته عن ${lesson.title} حتى الآن!`,
+          `هيا نكتشف ما تعلمته عن ${lesson.title} خلال هذه المغامرة!`,
+          mastered.some(l=>l.id===active)?"تهانينا! لقد أكملت مغامرتك العلمية بنجاح.":`لخص ما تعلمته عن ${lesson.title}، وراجع متطلبات الإتقان الفعلية.`,
         ][tab]) : page === "project" ? "اختر مواد آمنة للدبال، وقارن أثر الرطوبة والتهوية." : page === "final" ? "اقرأ كل سؤال واربطه بالهدف العلمي، ثم راجع اختياراتك." : "اختر محطتك بحرية. يمكنك العودة إلى أي مرحلة، والنجوم مرتبطة بالإتقان.",
         page === "lesson" ? `استعن بأهداف درس ${lesson.title} ومثال واحد منه. صف ما تغير، ثم ابحث عن السبب دون القفز إلى الإجابة.` : "ابدأ بخطوة واحدة، واستخدم دليل المستكشف إذا احتجت توضيحًا."
       ]} />}

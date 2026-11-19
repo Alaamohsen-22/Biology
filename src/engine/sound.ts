@@ -12,6 +12,9 @@ export const effectNames = [
   "drop",
   "discover",
   "time",
+  "book-open",
+  "page-turn",
+  "diagnostic-result",
 ] as const;
 export type SoundEffect = (typeof effectNames)[number];
 type AudioContextConstructor = new () => AudioContext;
@@ -37,7 +40,7 @@ export class SoundManager {
   private sequence = 0;
   private lastAt = 0;
   private lastEffect = "";
-  private media?: HTMLAudioElement;
+  private media?: HTMLMediaElement;
   private mediaSequence = 0;
   private bed?: HTMLAudioElement;
   private bedSequence = 0;
@@ -208,7 +211,7 @@ export class SoundManager {
     audio.pause();
     if(this.bed === audio) { this.bedSequence++; this.bed = undefined; }
   }
-  releaseMedia(audio: HTMLAudioElement) {
+  releaseMedia(audio: HTMLMediaElement) {
     audio.pause();
     if (this.media === audio) {
       this.mediaSequence++;
@@ -218,7 +221,7 @@ export class SoundManager {
       this.applyBedVolume();
     }
   }
-  async playMedia(audio: HTMLAudioElement, kind: "narration" | "music", reportError = true) {
+  async playMedia(audio: HTMLMediaElement, kind: "narration" | "music", reportError = true) {
     if (!this.state.enabled || this.state.volume === 0) return false;
     const token = ++this.mediaSequence;
     this.stop();
