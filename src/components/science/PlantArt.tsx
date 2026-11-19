@@ -164,12 +164,12 @@ export function PlantArt({
               <path d="M580 94L447 157" />
             </g>
           )}
-          {value > 0.55 && (
+          {value > 0 && t > 0.55 && (
             <>
               <Particles
                 from={[425, 173]}
                 to={[634, 147]}
-                t={phase(value, 0.55, 1)}
+                t={phase(t, 0.55, 1)}
                 color="#83b5ad"
                 r={7}
                 count={4}
@@ -177,7 +177,7 @@ export function PlantArt({
               <rect
                 x="353"
                 y="230"
-                width={phase(value, 0.55, 1) * 55}
+                width={value * 55}
                 height="24"
                 rx="8"
                 fill="#ddb85a"
@@ -331,7 +331,8 @@ export function VegetativeArt({ t, value, v, prefix }: ArtProps) {
   const p = value;
   return (
     <g>
-      <path d="M60 365Q380 331 700 365V420H60Z" fill="#d2bd90" />
+      {[0,1,2,3,4,5].map(i=><path key={i} d={`M${100+i*101} 375q22 10 40 0`} fill="none" stroke="#a5875c" strokeWidth="3"/>)}
+      <path d="M60 365Q380 331 700 365V420H60Z" fill={`url(#${prefix}-soil)`} />
       <Label x={380} y={55}>
         {
           [

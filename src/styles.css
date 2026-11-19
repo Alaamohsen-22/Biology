@@ -3069,3 +3069,167 @@ footer .text-button {
     width: 100%;
   }
 }
+/* Discovery and Palestinian learning companion: existing palette retained. */
+.discovery section { margin-block: 1.3rem; padding-block: .8rem; border-top: 1px solid var(--line, #dce1d4); }
+.discovery textarea { width: 100%; min-height: 110px; margin-block: .6rem; }
+.discovery-controls { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1rem; }
+.discovery-controls label { padding: .8rem; background: #edf1e7; color: #254c40; border-radius: 16px; }
+.discovery-controls input { width: 100%; min-height: 44px; }
+.discovery-result { padding: 1.2rem; border: 2px solid #7b9e78; border-radius: 18px; background: #819a7712; }
+.island-sound { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem; margin-block: 1rem; padding: 1rem; background: #819a7712; border-radius: 20px; }
+.island-sound button, .discovery button { min-height: 48px; }
+.embroidered-nav { position: relative; overflow: hidden; padding-inline: 1.7rem; border-radius: 16px; min-height: 48px; box-shadow: 0 4px 10px #254c4012; }
+.embroidered-nav::before, .embroidered-nav::after { content: ""; position: absolute; inset-block: 7px; width: 9px; background: repeating-linear-gradient(45deg,transparent 0 3px,#b84048 3px 5px,transparent 5px 8px), repeating-linear-gradient(-45deg,transparent 0 3px,#d8dfce 3px 5px,transparent 5px 8px); opacity: .75; pointer-events: none; }
+.embroidered-nav::before { right: 5px; } .embroidered-nav::after { left: 5px; }
+.embroidered-nav:active { transform: translateY(2px); }
+.pal-guide { position: fixed; bottom: 12px; left: 12px; z-index: 45; max-width: min(340px,calc(100vw - 24px)); }
+.guide-dock { display: flex; align-items: end; gap: .5rem; }
+.guide-dock > button:not(.guide-avatar) { padding: .5rem; font-size: .75rem; min-height: 44px; }
+.guide-avatar { width: 78px; height: 104px; padding: 0; background: #f5f2e7; border-radius: 40px 40px 20px 20px; box-shadow: 0 4px 18px #254c4020; }
+.teacher-character { width: 100%; height: 100%; }
+.guide-bubble { background: var(--surface, #fffdf5); color: var(--text, #254c40); padding: 1rem; border: 1px solid #98ad8c; border-radius: 18px; box-shadow: 0 6px 20px #254c4020; max-height: 45vh; overflow: auto; margin-bottom: .5rem; animation: guide-nudge .3s ease-out; }
+.guide-bubble button { min-height: 44px; }
+.stage-toggle { display: none; }
+body:has(.pal-guide) { padding-bottom: 120px; }
+@keyframes guide-nudge { from {transform: translateY(6px); opacity: .7;} to {transform: translateY(0);opacity: 1;} }
+@media(max-width: 700px) {
+ .discovery-controls { grid-template-columns: 1fr; gap: .5rem; }
+ .discovery .scientific-scene { margin-inline: -.5rem; }
+ .stage-toggle { display: block; width: 100%; min-height: 48px; }
+ .lesson-tabs:not(.expanded) { display: none; }
+ .lesson-tabs.expanded { display: flex; flex-wrap: wrap; }
+ .lesson-tabs.expanded button { flex: 1 1 42%; }
+ .guide-avatar { width: 54px; height: 72px; }
+ .guide-dock > button:not(.guide-avatar) { font-size: .65rem; }
+ .guide-bubble { max-width: 290px; }
+ .lesson-bottom { flex-wrap: wrap; gap: .5rem; }
+ .lesson-bottom button { flex: 1; font-size: .85rem; }
+ body:has(.pal-guide) { padding-bottom: 100px; }
+}
+[data-reduced="true"] .guide-bubble { animation: none; }
+@media(prefers-reduced-motion: reduce) { .guide-bubble { animation: none; } }
+.lesson-bottom .embroidered-nav { min-height: 48px; }
+[data-theme="dark"] .guide-bubble { background: #203a31; color: #f2f0df; }
+[data-contrast="true"] .guide-bubble, [data-contrast="true"] .discovery-controls label { border: 2px solid currentColor; }
+/* Reserve actual layout space for the assistant: it never overlays a question. */
+.app:has(.pal-guide) { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+.app:has(.pal-guide) > .site-header { flex: 0 0 auto; }
+.app:has(.pal-guide) > .learning-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: clip; }
+.app:has(.pal-guide) > .pal-guide { position: relative; bottom: auto; left: auto; flex: 0 0 auto; align-self: flex-end; margin: 6px 12px; }
+body:has(.pal-guide) { padding-bottom: 0; }
+.pal-guide .guide-avatar { width: 54px; height: 72px; }
+.pal-guide .guide-bubble { max-height: min(260px, 35dvh); }
+@media(min-width: 900px) {
+ .app:has(.pal-guide) { display: grid; grid-template-columns: minmax(0,1fr) 100px; grid-template-rows: auto minmax(0,1fr); }
+ .app:has(.guide-bubble) { grid-template-columns: minmax(0,1fr) 340px; }
+ .app:has(.pal-guide) > .site-header { grid-column: 1 / -1; grid-row: 1; }
+ .app:has(.pal-guide) > .learning-scroll { grid-column: 1; grid-row: 2; }
+ .app:has(.pal-guide) > .pal-guide { grid-column: 2; grid-row: 2; align-self: end; justify-self: center; max-width: calc(100% - 16px); margin: 8px; }
+ .guide-dock { flex-direction: column; align-items: center; }
+ .guide-bubble { width: 316px; }
+}
+@media(max-width: 899px) {
+ .app:has(.pal-guide) > .pal-guide { max-height: 40dvh; overflow-y: auto; overflow-x: hidden; }
+ .pal-guide .guide-bubble { max-height: none; }
+}
+/* Scientific workbench: actual procedure tools, readable scenes and focused sequence. */
+.lab-prediction textarea, .lab-observations textarea { width:100%; min-height:85px; margin-block:.5rem; }
+.lab-observations { display:grid; gap:.7rem; margin-top:1rem; }
+.lab-objective { font-size:.9rem; color:var(--muted); margin: .3rem 0; }
+.lab-tools { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.65rem; margin-block:.8rem; }
+.lab-tools button { display:flex; align-items:center; gap:.7rem; text-align:right; min-height:76px; padding:.7rem; border:1px solid #a9bda5; background:linear-gradient(130deg,#fffef8,#e8eee2); border-radius:17px; color:#254d40; }
+.lab-tools button:hover, .lab-tools button:focus-visible { border-color:#4e7e60; box-shadow:0 4px 12px #32583f17; }
+.lab-tools button.used-tool { background:#deead8; }
+.lab-tools svg { flex:0 0 44px; }
+.lab-progress { display:block; width:100%; height:10px; accent-color:#4e7f60; margin-block:1rem; }
+.experiment-information { margin-block:1rem; padding:.7rem 1rem; border:1px solid #d1dbc9; border-radius:14px; }
+.experiment-information summary { min-height:44px; cursor:pointer; }
+.lab-visual .scientific-scene { margin:0; }
+.scene-realistic { position:relative; background:linear-gradient(135deg,#fdfcf5,#e8ede1); border:1px solid #d7dfcf; border-radius:22px; padding:.6rem; }
+.scene-realistic .scientific-svg { display:block; width:100%; max-height:none; min-height:240px; }
+.scene-zoom { display:block; margin-inline-start:auto; min-height:44px; padding:.45rem .8rem; position:relative; z-index:1; }
+.scene-expanded { position:fixed !important; inset:10px; z-index:100; margin:0 !important; overflow:auto; border:2px solid #739a78; box-shadow:0 0 0 100vmax #1f322dcc; }
+.scene-expanded .scientific-svg { min-width:650px; min-height:440px; max-height:75vh; }
+.scene-expanded .scene-zoom { position:sticky; top:0; }
+.scene-expanded .science-parts { position:relative; }
+.simulation-controls { flex-wrap:wrap; gap:.6rem; }
+.simulation-controls button { min-height:48px; }
+@media(max-width:700px) {
+ .lab-tools { grid-template-columns:1fr; }
+ .scene-realistic { padding:.3rem; }
+ .scene-realistic .scientific-svg { min-height:230px; }
+ .scene-realistic .science-parts { grid-template-columns:1fr; }
+ .simulation-controls button { flex:1 1 42%; }
+ .simulation-v2 { padding:.8rem; }
+}
+[data-theme="dark"] .lab-tools button { background:#2e4c3a; color:#f3f3e7; }
+[data-contrast="true"] .scene-realistic { border:2px solid currentColor; }
+/* Nutrition introduction only: a living Palestinian olive orchard. */
+.orchard-intro { overflow:hidden; border:1px solid #bac6a3; border-radius:24px; background:#edf0da; color:#264e3d; box-shadow:0 12px 35px #35523813; }
+.orchard-heading { padding:1.4rem 1.6rem 1rem; background:linear-gradient(120deg,#e0ead2,#f2e9cb); }
+.orchard-heading h2 { font-size:clamp(1.5rem,2.5vw,2.2rem); line-height:1.65; margin:.2rem 0; }
+.orchard-heading p { margin:0; line-height:1.9; }
+.orchard-panorama { position:relative; background:#a9d8eb; overflow:hidden; }
+.olive-orchard-art { display:block; width:100%; height:auto; }
+.orchard-hit { cursor:pointer; }
+.orchard-hit:focus-visible { outline:4px solid #a84944; outline-offset:6px; }
+.orchard-canopy { transform-origin:590px 375px; }
+.orchard-clouds { animation:orchard-cloud-drift 25s ease-in-out infinite alternate; }
+.orchard-birds { animation:orchard-bird-drift 16s ease-in-out infinite alternate; }
+.orchard-sunbeams { animation:orchard-light 8s ease-in-out infinite; transform-origin:853px 91px; }
+.active-sun .orchard-sunbeams { animation:orchard-light-selected 2s ease-out; }
+.leaves-discovered { animation:orchard-leaf-touch 1.5s ease-in-out; }
+.roots-discovered { animation:orchard-root-touch 1.5s ease-out; }
+.orchard-guide { position:absolute; left:2%; bottom:12%; display:flex; align-items:flex-end; width:31%; max-width:270px; gap:.4rem; }
+.orchard-guide-character { flex:0 0 60px; height:90px; }
+.orchard-bubble { border:1px solid #aab997; border-radius:18px 18px 4px 18px; padding:.7rem; background:#fffdf1eb; font-size:.78rem; box-shadow:0 5px 16px #35523f20; }
+.orchard-bubble p { margin:0; line-height:1.9; }
+.orchard-bubble button { min-height:44px; padding:.2rem; font-size:.7rem; }
+.orchard-guide.collapsed { width:auto; }
+.orchard-explore { padding:1rem 1.4rem; background:#e3ead2; }
+.orchard-explore-title { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; }
+.orchard-explore-title h3 { margin:0 0 .5rem; }
+.orchard-explore-title > span { font-size:.8rem; }
+.orchard-part-buttons { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.6rem; }
+.orchard-part-buttons button { min-height:48px; border:1px solid #92aa7f; background:#f6f5e8; color:#2d543f; border-radius:14px; }
+.orchard-part-buttons .selected { background:#315e45; color:#fffdf0; }
+.orchard-fact { min-height:4rem; padding:1rem .2rem .2rem; line-height:1.9; font-weight:600; }
+.orchard-prediction { margin:1.4rem; padding:1rem; border:1px solid #b8c19e; border-radius:18px; background:#f7f4e5; min-width:0; }
+.orchard-prediction legend { font-weight:700; padding-inline:.4rem; }
+.orchard-prediction > p { font-size:.85rem; }
+.orchard-prediction label { display:flex; align-items:center; gap:.7rem; padding:.85rem; border:1px solid #d1d6bb; background:#fffdf3; border-radius:14px; margin:.6rem 0; cursor:pointer; min-height:56px; line-height:1.9; }
+.orchard-prediction input { accent-color:#486f4e; width:20px; height:20px; flex:0 0 20px; }
+.orchard-prediction label.chosen { border-color:#668955; background:#e6edd7; }
+.orchard-prediction-feedback { color:#345a3e; padding:.7rem; border-radius:12px; background:#dfe9d0; }
+.orchard-audio { display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; padding:.6rem 1.4rem; }
+.orchard-audio button { min-height:48px; background:#f9f5e7; color:#355b43; border:1px solid #b4bea0; }
+.orchard-audio span { font-size:.8rem; line-height:1.8; }
+.orchard-teacher { padding:.5rem 1.4rem; }
+.orchard-next-hint { font-size:.8rem; line-height:1.9; padding:0 1.4rem; }
+.orchard-navigation { display:flex; justify-content:space-between; flex-wrap:wrap; gap:.6rem; padding:1rem 1.4rem 1.4rem; }
+.orchard-navigation button { min-height:52px; }
+@keyframes orchard-cloud-drift { to {transform:translateX(30px);} }
+@keyframes orchard-bird-drift { to {transform:translate(34px,-8px);} }
+@keyframes orchard-light { 50% {opacity:.6;transform:rotate(3deg);} }
+@keyframes orchard-light-selected { 50% {opacity:1;transform:rotate(7deg);} }
+@keyframes orchard-leaf-touch { 25%,75% {transform:rotate(-1deg);} 50% {transform:rotate(1deg);} }
+@keyframes orchard-root-touch { 40% {filter:brightness(1.4);} }
+.orchard-intro[data-reduced="true"] *, [data-reduced="true"] .orchard-intro * { animation:none !important; transition:none !important; }
+@media(prefers-reduced-motion:reduce) { .orchard-intro * { animation:none !important; } }
+@media(max-width:700px) {
+ .orchard-heading { padding:1rem; }
+ .orchard-guide { position:relative; left:auto; bottom:auto; width:100%; max-width:none; padding:.7rem; background:#dce7c6; align-items:center; }
+ .orchard-guide-character { flex-basis:54px; height:80px; }
+ .orchard-bubble { font-size:.82rem; flex:1; }
+ .orchard-explore { padding:.9rem; }
+ .orchard-prediction { margin:.9rem; padding:.8rem; }
+ .orchard-prediction label { font-size:.9rem; padding:.7rem; }
+ .orchard-audio { padding:.6rem .9rem; }
+ .orchard-navigation { padding:.9rem; }
+ .orchard-navigation button { width:100%; }
+}
+[data-contrast="true"] .orchard-part-buttons button, [data-contrast="true"] .orchard-prediction label { border:2px solid #2f523c; }
+main:has(.orchard-intro) > .lesson-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem; padding:0; margin:0 0 1rem; }
+main:has(.orchard-intro) > .lesson-heading h1 { font-size:1.5rem; margin:0; }
+main:has(.orchard-intro) > .lesson-heading h1 > span { font-size:1.6rem; }
+main:has(.orchard-intro) > .lesson-heading > p, main:has(.orchard-intro) > .lesson-heading > .eyebrow { display:none; }

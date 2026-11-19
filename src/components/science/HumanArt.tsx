@@ -15,6 +15,7 @@ export function UrinaryArt({ t, value, prefix }: ArtProps) {
   const bladderLevel = fill * (1 - drain);
   return (
     <g>
+      <path d="M239 84q-40 33-12 79M521 84q40 33 12 79" stroke="#f0c7b8" strokeWidth="11" opacity=".5" fill="none"/>
       <path d="M380 58v130" stroke="#b76d65" strokeWidth="19" />
       <path d="M400 58v130" stroke="#709fba" strokeWidth="15" />
       <path d="M380 98H292M380 98h112" stroke="#bb786d" strokeWidth="10" />
@@ -169,13 +170,13 @@ export function SweatArt({ t, value, prefix }: ArtProps) {
       >
         <path
           d="M180 151Q120 143 106 218Q90 291 178 302Z"
-          fill="#d6a096"
+          fill={`url(#${prefix}-lung)`}
           stroke="#b98079"
           strokeWidth="3"
         />
         <path
           d="M222 151Q282 143 296 218Q312 291 224 302Z"
-          fill="#d6a096"
+          fill={`url(#${prefix}-lung)`}
           stroke="#b98079"
           strokeWidth="3"
         />
@@ -204,7 +205,7 @@ export function SweatArt({ t, value, prefix }: ArtProps) {
       <Label x={555} y={80}>
         مقطع الجلد والغدة العرقية
       </Label>
-      <path d="M420 169H697v190H420Z" fill="#e5c7a9" />
+      <path d="M420 169H697v190H420Z" fill={`url(#${prefix}-skin)`} />
       <path
         d="M420 169q28-20 55 0t56 0t56 0t56 0t54 0v23H420Z"
         fill="#bf9279"
@@ -216,6 +217,8 @@ export function SweatArt({ t, value, prefix }: ArtProps) {
         fill="none"
         strokeLinecap="round"
       />
+      {[0,1,2,3,4,5].map(i=><path key={i} d={`M${438+i*43} 292q12-20 24 0t24 0`} stroke="#f0d5ab" strokeWidth="9" fill="none" opacity=".7"/>)}
+      <path d="M641 170q-8-31 2-48" stroke="#665748" strokeWidth="3" fill="none"/>
       <path d="M441 325h240" stroke="#bd7774" strokeWidth="9" />
       <Particles
         from={[440, 325]}
@@ -260,7 +263,7 @@ export function ReflexArt({ t, value, prefix }: ArtProps) {
         strokeLinecap="round"
         fill="none"
       />
-      <circle cx="213" cy="54" r="29" fill="#d5b598" />
+      <circle cx="213" cy="54" r="29" fill={`url(#${prefix}-skin)`} />
       <path
         d="M241 170l80 64"
         stroke="#cc9381"

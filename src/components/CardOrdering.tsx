@@ -1,3 +1,4 @@
+import { useDraft } from "../engine/drafts";
 import { useId, useState } from "react";
 import { CheckCircle2, RotateCcw, Undo2 } from "lucide-react";
 import { useSound } from "./SoundSystem";
@@ -28,7 +29,9 @@ export function CardOrdering({
   title?: string;
 }) {
   const [pool, setPool] = useState(() => shuffledCards(items.length));
-  const [chosen, setChosen] = useState<number[]>([]);
+  const [draft,setDraft] = useDraft(`ordering-${items.join("|")}`, {chosen: [] as number[]});
+  const chosen = draft.chosen;
+  const setChosen = (chosen: number[]) => setDraft({chosen});
   const sound = useSound();
   const feedback = useActivityFeedback(allowSound);
   const id = useId();

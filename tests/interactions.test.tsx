@@ -1,6 +1,6 @@
 import React from "react";
 import { JSDOM } from "jsdom";
-import { test } from "node:test";
+import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 const dom = new JSDOM("<!doctype html><html><body></body></html>", {
   url: "http://localhost/Biology/",
@@ -20,6 +20,10 @@ Object.defineProperty(globalThis, "navigator", {
 Object.assign(globalThis, {
   HTMLElement: dom.window.HTMLElement,
   IS_REACT_ACT_ENVIRONMENT: true,
+});
+beforeEach(() => {
+  for (const key of Object.keys(dom.window.localStorage))
+    if (key.startsWith("life-island-draft:")) dom.window.localStorage.removeItem(key);
 });
 const { render, fireEvent, cleanup } = await import("@testing-library/react");
 const { Simulation } = await import("../src/components/Simulation");
@@ -231,7 +235,7 @@ test("complete learner journey through seven stations, compost, final, certifica
     fireEvent.click(ui.getByRole("button", { name: /المحطة 1 التغذية/ }));
     for (const lesson of lessons) {
       fireEvent.click(
-        ui.getByRole("button", { name: /الاختبار القبلي/, exact: false }),
+        ui.getByRole("button", { name: /^02\s*الاختبار القبلي$/, exact: false }),
       );
       answerQuiz(bank(lesson, "pre"));
       fireEvent.click(
@@ -404,7 +408,7 @@ test("automatic playback, pause, replay and speed controls operate for every sci
           fireEvent.click(
             ui.getByRole("button", { name: "إعادة ضبط المحاكاة" }),
           );
-          assert.ok(ui.getByText("0% · زمن افتراضي مسرّع"));
+          assert.equal((ui.getByRole("progressbar", {name:"تقدم التجربة"}) as HTMLProgressElement).value, 0);
           assert.equal(watched, 1);
         } finally {
           cleanup();
@@ -452,6 +456,14 @@ test("all seven stations and ten stages are open before any assessment; visiting
             name: new RegExp(`^0?${index + 1}\\s*${stages[index]}$`),
           }),
         );
+        if (lesson.id === 1 && index === 0) {
+          assert.equal(ui.getByRole("button", {name:"ابدأ الاختبار القبلي"}).hasAttribute("disabled"), true);
+          const directPre = ui.getByRole("button", {name:/^02\s*الاختبار القبلي$/});
+          assert.equal(directPre.hasAttribute("disabled"),false);
+          fireEvent.click(directPre);
+          assert.ok(ui.getByText("2 / 10"));
+          continue;
+        }
         const next = ui.getByRole("button", { name: /تابع الاستكشاف/ });
         const prev = ui.getByRole("button", { name: "المرحلة السابقة" });
         assert.equal(next.hasAttribute("disabled"), index === 9);

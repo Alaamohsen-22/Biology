@@ -10,77 +10,29 @@ import {
   type ArtProps,
 } from "./primitives";
 export function IodineArt({ t, value, v, prefix }: ArtProps) {
-  const add = v.iodine ? phase(t, 0.15, 0.6) : 0;
-  return (
-    <g>
-      <Bench />
-      {[235, 525].map((x, i) => (
-        <g key={i}>
-          <rect
-            x={x - 56}
-            y="343"
-            width="112"
-            height="22"
-            rx="7"
-            fill="#a8b8a7"
-          />
-          <path
-            d={`M${x - 33} 135v172q0 43 66 0V135`}
-            stroke="#91b5b5"
-            strokeWidth="5"
-            fill={`url(#${prefix}-glass)`}
-          />
-          <path
-            d={`M${x - 28} 240v68q28 31 56 0v-68Z`}
-            fill={
-              i === 0 && value > 0.15
-                ? "#3b3d73"
-                : add > 0
-                  ? "#c99b55"
-                  : "#b6d9de"
-            }
-            opacity=".88"
-          />
-          <path d={`M${x - 30} 137h60`} stroke="#c5d7d4" strokeWidth="5" />
-          <Label x={x} y={408}>
-            {i ? "ماء + لوغول · ضابط" : v.starch ? "عينة نشا" : "عينة ماء"}
-          </Label>
-          {i === 0 && (
-            <>
-              <g transform={`translate(0 ${add * 20})`}>
-                <path
-                  d={`M${x - 18} 50h36l-7 52-11 15-11-15Z`}
-                  fill="#c2ab77"
-                  stroke="#8d937d"
-                  strokeWidth="2"
-                />
-                <rect
-                  x={x - 23}
-                  y="35"
-                  width="46"
-                  height="22"
-                  rx="10"
-                  fill="#617f73"
-                />
-              </g>
-              {add > 0 && (
-                <Drop x={x} y={mix(131, 232, add)} color="#ab8044" size={7} />
-              )}
-            </>
-          )}
-        </g>
-      ))}
-      <Label x={380} y={30}>
-        كاشف لوغول · تجربة افتراضية
-      </Label>
-      <Arrow x1={310} y1={274} x2={452} y2={274} prefix={prefix} dash />
-      <Label x={380} y={450}>
-        {value > 0.15
-          ? "تغير إلى أزرق مسود يدل على النشا"
-          : "قارن اللون قبل الإضافة وبعدها"}
-      </Label>
-    </g>
-  );
+  const dispensing = v.iodine ? phase(t,.25,.5) : 0;
+  const reaction = v.iodine && v.starch ? phase(t,.5,.75) : 0;
+  const sampleColor = `rgb(${mix(204,27,reaction)} ${mix(172,35,reaction)} ${mix(102,67,reaction)})`;
+  return <g><Bench/>
+    {[235,525].map((x,i)=><g key={i}>
+      <ellipse cx={x} cy="362" rx="66" ry="10" fill="#445749" opacity=".12"/>
+      <rect x={x-61} y="337" width="122" height="24" rx="7" fill={`url(#${prefix}-wood)`}/>
+      <path d={`M${x-36} 124v179a36 36 0 0 0 72 0V124Z`} fill={`url(#${prefix}-glass)`} stroke="#7d9fa3" strokeWidth="3"/>
+      <path d={`M${x-31} 237v65a31 31 0 0 0 62 0v-65Z`} fill={dispensing>0 ? i===0 ? sampleColor : "#c8a15a" : v.starch && i===0 ? "#e4e6df" : "#b8d8dc"}/>
+      <ellipse cx={x} cy="237" rx="31" ry="6" fill={dispensing>0 ? i===0 ? sampleColor : "#dab873" : "#e5f3ef"} opacity=".8"/>
+      <path d={`M${x-24} 145v153q0 14 7 20`} fill="none" stroke="#fff" strokeWidth="5" opacity=".72" strokeLinecap="round"/>
+      <ellipse cx={x} cy="124" rx="36" ry="7" fill="none" stroke="#9ab8ba" strokeWidth="4"/>
+      {[0,1,2,3].map(n=><path key={n} d={`M${x+21} ${163+n*19}h11`} stroke="#708e8d" strokeWidth="1.5"/>)}
+      {dispensing>0 && t<.88 && <path d={`M${x-23} 275q22 ${Math.sin(t*35)*18} 46 0m-46 17q22 ${Math.cos(t*30)*15} 46 0`} fill="none" stroke={i===0 && reaction>0 ? "#a2a0ce" : "#f1d292"} strokeWidth="2" opacity=".65"/>}
+      <g transform={`translate(${x} ${dispensing*12}) rotate(${mix(-15,0,phase(t,0,.25))})`}>
+       <path d="M-9 33h18v54l-9 13-9-13Z" fill={`url(#${prefix}-glass)`} stroke="#789b99" strokeWidth="2"/><path d="M-14 14q14-20 28 0v24h-28Z" fill="#4a6659"/>
+      </g>
+      {v.iodine>0 && [.26,.33,.40].map((start,n)=>{const p=phase(t,start,start+.08);return p>0 && p<1 ? <Drop key={n} x={x} y={128+p*103} color="#b58a3f" size={5}/> : null;})}
+      <Label x={x} y={409}>{i ? "ماء + لوغول · ضابط" : v.starch ? "عينة تحتوي النشا" : "عينة ماء"}</Label>
+    </g>)}
+    <Label x={380} y={31}>الكشف عن النشا بمحلول لوغول</Label>
+    <Label x={380} y={452}>{reaction>.8 ? "أزرق مسود في العينة المحتوية على النشا" : dispensing>0 ? "راقب سقوط القطرات واختلاط المحلول" : "العينة والضابط قبل إضافة الكاشف"}</Label>
+  </g>;
 }
 export function YeastArt({ t, value, v, prefix }: ArtProps) {
   const gas = value;
@@ -97,7 +49,7 @@ export function YeastArt({ t, value, v, prefix }: ArtProps) {
           />
           <path
             d={`M${x - 44} 278l-23 49q-5 24 26 26h82q31-2 26-26l-23-49Z`}
-            fill="#d9ca9a"
+            fill={`url(#${prefix}-bread)`}
           />
           <ellipse
             cx={x}
@@ -132,6 +84,7 @@ export function YeastArt({ t, value, v, prefix }: ArtProps) {
               )}
             </>
           )}
+          <path d={`M${x-21} 194v32l-35 81`} stroke="#ffffffaa" strokeWidth="5" fill="none" strokeLinecap="round"/>
           <Label x={x} y={408}>
             {i ? "ضابط دون خميرة" : "سكر + خميرة · تخمر"}
           </Label>
@@ -196,6 +149,7 @@ export function RespirationArt({ t, value, v, prefix }: ArtProps) {
               r={5}
             />
           )}
+          <path d={`M${x-21} 194v32l-35 81`} stroke="#ffffffaa" strokeWidth="5" fill="none" strokeLinecap="round"/>
           <Label x={x} y={408}>
             {["نبات في الظلام", "نبات مضاء", "ماء جير في الهواء"][i]}
           </Label>
@@ -207,7 +161,7 @@ export function RespirationArt({ t, value, v, prefix }: ArtProps) {
     </g>
   );
 }
-export function MoldArt({ t, value, v }: ArtProps) {
+export function MoldArt({ t, value, v, prefix }: ArtProps) {
   return (
     <g>
       <Label x={380} y={43}>
@@ -227,22 +181,24 @@ export function MoldArt({ t, value, v }: ArtProps) {
           />
           <path
             d={`M${x - 81} 168q0-75 81-60q81-15 81 60v148h-162Z`}
-            fill="#c6a076"
+            fill={`url(#${prefix}-crust)`}
             stroke="#ad855a"
             strokeWidth="5"
           />
           <path
             d={`M${x - 73} 173q0-66 73-53q73-13 73 53v134h-146Z`}
-            fill="#eddbb2"
+            fill={`url(#${prefix}-bread)`}
           />
+          <path d={`M${x-73} 173q0-66 73-53q73-13 73 53v134h-146Z`} fill={`url(#${prefix}-pores)`}/>
+          <path d={`M${x-104} 109h208M${x-99} 122v215`} stroke="#fff" strokeWidth="4" opacity=".55" fill="none"/>
           {Array.from(
-            { length: Math.floor((i ? 0.04 + 0.06 * t : value) * 80) },
+            { length: Math.floor((i ? (.2 * .08 * (v.days ?? 5) / 10 * t) : value) * 80) },
             (_, j) => (
               <g key={j} opacity=".85">
                 <circle
                   cx={x - 58 + ((j * 41) % 120)}
                   cy={159 + ((j * 37) % 130)}
-                  r={3 + (j % 8)}
+                  r={(3 + (j % 8)) * phase(i ? (.2 * .08 * (v.days ?? 5) / 10 * t) : value, j/80, (j+5)/80)}
                   fill={j % 2 ? "#7c9670" : "#5d7767"}
                 />
                 <circle

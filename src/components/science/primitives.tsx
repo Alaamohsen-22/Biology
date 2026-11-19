@@ -127,9 +127,10 @@ export function Plant({
   const h = growth === 0 ? 0 : 25 + growth * 190;
   return (
     <g>
+      <ellipse cx={x} cy={base+64} rx="54" ry="9" fill="#3c4e3c" opacity=".12"/>
       <path
         d={`M${x - 48} ${base}h96l-14 63h-68z`}
-        fill={water ? "#b2d5d9" : "#bd9470"}
+        fill={`url(#${prefix}-${water ? "water" : "crust"})`}
         stroke={water ? "#8db2b4" : "#9f7859"}
         strokeWidth="2"
       />
@@ -141,6 +142,7 @@ export function Plant({
       />
       {roots && (
         <g stroke="#b79b70" strokeWidth="3" fill="none">
+          {[-1,1].map(side=><g key={side}>{[0,1,2].map(n=><path key={n} d={`M${x} ${base+10+n*8}q${side*18} 4 ${side*(22+n*3)} 19m${-side*11} -8l${side*8} 7`} strokeWidth="1.5"/>)}</g>)}
           <path
             d={`M${x} ${base + 5}v40m0-32-22 17m22-10 22 13m-22-3-16 17m16-5 13 10`}
           />
@@ -162,13 +164,8 @@ export function Plant({
             key={i}
             transform={`translate(${px} ${py}) rotate(${i % 2 ? -27 : 27}) scale(${0.55 + growth * 0.5})`}
           >
-            <ellipse
-              cx={i % 2 ? -28 : 28}
-              cy="-8"
-              rx="36"
-              ry="15"
-              fill={`url(#${prefix}-leaf)`}
-            />
+            <path d={i%2 ? "M0 0Q-15-37-67-18Q-42 15 0 0Z" : "M0 0Q15-37 67-18Q42 15 0 0Z"} fill={`url(#${prefix}-leaf)`} stroke="#608161" strokeWidth="1"/>
+            {[1,2,3].map(n=><path key={n} d={`M${(i%2?-1:1)*n*13} ${-n*3}l${(i%2?-1:1)*8} -10`} stroke="#c3d2a6" strokeWidth=".9" opacity=".6"/>)}
             <path
               d={i % 2 ? "M-2 0l-49-17" : "M2 0l49-17"}
               stroke="#a9c097"

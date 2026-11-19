@@ -36,8 +36,7 @@ export function ObservationPreview({ lesson }: { lesson: Lesson }) {
         )}
       </div>
       <p className="muted">
-        ملاحظة استكشافية لا تمنح إتقان المختبر. جرّب المتغيرات بنفسك في مرحلة
-        المختبر.
+        قارن ما تشاهده بتوقعك، ثم جرّب العوامل في المختبر.
       </p>
     </div>
   );

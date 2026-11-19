@@ -1,3 +1,8 @@
+import { OliveOrchardIntro } from "./components/OliveOrchardIntro";
+import { NutritionDiscovery } from "./components/NutritionDiscovery";
+import { PalestinianGuide } from "./components/PalestinianGuide";
+import { IslandSound } from "./components/IslandSound";
+import { useDraft } from "./engine/drafts";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import {
   Map,
@@ -120,6 +125,12 @@ export default function App() {
   const [page, setPage] = useState("cover");
   const [active, setActive] = useState(1);
   const [tab, setTab] = useState(0);
+  const [hintState, setHintState] = useState({key: "", tip: ""});
+  const hintKey = `${page}-${active}-${tab}`;
+  const discoveryHint = hintState.key === hintKey ? hintState.tip : "";
+  const setDiscoveryHint = useCallback((tip: string) => setHintState({key: hintKey, tip}), [hintKey]);
+  useEffect(() => { const scroll = document.getElementById("learning-scroll"); if(scroll) scroll.scrollTop = 0; }, [page, active, tab]);
+  const [stagesOpen, setStagesOpen] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [modal, setModal] = useState(false);
   const [notice, setNotice] = useState("");
@@ -275,6 +286,7 @@ export default function App() {
           </button>
         </div>
       </header>
+      <div className="learning-scroll" id="learning-scroll">
       <main id="main" tabIndex={-1}>
         <SoundNotice />
         {notice && (
@@ -440,6 +452,7 @@ export default function App() {
             </small>
           </section>
         )}
+        {page === "map" && <IslandSound enabled={settings.sound && settings.volume > 0} />}
         {page === "map" && (
           <>
             <header className="page-heading split">
@@ -599,13 +612,14 @@ export default function App() {
               </p>
             </header>
             <div className="lesson-layout">
-              <aside className="lesson-tabs" aria-label="مراحل الدرس">
+              <button className="stage-toggle" aria-expanded={stagesOpen} onClick={() => setStagesOpen(!stagesOpen)}>مراحل الدرس · {stages[tab]}</button>
+              <aside className={`lesson-tabs ${stagesOpen ? "expanded" : ""}`} aria-label="مراحل الدرس">
                 {stages.map((s, i) => (
                   <button
                     key={s}
                     aria-current={tab === i ? "step" : undefined}
                     className={tab === i ? "active" : ""}
-                    onClick={() => setTab(i)}
+                    onClick={() => { setTab(i); setStagesOpen(false); }}
                   >
                     <span>{String(i + 1).padStart(2, "0")}</span>
                     {s}
@@ -613,7 +627,8 @@ export default function App() {
                 ))}
               </aside>
               <div className="lesson-content">
-                {tab === 0 && (
+                {tab === 0 && active === 1 && <OliveOrchardIntro enabled={settings.sound && settings.volume > 0} reduced={settings.reduced} teacherText={lesson.story} onBack={()=>go("map")} onPre={()=>setTab(1)}/>}
+                {tab === 0 && active !== 1 && (
                   <section className="card story-card">
                     <span className="big-emoji">{lesson.icon}</span>
                     <span className="eyebrow">سؤال تبدأ به المغامرة</span>
@@ -673,7 +688,7 @@ export default function App() {
                     </button>
                   </section>
                 )}
-                {tab === 3 && <Explore lesson={lesson} />}
+                {tab === 3 && (active === 1 ? <NutritionDiscovery onHint={setDiscoveryHint} /> : <Explore key={active} lesson={lesson} />)}
                 {tab === 4 && (
                   <>
                     <h2>نفهم السر خطوة بخطوة</h2>
@@ -717,6 +732,7 @@ export default function App() {
                       <Simulation
                         key={`${active}-${s.id}`}
                         scene={s}
+                        onHint={setDiscoveryHint}
                         reduced={settings.reduced}
                         watched={lp.watched.includes(s.id)}
                         experimented={lp.experimented.includes(s.id)}
@@ -926,21 +942,22 @@ export default function App() {
                     </button>
                   </section>
                 )}
-                <div className="lesson-bottom">
-                  <button disabled={tab === 0} onClick={() => setTab(tab - 1)}>
+                {!(active === 1 && tab === 0) && <div className="lesson-bottom">
+                  <button className="embroidered-nav previous" disabled={tab === 0} onClick={() => setTab(tab - 1)}>
+                    <ArrowLeft size={16} style={{ transform: "rotate(180deg)" }} />
                     المرحلة السابقة
                   </button>
                   <span>
                     {tab + 1} / {stages.length}
                   </span>
                   <button
-                    className="primary"
+                    className="primary embroidered-nav next"
                     disabled={tab === stages.length - 1}
                     onClick={() => setTab(tab + 1)}
                   >
                     تابع الاستكشاف <ArrowLeft size={16} />
                   </button>
-                </div>
+                </div>}
               </div>
             </div>
           </>
@@ -1204,20 +1221,22 @@ export default function App() {
           دليل المعلمة وتوثيق المحتوى <BookOpen size={15} />
         </button>
       </footer>
-      {page !== "cover" && (
-        <Helper
-          name={progress.name}
-          tip={
-            page === "lesson"
-              ? tab === 5
-                ? "غيّر عاملًا واحدًا في كل مرة، ثم قارِن النتيجة بتوقعك."
-                : lp.pre !== undefined && lp.pre < 40
-                  ? "خذ وقتك. ابدأ بفكرة واحدة، واستعن بالمثال والتلميح."
-                  : "التفسير أهم من التخمين. ما الدليل على إجابتك؟"
-              : "اختر مهمتك التالية من الخريطة. النجوم تُكتسب بالإتقان."
-          }
-        />
-      )}{" "}
+      </div>
+      {page !== "cover" && !(page === "lesson" && active === 1 && tab === 0) && <PalestinianGuide name={progress.name} character={assets.companion ? (import.meta.env?.BASE_URL ?? "/Biology/") + assets.companion : undefined} context={`${page}-${active}-${tab}`} hints={[
+        page === "lesson" ? (((tab === 3 && active === 1) || tab === 5) && discoveryHint ? discoveryHint : [
+          `أهلًا! اقرأ موقف ${lesson.title}، وحدد السؤال الذي تريد استكشافه.`,
+          `اختبر معرفتك السابقة حول ${lesson.title}؛ هذه النتيجة للتشخيص وليست للإتقان.`,
+          `اختر هدفًا من أهداف ${lesson.title}، وابحث لاحقًا عن دليل يوضح فهمك له.`,
+          `اكتب توقعك حول ${lesson.title} قبل التجربة، ثم قارن بما تلاحظه.`,
+          `اربط شرح ${lesson.title} بمثال من بيئتك، وحدد ما يحتاج توضيحًا.`,
+          `في مختبر ${lesson.title} غيّر عاملًا واحدًا، وقارن النتائج قبل تفسيرها.`,
+          `في أنشطة ${lesson.title} اقرأ البطاقات، ثم اختبر العلاقات أو التسلسل.`,
+          `استند إلى دليل من ${lesson.title}؛ عند الخطأ راجع التلميح وأعد المحاولة.`,
+          `هذا تقويم ${lesson.title}. فكّر في الهدف الذي يقيسه كل سؤال.`,
+          `لخص ما تعلمته عن ${lesson.title}، وراجع متطلبات الإتقان الفعلية.`,
+        ][tab]) : page === "project" ? "اختر مواد آمنة للدبال، وقارن أثر الرطوبة والتهوية." : page === "final" ? "اقرأ كل سؤال واربطه بالهدف العلمي، ثم راجع اختياراتك." : "اختر محطتك بحرية. يمكنك العودة إلى أي مرحلة، والنجوم مرتبطة بالإتقان.",
+        page === "lesson" ? `استعن بأهداف درس ${lesson.title} ومثال واحد منه. صف ما تغير، ثم ابحث عن السبب دون القفز إلى الإجابة.` : "ابدأ بخطوة واحدة، واستخدم دليل المستكشف إذا احتجت توضيحًا."
+      ]} />}
       {celebrate && !settings.reduced && (
         <div className="celebration" aria-hidden="true">
           ✦ ★ ✦ ★ ✦
@@ -1264,8 +1283,10 @@ function Locked({
   );
 }
 function Explore({ lesson }: { lesson: Lesson }) {
-  const [prediction, setPrediction] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [draft, setDraft] = useDraft(`explore-${lesson.id}`, {prediction: "", saved: false});
+  const { prediction, saved } = draft;
+  const setPrediction = (prediction: string) => setDraft(d => ({...d,prediction}));
+  const setSaved = (saved: boolean) => setDraft(d => ({...d,saved}));
   return (
     <section className="card">
       <span className="eyebrow">توقّع · لاحظ · فسّر</span>
@@ -1298,37 +1319,6 @@ function Explore({ lesson }: { lesson: Lesson }) {
         </p>
       )}
     </section>
-  );
-}
-function Helper({ name, tip }: { name: string; tip: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <aside className="helper">
-      <button
-        aria-label="تلميحات المساعد الصامت"
-        aria-expanded={open}
-        onClick={() => setOpen(!open)}
-      >
-        {assets.companion ? (
-          <img
-            src={(import.meta.env?.BASE_URL ?? "/Biology/") + assets.companion}
-            alt="الشخصية المساعدة"
-          />
-        ) : (
-          <Leaf size={25} />
-        )}
-      </button>
-      {open && (
-        <div className="speech-bubble">
-          <b>{name ? `${name}، فكرة تساعدك` : "فكرة تساعدك"}</b>
-          <p>{tip}</p>
-          <small>مساعد نصي صامت · الشخصية المرفقة تضاف لاحقًا</small>
-          <button className="text-button" onClick={() => setOpen(false)}>
-            فهمت <CheckCircle2 size={15} />
-          </button>
-        </div>
-      )}
-    </aside>
   );
 }
 function SettingsDialog({

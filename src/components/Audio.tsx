@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Volume2, Square, RotateCcw } from "lucide-react";
 import { soundManager } from "../engine/sound";
 import audioConfig from "../data/audio.json";
@@ -15,6 +15,7 @@ export function TeacherAudio({
 }) {
   const ref = useRef<HTMLAudioElement>(null);
   const [error, setError] = useState(false);
+  useEffect(() => { const audio = ref.current; return () => { if(audio) soundManager.releaseMedia(audio); }; }, [enabled]);
   const file = (audioConfig as Record<string, string>)[`${lesson}.${section}`];
   return (
     <details className="audio-card">
