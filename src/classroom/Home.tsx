@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Search, Play, FlaskConical } from "lucide-react";
+import { Check, Search, Play } from "lucide-react";
 import { useState } from "react";
 import { lessons } from "../data/lessons";
 import { curriculum } from "../data/curriculum";
@@ -30,20 +30,8 @@ export function Home({
     <div className="home-view">
       <section className="home-welcome">
         <div>
-          <span className="overline">علوم الصف السابع · المنهاج الفلسطيني</span>
-          <h1>
-            لنبدأ بسؤال<span>.</span>
-          </h1>
-          <p>
-            نفهم الحياة، تجربةً بعد تجربة.
-            <br />
-            اختر درسًا، وامنح فضولك مساحة.
-          </p>
-        </div>
-        <div className="home-note">
-          <FlaskConical size={28} strokeWidth={1.5} />
-          <strong>٧ دروس · ٢٣ تجربة</strong>
-          <span>تعلم بحرية، وعلى مهل.</span>
+          <span className="overline">العلوم والحياة · الصف السابع</span>
+          <h1>خصائص الكائنات الحية</h1>
         </div>
       </section>
       {resume && (
@@ -62,13 +50,11 @@ export function Home({
                   : "متابعة الدرس"}
             </strong>
           </span>
-          <ArrowLeft size={20} />
         </button>
       )}
       <div className="catalog-heading">
         <div>
-          <h2>خصائص الكائنات الحية</h2>
-          <span>الوحدة الأولى · جميع الدروس متاحة</span>
+          <h2>الدروس</h2>
         </div>
         <label className="search-field">
           <Search size={18} />
@@ -103,7 +89,7 @@ export function Home({
                 <span className="lesson-glyph">
                   <Icon size={27} strokeWidth={1.6} />
                 </span>
-                <small>0{l.id}</small>
+
                 {mastered.includes(l.id) && <Check size={19} />}
               </div>
               <h3>{l.title}</h3>
@@ -113,7 +99,6 @@ export function Home({
                   {curriculum[l.id - 1].topics.length} مفاهيم ·{" "}
                   {l.scenes.length} تجارب
                 </span>
-                <ArrowLeft size={18} />
               </div>
               {completed > 0 && (
                 <div className="tile-progress">
@@ -146,7 +131,6 @@ export function Home({
           <span>إعداد المعلمة</span>
           <strong>أ. آلاء محسن كلاب</strong>
         </div>
-        <small>التقدم محفوظ على هذا الجهاز فقط.</small>
       </footer>
     </div>
   );

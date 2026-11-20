@@ -1,3 +1,4 @@
+import { reinforcement } from "../nutrition/voice";
 import { useRef, useState } from "react";
 import type { Question } from "../data/lessons";
 import { useDraft } from "../engine/drafts";
@@ -7,11 +8,13 @@ export function ConceptCheck({
   done,
   onDone,
   onHint,
+  narrate = false,
 }: {
   question: Question;
   done: boolean;
   onDone: () => void;
   onHint: (hint: string) => void;
+  narrate?: boolean;
 }) {
   const [draft, setDraft] = useDraft(`concept-check-${question.id}`, {
     choice: -1,
@@ -53,6 +56,7 @@ export function ConceptCheck({
               if (!awarded.current) {
                 awarded.current = true;
                 sound.play("success");
+                if (narrate) reinforcement("correct");
                 onDone();
               }
             } else {
@@ -61,6 +65,7 @@ export function ConceptCheck({
                 `محاولة تستحق التفكير. ${question.why} قارن هذا التفسير باختيارك، ثم حاول مجددًا.`,
               );
               sound.play("error");
+              if (narrate) reinforcement("retry");
               onHint("قارن الخيار الذي اخترته بما شاهدته في الشرح أو التجربة.");
             }
           }}

@@ -1,3 +1,6 @@
+import { NutritionIntro } from "../nutrition/Intro";
+import { NutritionGuide } from "../nutrition/NutritionGuide";
+import { activityIds, shortTitles } from "../nutrition/data";
 import { nutritionOpeningGoals } from "../data/nutritionOpening";
 import { teacherExplanation } from "./content";
 import { useState, lazy, Suspense, useEffect } from "react";
@@ -29,6 +32,16 @@ import { useSound } from "../components/SoundSystem";
 import audioConfig from "../data/audio.json";
 import { LessonNavigator } from "./LessonNavigator";
 import type { Destination, SettingsData } from "./storage";
+const NutritionVisual = lazy(() =>
+  import("../nutrition/VisualLesson").then((m) => ({
+    default: m.VisualLesson,
+  })),
+);
+const NutritionInfographic = lazy(() =>
+  import("../nutrition/Infographic").then((m) => ({
+    default: m.NutritionInfographic,
+  })),
+);
 const Simulation = lazy(() =>
   import("../components/Simulation").then((m) => ({ default: m.Simulation })),
 );
@@ -93,7 +106,7 @@ export function LessonWorkspace({
       };
     });
   return (
-    <div className="lesson-workspace">
+    <div className="lesson-workspace" data-lesson={lesson.id}>
       <header className="lesson-context">
         <button className="plain" onClick={onHome}>
           <ArrowRight size={17} /> الدروس
@@ -115,58 +128,66 @@ export function LessonWorkspace({
           className="lesson-canvas"
           key={`${route.lesson}-${route.section}-${route.topic}`}
         >
-          {route.section === "intro" && (
-            <section className="lesson-intro">
-              <span className="overline">
-                الدرس {lesson.id} · {lesson.place}
-              </span>
-              <h1>{lesson.title}</h1>
-              <div className="intro-discovery">
-                <div>
-                  <h2>{data.introTitle}</h2>
-                  <p className="intro-question">{data.introQuestion}</p>
-                  <p>
-                    ابدأ بفكرتك، ثم اختبرها. يمكنك طلب تلميح أو إعادة أي تجربة.
-                  </p>
-                  <button
-                    className="primary"
-                    onClick={() => onSelect("concept", 0)}
-                  >
-                    لنكتشف معًا <ArrowLeft size={18} />
-                  </button>
-                </div>
-                <LessonOpeningArt lesson={lesson.id} />
-              </div>
-              <StageGuide
-                autoOpen={false}
-                context={`studio-intro-${lesson.id}`}
-                text="ابدأ بتفسير من خبرتك اليومية، ثم قارنه بما ستلاحظه. ليس مطلوبًا أن تعرف الإجابة الآن."
-                hints={[
-                  "استحضر موقفًا مشابهًا من حياتك، ثم انتقل لنكتشف السبب.",
-                ]}
-              />
-              <details className="goals-disclosure">
-                <summary>ماذا سأتعلم في هذا الدرس؟</summary>
-                <ul>
-                  {(lesson.id === 1
-                    ? nutritionOpeningGoals
-                    : data.topics.map((c) => c.goal)
-                  ).map((goal) => (
-                    <li key={goal}>{goal}</li>
-                  ))}
-                </ul>
-              </details>
-              <button className="secondary" onClick={() => onSelect("pre")}>
-                استكشف معرفتك السابقة · ٥ أسئلة
-              </button>
-              <ConfiguredAudio
-                lesson={lesson.id}
-                section="intro"
-                text={data.introQuestion}
+          {route.section === "intro" &&
+            (lesson.id === 1 ? (
+              <NutritionIntro
+                onStart={() => onSelect("concept", 0)}
+                onPre={() => onSelect("pre")}
                 sound={settings.sound}
               />
-            </section>
-          )}
+            ) : (
+              <section className="lesson-intro">
+                <span className="overline">
+                  الدرس {lesson.id} · {lesson.place}
+                </span>
+                <h1>{lesson.title}</h1>
+                <div className="intro-discovery">
+                  <div>
+                    <h2>{data.introTitle}</h2>
+                    <p className="intro-question">{data.introQuestion}</p>
+                    <p>
+                      ابدأ بفكرتك، ثم اختبرها. يمكنك طلب تلميح أو إعادة أي
+                      تجربة.
+                    </p>
+                    <button
+                      className="primary"
+                      onClick={() => onSelect("concept", 0)}
+                    >
+                      لنكتشف معًا <ArrowLeft size={18} />
+                    </button>
+                  </div>
+                  <LessonOpeningArt lesson={lesson.id} />
+                </div>
+                <StageGuide
+                  autoOpen={false}
+                  context={`studio-intro-${lesson.id}`}
+                  text="ابدأ بتفسير من خبرتك اليومية، ثم قارنه بما ستلاحظه. ليس مطلوبًا أن تعرف الإجابة الآن."
+                  hints={[
+                    "استحضر موقفًا مشابهًا من حياتك، ثم انتقل لنكتشف السبب.",
+                  ]}
+                />
+                <details className="goals-disclosure">
+                  <summary>ماذا سأتعلم في هذا الدرس؟</summary>
+                  <ul>
+                    {(lesson.id === 1
+                      ? nutritionOpeningGoals
+                      : data.topics.map((c) => c.goal)
+                    ).map((goal) => (
+                      <li key={goal}>{goal}</li>
+                    ))}
+                  </ul>
+                </details>
+                <button className="secondary" onClick={() => onSelect("pre")}>
+                  استكشف معرفتك السابقة · ٥ أسئلة
+                </button>
+                <ConfiguredAudio
+                  lesson={lesson.id}
+                  section="intro"
+                  text={data.introQuestion}
+                  sound={settings.sound}
+                />
+              </section>
+            ))}
           {route.section === "pre" && (
             <NutritionDiagnostic
               key={lesson.id}
@@ -192,15 +213,20 @@ export function LessonWorkspace({
                 patch={patch}
                 onCheck={() => recordCheck(concept.check.id)}
               />
-              <StageGuide
-                autoOpen={false}
-                context={`studio-concept-${lesson.id}-${concept.id}`}
-                text={
-                  help || `اربط ${concept.title} بالمثال، ثم جرّب تطبيق الفكرة.`
-                }
-                notice={help}
-                hints={concept.hints}
-              />
+              {lesson.id === 1 ? (
+                <NutritionGuide context={concept.id} notice={help} />
+              ) : (
+                <StageGuide
+                  autoOpen={false}
+                  context={`studio-concept-${lesson.id}-${concept.id}`}
+                  text={
+                    help ||
+                    `اربط ${concept.title} بالمثال، ثم جرّب تطبيق الفكرة.`
+                  }
+                  notice={help}
+                  hints={concept.hints}
+                />
+              )}
               <nav
                 className="concept-navigation"
                 aria-label="التنقل بين المفاهيم"
@@ -225,19 +251,31 @@ export function LessonWorkspace({
           )}
           {route.section === "review" && (
             <>
-              <h1>اجمع أفكارك</h1>
-              <p className="lead">
-                ملخص {lesson.title}، لتعود إلى الفكرة التي تحتاجها.
-              </p>
-              <LessonInfographic lesson={data} />
-              <div className="review-links">
-                {data.topics.map((c, i) => (
-                  <button key={c.id} onClick={() => onSelect("concept", i)}>
-                    {c.title}
-                    <ArrowLeft size={15} />
-                  </button>
-                ))}
-              </div>
+              <h1>{lesson.id === 1 ? "خلاصة التغذية" : "اجمع أفكارك"}</h1>
+              {lesson.id !== 1 && (
+                <p className="lead">
+                  ملخص {lesson.title}، لتعود إلى الفكرة التي تحتاجها.
+                </p>
+              )}
+              {lesson.id === 1 ? (
+                <Suspense fallback={<p role="status">نجهّز الرسم…</p>}>
+                  <NutritionInfographic
+                    onConcept={(i) => onSelect("concept", i)}
+                  />
+                </Suspense>
+              ) : (
+                <LessonInfographic lesson={data} />
+              )}
+              {lesson.id !== 1 && (
+                <div className="review-links">
+                  {data.topics.map((c, i) => (
+                    <button key={c.id} onClick={() => onSelect("concept", i)}>
+                      {c.title}
+                      <ArrowLeft size={15} />
+                    </button>
+                  ))}
+                </div>
+              )}
               <button className="primary" onClick={() => onSelect("post")}>
                 اختبر فهمك <ArrowLeft size={18} />
               </button>
@@ -440,7 +478,7 @@ function ConceptLesson({
         <span className="overline">
           {lesson.title} / {route.topic + 1}
         </span>
-        <h1>{concept.title}</h1>
+        <h1>{lesson.id === 1 ? shortTitles[concept.id] : concept.title}</h1>
       </div>
       {concept.scenes.length > 0 && (
         <div
@@ -458,17 +496,40 @@ function ConceptLesson({
       )}
       {view === "idea" ? (
         <section className="concept-teaching">
-          <p className="concept-definition">{concept.definition}</p>
-          <p className="concept-teacher">{teacherExplanation(concept)}</p>
-          <div className="teaching-visual">
-            <ConceptVisual concept={concept} />
-            <aside className="everyday-example">
-              <span>
-                <Lightbulb size={18} /> من حياتنا
-              </span>
-              <p>{concept.example}</p>
-            </aside>
-          </div>
+          {lesson.id === 1 ? (
+            <>
+              <p className="nutrition-core">{concept.definition}</p>
+              <Suspense fallback={<p role="status">نجهّز الرسم…</p>}>
+                <NutritionVisual
+                  concept={concept}
+                  done={progress.activities.includes(activityIds[concept.id])}
+                  onDone={() =>
+                    patch((p) => ({
+                      ...p,
+                      activities: [
+                        ...new Set([...p.activities, activityIds[concept.id]]),
+                      ],
+                    }))
+                  }
+                  reduced={settings.reduced}
+                />
+              </Suspense>
+            </>
+          ) : (
+            <>
+              <p className="concept-definition">{concept.definition}</p>
+              <p className="concept-teacher">{teacherExplanation(concept)}</p>
+              <div className="teaching-visual">
+                <ConceptVisual concept={concept} />
+                <aside className="everyday-example">
+                  <span>
+                    <Lightbulb size={18} /> من حياتنا
+                  </span>
+                  <p>{concept.example}</p>
+                </aside>
+              </div>
+            </>
+          )}
           <ConfiguredAudio
             lesson={lesson.id}
             section={`concept.${concept.id}`}
@@ -555,22 +616,37 @@ function ConceptLesson({
           />
         </section>
       )}
-      <div className="inline-check">
-        <ConceptCheck
-          question={concept.check}
-          done={progress.conceptChecks?.includes(concept.check.id) ?? false}
-          onDone={onCheck}
-          onHint={onHint}
-        />
-      </div>
-      <details className="reference-disclosure">
-        <summary>مصدر هذا المفهوم</summary>
-        <p>
-          العلوم والحياة، الوحدة الأولى، الصفحات المطبوعة{" "}
-          {curriculum[lesson.id - 1].sourcePages}. تفاصيل المرجع وحدود الطبعة في
-          دليل المعلمة.
-        </p>
-      </details>
+      {lesson.id === 1 ? (
+        <details className="nutrition-quick-question">
+          <summary>اختبر فهمك</summary>
+          <ConceptCheck
+            narrate
+            question={concept.check}
+            done={progress.conceptChecks?.includes(concept.check.id) ?? false}
+            onDone={onCheck}
+            onHint={onHint}
+          />
+        </details>
+      ) : (
+        <div className="inline-check">
+          <ConceptCheck
+            question={concept.check}
+            done={progress.conceptChecks?.includes(concept.check.id) ?? false}
+            onDone={onCheck}
+            onHint={onHint}
+          />
+        </div>
+      )}
+      {lesson.id !== 1 && (
+        <details className="reference-disclosure">
+          <summary>مصدر هذا المفهوم</summary>
+          <p>
+            العلوم والحياة، الوحدة الأولى، الصفحات المطبوعة{" "}
+            {curriculum[lesson.id - 1].sourcePages}. تفاصيل المرجع وحدود الطبعة
+            في دليل المعلمة.
+          </p>
+        </details>
+      )}
     </>
   );
 }

@@ -178,7 +178,7 @@ export default function App() {
   ] as const;
   return (
     <div
-      className="science-app"
+      className="science-app palestinian-prototype"
       onClickCapture={(e) => interfaceClick(e.target)}
     >
       <SoundPreferences enabled={settings.sound} volume={settings.volume} />
