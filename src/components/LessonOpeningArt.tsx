@@ -2,6 +2,7 @@ import { useId } from "react";
 export function LessonOpeningArt({ lesson }: { lesson: number }) {
   const p = useId().replace(/:/g, "");
   const titles: Record<number, string> = {
+    1: "شجرة في مدرجات فلسطينية",
     2: "غذاء وشجرة وإنسان في بيئة فلسطينية",
     3: "شتلة صغيرة وشجرة كبيرة في مدرج حجري",
     4: "بركة ماء وسمكة ومجهر",

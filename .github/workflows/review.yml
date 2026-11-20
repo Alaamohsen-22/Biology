@@ -21,3 +21,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Package review build (no deployment)
+        uses: actions/upload-artifact@v4
+        with:
+          name: classroom-review-dist
+          path: dist
+          retention-days: 14

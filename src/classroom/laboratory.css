@@ -1,0 +1,851 @@
+/* Shared laboratory: no dependencies on the retired page/book layouts. */
+.simulation {
+  min-width: 0;
+}
+.simulation-v2 .section-head {
+  margin-bottom: 12px;
+}
+.simulation-v2 .section-head h2 {
+  font-size: 1.4rem;
+  margin: 0 0 6px;
+}
+.lab-objective {
+  font-size: 0.83rem;
+  color: var(--muted);
+  line-height: 1.9;
+  margin: 0;
+}
+.simulation-v2 .section-head > svg {
+  display: none;
+}
+.inquiry-note {
+  font-size: 0.8rem;
+  margin: 10px 0;
+}
+.inquiry-note summary {
+  font-weight: 400;
+  color: var(--green);
+}
+.inquiry-note label {
+  display: block;
+  font-size: 0.8rem;
+  margin-top: 12px;
+}
+.inquiry-note textarea {
+  margin-top: 8px;
+  min-height: 70px;
+}
+.segmented {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  margin: 14px 0 18px;
+  background: var(--bg);
+}
+.segmented button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 9px 12px;
+  min-height: 44px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  border-radius: 8px;
+}
+.segmented button.selected {
+  background: var(--paper);
+  color: var(--green);
+  box-shadow: 0 2px 5px #2d44270a;
+}
+.lab-workspace {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.lab-stage {
+  border: 1px solid var(--line);
+  background: #f4f6ee;
+  padding: 12px;
+  border-radius: 14px;
+  min-width: 0;
+  overflow: hidden;
+  color: #294633;
+}
+.lab-step-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 4px 2px 12px;
+}
+.lab-step-header .pill {
+  background: #fff;
+  color: #486047;
+  font-size: 0.67rem;
+}
+.lab-step-header p {
+  font-size: 0.8rem;
+  flex: 1 1 220px;
+  margin: 0;
+  color: #294633;
+  line-height: 1.9;
+}
+.play-state {
+  font-size: 0.64rem;
+  color: #58734c;
+  background: #ffffffa8;
+  padding: 3px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.play-state.running {
+  color: #236741;
+  background: #e3efda;
+}
+.lab-visual {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+}
+.scientific-scene {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+.scene-canvas {
+  max-width: 100%;
+  min-width: 0;
+}
+.scientific-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  aspect-ratio: 760/474;
+}
+.science-label {
+  font:
+    600 19px ScienceArabic,
+    Tahoma,
+    sans-serif;
+  fill: #34563d;
+  direction: rtl;
+  unicode-bidi: plaintext;
+}
+.scene-zoom {
+  background: white;
+  color: #385336;
+  border: 1px solid #d4ddcc;
+  padding: 5px 11px;
+  min-height: 38px;
+  font-size: 0.7rem;
+  margin: 0 0 7px;
+  border-radius: 8px;
+}
+.scientific-scene figcaption {
+  display: none;
+}
+.science-parts {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+.science-parts button {
+  background: #fff;
+  color: #385336;
+  font-size: 0.7rem;
+  min-height: 42px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border-color: #dce3d7;
+}
+.science-parts button[aria-pressed="true"] {
+  border-color: #699764;
+  background: #e8f1dd;
+}
+.science-parts button > span {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 0.61rem;
+  background: #edf3e6;
+  border-radius: 50%;
+}
+.part-description {
+  padding: 12px 15px;
+  background: #fff;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  line-height: 1.95;
+  color: #385336;
+  margin: 12px 0 0;
+}
+.simulation-controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  border-top: 1px solid #dbe3d5;
+  padding-top: 14px;
+  margin-top: 14px;
+}
+.simulation-controls button {
+  min-height: 44px;
+  font-size: 0.75rem;
+  padding: 9px 12px;
+  background: #fff;
+  color: #345238;
+  border-color: #d4dfcc;
+}
+.simulation-controls button.primary {
+  background: #28634a;
+  color: white;
+  border-color: #28634a;
+}
+.simulation-controls svg {
+  width: 16px;
+}
+.simulation-controls .speed {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  color: #4c6449;
+  font-size: 0.7rem;
+  margin-inline-start: auto;
+}
+.speed select {
+  font-size: 0.75rem;
+  min-height: 42px;
+  padding: 5px 8px;
+  width: 70px;
+  color: #345238;
+  background: white;
+  border-color: #d4dfcc;
+}
+.experiment-tools {
+  min-width: 0;
+}
+.experiment-tools .section-head {
+  align-items: center;
+  margin-bottom: 12px;
+}
+.experiment-tools .section-head h3 {
+  font-size: 0.9rem;
+  margin: 0;
+}
+.experiment-tools .pill {
+  background: transparent;
+  font-size: 0.68rem;
+  color: var(--muted);
+  padding: 0;
+}
+.lab-tools {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+.lab-tools button {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 10px;
+  min-height: 64px;
+  font-size: 0.75rem;
+  text-align: right;
+  padding: 11px 13px;
+  background: var(--bg);
+  border-color: var(--line);
+}
+.lab-tools svg {
+  width: 37px;
+  height: 37px;
+  flex-shrink: 0;
+}
+.lab-tools .used-tool {
+  border-color: #87ab74;
+  background: var(--soft);
+}
+.lab-tools b {
+  margin-inline-start: auto;
+  color: var(--green);
+  font-size: 0.75rem;
+}
+.experiment-tools > h3 {
+  font-size: 0.9rem;
+  margin: 20px 0 10px;
+}
+.variables {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+.variables > label {
+  display: block;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  min-width: 0;
+}
+.variables label > span {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 8px;
+  font-size: 0.77rem;
+  line-height: 1.9;
+}
+.variables b {
+  font-size: 0.72rem;
+  color: var(--green);
+  white-space: nowrap;
+}
+.variables input[type="range"] {
+  width: 100%;
+  margin-top: 5px;
+}
+.variable-choices {
+  display: flex;
+  gap: 5px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.variable-choices button {
+  flex: 1;
+  min-height: 40px;
+  font-size: 0.67rem;
+  padding: 6px 8px;
+  white-space: normal;
+  border-color: var(--line);
+}
+.variable-choices button[aria-pressed="true"] {
+  background: #28634a;
+  color: white;
+  border-color: #28634a;
+}
+.lab-comparison-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+  margin: 18px 0 5px;
+}
+.lab-comparison-controls button {
+  font-size: 0.75rem;
+  min-height: 44px;
+}
+.lab-comparison-controls small {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+.lab-comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  background: var(--soft);
+  border-radius: 12px;
+  margin: 18px 0;
+  padding: 16px;
+}
+.lab-comparison > div {
+  min-width: 0;
+}
+.lab-comparison h3 {
+  font-size: 0.9rem;
+}
+.lab-comparison p,
+.lab-comparison li {
+  font-size: 0.75rem;
+  line-height: 1.9;
+}
+.lab-comparison ul {
+  padding-inline-start: 20px;
+  margin: 8px 0;
+}
+.lab-hint {
+  border: 0;
+  background: transparent !important;
+  padding: 6px 0;
+  color: var(--green);
+  font-size: 0.73rem;
+  margin-top: 8px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.lab-progress {
+  height: 4px;
+  margin: 12px 0;
+  display: block;
+}
+.experiment-information {
+  font-size: 0.73rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.experiment-information summary {
+  font-weight: 400;
+}
+.experiment-information p {
+  font-size: 0.75rem;
+  line-height: 1.95;
+}
+.lab-result {
+  background: var(--soft);
+  padding: 14px 16px;
+  font-size: 0.87rem;
+  border-radius: 10px;
+  color: var(--green);
+  margin: 15px 0;
+}
+.lab-instruction {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 12px 0;
+}
+.experiment-notes {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  margin-top: 15px;
+}
+.experiment-notes h3 {
+  font-size: 0.93rem;
+  margin-bottom: 8px;
+}
+.experiment-notes p {
+  font-size: 0.8rem;
+  line-height: 1.95;
+  margin-bottom: 12px;
+}
+.experiment-notes label {
+  display: block;
+  font-size: 0.85rem;
+  margin: 15px 0 12px;
+}
+.experiment-notes select {
+  font-size: 0.82rem;
+  margin-top: 8px;
+  max-width: 100%;
+}
+.experiment-notes button {
+  font-size: 0.78rem;
+}
+.lab-observations {
+  margin-bottom: 15px;
+}
+.lab-observations button {
+  font-size: 0.8rem;
+}
+.experiment-notes .muted {
+  font-size: 0.73rem;
+}
+.ordering-feedback {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  margin-top: 15px;
+}
+.ordering-feedback:empty {
+  display: none;
+}
+.ordering-feedback.correct {
+  color: var(--green);
+}
+.ordering-feedback.wrong {
+  color: #956d34;
+}
+.ordering-feedback > svg {
+  width: 30px;
+}
+.ordering-celebration {
+  position: relative;
+  width: 100%;
+  height: 80px;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ordering-celebration > i {
+  position: absolute;
+  left: var(--x);
+  top: 0;
+  color: var(--color);
+  animation: lab-spark 2.4s ease-out both;
+  animation-delay: var(--delay);
+}
+.ordering-celebration > i > span {
+  display: block;
+  width: 8px;
+  height: 14px;
+  background: currentColor;
+  border-radius: 2px;
+}
+.ordering-celebration.still > i {
+  animation: none;
+  top: 20px;
+}
+.scene-expanded {
+  position: fixed !important;
+  inset: 12px auto auto 50% !important;
+  transform: translateX(-50%);
+  width: min(1100px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  z-index: 90;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  box-shadow: 0 0 0 100vmax #14291dd9;
+}
+.scene-expanded .scene-zoom {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.scene-expanded .scene-canvas {
+  overflow: auto;
+  max-height: 70dvh;
+  overscroll-behavior: contain;
+  direction: ltr;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  touch-action: pan-x pan-y;
+}
+.scene-expanded .scientific-svg {
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+}
+.detail-zoom-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 5px 0 12px;
+  font-size: 0.8rem;
+}
+.detail-zoom-controls button {
+  font-size: 0.75rem;
+  min-height: 44px;
+}
+.detail-zoom-controls small {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+.scene-expanded .science-parts {
+  padding-bottom: 10px;
+}
+.scene-expanded .part-description {
+  border: 1px solid var(--line);
+}
+@keyframes lab-spark {
+  0% {
+    opacity: 1;
+    transform: translateY(65px) rotate(0);
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-35px) rotate(var(--turn));
+  }
+}
+@media (min-width: 1280px) {
+  .lab-workspace.interactive {
+    grid-template-columns: minmax(0, 1fr) 205px;
+    align-items: start;
+  }
+  .lab-workspace.interactive .lab-tools,
+  .lab-workspace.interactive .variables {
+    grid-template-columns: 1fr;
+  }
+  .lab-workspace.interactive .experiment-tools .section-head {
+    display: block;
+  }
+  .lab-workspace.interactive .lab-tools button {
+    min-height: 60px;
+    padding: 9px;
+  }
+  .lab-workspace.interactive .lab-tools svg {
+    width: 32px;
+    height: 32px;
+  }
+  .lab-workspace.interactive .experiment-tools .pill {
+    font-size: 0.62rem;
+  }
+  .lab-workspace.interactive .variables > label {
+    padding: 10px;
+  }
+  .lab-workspace.interactive .variables label > span {
+    font-size: 0.71rem;
+  }
+}
+@media (max-width: 900px) {
+  .lab-tools {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lab-tools button {
+    font-size: 0.73rem;
+    padding: 10px;
+  }
+  .lab-tools svg {
+    width: 31px;
+    height: 31px;
+  }
+  .variables {
+    grid-template-columns: 1fr;
+  }
+  .lab-step-header p {
+    flex-basis: 170px;
+  }
+  .play-state {
+    display: none;
+  }
+}
+@media (max-width: 560px) {
+  .simulation-v2 .section-head h2 {
+    font-size: 1.2rem;
+  }
+  .lab-objective {
+    font-size: 0.77rem;
+  }
+  .inquiry-note summary {
+    font-size: 0.73rem;
+  }
+  .segmented {
+    gap: 4px;
+    margin: 12px 0 15px;
+    padding: 4px;
+  }
+  .segmented button {
+    font-size: 0.72rem;
+    gap: 5px;
+    padding: 8px 6px;
+  }
+  .segmented button > svg {
+    width: 16px;
+  }
+  .lab-stage {
+    padding: 8px;
+    margin-inline: -5px;
+    border-radius: 10px;
+  }
+  .lab-step-header {
+    gap: 7px;
+    padding-bottom: 10px;
+  }
+  .lab-step-header p {
+    font-size: 0.75rem;
+    flex: 1 1 160px;
+    line-height: 1.9;
+  }
+  .lab-step-header .pill {
+    font-size: 0.63rem;
+    padding: 4px 7px;
+  }
+  .scene-zoom {
+    font-size: 0.67rem;
+    min-height: 40px;
+  }
+  .science-parts {
+    gap: 5px;
+  }
+  .science-parts button {
+    font-size: 0.7rem;
+    padding: 5px 8px;
+    min-height: 42px;
+    gap: 5px;
+  }
+  .science-parts button > span {
+    width: 16px;
+    height: 16px;
+    font-size: 0.58rem;
+  }
+  .part-description {
+    font-size: 0.76rem;
+    padding: 11px;
+  }
+  .simulation-controls {
+    gap: 6px;
+    padding-top: 11px;
+    margin-top: 12px;
+  }
+  .simulation-controls button {
+    flex: 1 1 40%;
+    min-height: 46px;
+    padding: 9px;
+    font-size: 0.74rem;
+    gap: 6px;
+  }
+  .simulation-controls .speed {
+    font-size: 0.68rem;
+  }
+  .speed select {
+    min-height: 44px;
+    font-size: 0.73rem;
+    width: 70px;
+  }
+  .lab-tools {
+    gap: 8px;
+  }
+  .lab-tools button {
+    min-height: 66px;
+    font-size: 0.72rem;
+    gap: 7px;
+    padding: 10px 8px;
+    line-height: 1.9;
+  }
+  .lab-tools svg {
+    width: 28px;
+    height: 28px;
+  }
+  .experiment-tools .section-head h3 {
+    font-size: 0.85rem;
+  }
+  .experiment-tools .section-head .pill {
+    font-size: 0.61rem;
+  }
+  .variables > label {
+    padding: 12px;
+  }
+  .variables label > span {
+    font-size: 0.77rem;
+  }
+  .variables b {
+    font-size: 0.7rem;
+  }
+  .variable-choices button {
+    font-size: 0.68rem;
+    min-height: 44px;
+  }
+  .lab-comparison-controls {
+    gap: 7px;
+    margin-top: 15px;
+  }
+  .lab-comparison-controls button {
+    flex: 1 1 100%;
+    font-size: 0.73rem;
+  }
+  .lab-comparison {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 22px;
+  }
+  .lab-hint {
+    font-size: 0.71rem;
+    min-height: 44px;
+  }
+  .experiment-information summary {
+    font-size: 0.7rem;
+  }
+  .lab-result {
+    font-size: 0.81rem;
+    padding: 12px;
+  }
+  .experiment-notes p {
+    font-size: 0.78rem;
+  }
+  .experiment-notes select {
+    font-size: 0.8rem;
+  }
+  .experiment-notes h3 {
+    font-size: 0.87rem;
+  }
+  .scene-expanded {
+    inset: 8px auto auto 50% !important;
+    width: calc(100vw - 16px);
+    padding: 10px;
+    border-radius: 12px;
+  }
+  .detail-zoom-controls {
+    gap: 6px;
+    font-size: 0.72rem;
+  }
+  .detail-zoom-controls button {
+    font-size: 0.7rem;
+    padding: 8px;
+  }
+  .detail-zoom-controls small {
+    font-size: 0.66rem;
+  }
+  .ordering-feedback {
+    font-size: 0.8rem;
+  }
+  .ordering-feedback > svg {
+    width: 25px;
+  }
+}
+@media (max-width: 350px) {
+  .lab-tools {
+    grid-template-columns: 1fr;
+  }
+  .segmented {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .simulation-controls button {
+    flex-basis: 100%;
+  }
+  .lab-stage {
+    margin-inline: -3px;
+  }
+  .lab-step-header p {
+    flex-basis: 100%;
+  }
+}
+[data-reduced="true"] .ordering-celebration > i {
+  animation: none;
+  opacity: 0.8;
+  top: 20px;
+}
+@media print {
+  .simulation-controls,
+  .segmented,
+  .lab-tools,
+  .lab-comparison-controls,
+  .scene-zoom,
+  .ordering-celebration {
+    display: none !important;
+  }
+  .lab-workspace.interactive {
+    display: block;
+  }
+  .lab-stage {
+    break-inside: avoid;
+  }
+}
+.lesson-canvas:has(.concept-laboratory) .concept-title h1 {
+  font-size: 1.65rem;
+  margin-bottom: 15px;
+}
+.concept-laboratory .simulation-v2 .section-head > .eyebrow,
+.concept-laboratory .simulation-v2 .section-head .eyebrow {
+  display: none;
+}
+.concept-laboratory .simulation-v2 .section-head h2 {
+  font-size: 1.15rem;
+}
+.concept-laboratory .idea-reminder {
+  margin: 0 0 6px;
+}
+.concept-laboratory .idea-reminder summary {
+  min-height: 36px;
+  padding: 6px 0;
+}
+@media (max-width: 560px) {
+  .lesson-canvas:has(.concept-laboratory) .concept-title h1 {
+    font-size: 1.4rem;
+  }
+  .concept-laboratory .simulation-v2 .section-head h2 {
+    font-size: 1.05rem;
+  }
+}
