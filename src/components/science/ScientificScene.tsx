@@ -228,6 +228,7 @@ export function ScientificScene({
 }) {
   const prefix = useId().replace(/:/g, "");
   const [expanded, setExpanded] = useState(false);
+  const [magnification, setMagnification] = useState(1);
   const zoomButton = useRef<HTMLButtonElement>(null);
   const wasExpanded = useRef(false);
   useEffect(() => {
@@ -310,63 +311,113 @@ export function ScientificScene({
         aria-expanded={expanded}
         onClick={() => {
           setExpanded(!expanded);
+          setMagnification(1);
           sound.play("tool");
         }}
       >
         {expanded ? "إغلاق التكبير" : "تكبير الرسم"}
       </button>
-      <svg
-        viewBox="0 0 760 474"
-        role="img"
-        aria-label={`${info.title} — تقدم ${Math.round(t * 100)}%`}
-        className="scientific-svg"
+      {expanded && (
+        <div className="detail-zoom-controls" aria-label="تكبير تفاصيل الرسم">
+          <button
+            disabled={magnification >= 2.5}
+            onClick={() => {
+              setMagnification((s) => Math.min(2.5, s + 0.5));
+              sound.play("tool");
+            }}
+          >
+            تكبير التفاصيل +
+          </button>
+          <span>{Math.round(magnification * 100)}%</span>
+          <button
+            disabled={magnification <= 1}
+            onClick={() => {
+              setMagnification((s) => Math.max(1, s - 0.5));
+              sound.play("tool");
+            }}
+          >
+            تصغير التفاصيل −
+          </button>
+          {magnification > 1 && <small>حرّك الرسم لاستكشاف أجزائه.</small>}
+        </div>
+      )}
+      <div
+        className="scene-canvas"
+        tabIndex={expanded && magnification > 1 ? 0 : undefined}
+        aria-label={expanded ? "مساحة الرسم القابلة للتحريك" : undefined}
       >
-        <title>{info.title}</title>
-        <defs>
-          <Materials prefix={prefix} />
-          <linearGradient id={`${prefix}-leaf`} x2="1" y2="1">
-            <stop stopColor="#a0b97f" />
-            <stop offset="1" stopColor="#5f8b6c" />
-          </linearGradient>
-          <linearGradient id={`${prefix}-glass`} x2="1" y2="1">
-            <stop stopColor="#f8fcfa" stopOpacity=".8" />
-            <stop offset=".5" stopColor="#c5dfda" stopOpacity=".18" />
-            <stop offset="1" stopColor="#99bdb5" stopOpacity=".45" />
-          </linearGradient>
-          <radialGradient id={`${prefix}-kidney`}>
-            <stop stopColor="#d5a294" />
-            <stop offset="1" stopColor="#b47372" />
-          </radialGradient>
-          <radialGradient id={`${prefix}-cell`}>
-            <stop stopColor="#e0edce" />
-            <stop offset="1" stopColor="#9ebfa6" />
-          </radialGradient>
-          <marker
-            id={`${prefix}-arrow`}
-            viewBox="0 0 10 10"
-            refX="8"
-            refY="5"
-            markerWidth="5"
-            markerHeight="5"
-            orient="auto-start-reverse"
-          >
-            <path d="M0 0l10 5-10 5Z" fill="#799884" />
-          </marker>
-          <pattern
-            id={`${prefix}-grid`}
-            width="28"
-            height="28"
-            patternUnits="userSpaceOnUse"
-          >
-            <circle cx="1" cy="1" r=".9" fill="#91ab91" opacity=".16" />
-          </pattern>
-        </defs>
-        <rect width="760" height="474" rx="25" fill={`url(#${prefix}-light)`} />
-        <rect width="760" height="474" rx="25" fill={`url(#${prefix}-grid)`} />
-        <g className="science-model" filter={`url(#${prefix}-depth)`}>
-          {art}
-        </g>
-      </svg>
+        <svg
+          style={
+            expanded && magnification > 1
+              ? {
+                  width: `${magnification * 100}%`,
+                  maxWidth: "none",
+                  maxHeight: "none",
+                }
+              : undefined
+          }
+          viewBox="0 0 760 474"
+          role="img"
+          aria-label={`${info.title} — تقدم ${Math.round(t * 100)}%`}
+          className="scientific-svg"
+        >
+          <title>{info.title}</title>
+          <defs>
+            <Materials prefix={prefix} />
+            <linearGradient id={`${prefix}-leaf`} x2="1" y2="1">
+              <stop stopColor="#a0b97f" />
+              <stop offset="1" stopColor="#5f8b6c" />
+            </linearGradient>
+            <linearGradient id={`${prefix}-glass`} x2="1" y2="1">
+              <stop stopColor="#f8fcfa" stopOpacity=".8" />
+              <stop offset=".5" stopColor="#c5dfda" stopOpacity=".18" />
+              <stop offset="1" stopColor="#99bdb5" stopOpacity=".45" />
+            </linearGradient>
+            <radialGradient id={`${prefix}-kidney`}>
+              <stop stopColor="#d5a294" />
+              <stop offset="1" stopColor="#b47372" />
+            </radialGradient>
+            <radialGradient id={`${prefix}-cell`}>
+              <stop stopColor="#e0edce" />
+              <stop offset="1" stopColor="#9ebfa6" />
+            </radialGradient>
+            <marker
+              id={`${prefix}-arrow`}
+              viewBox="0 0 10 10"
+              refX="8"
+              refY="5"
+              markerWidth="5"
+              markerHeight="5"
+              orient="auto-start-reverse"
+            >
+              <path d="M0 0l10 5-10 5Z" fill="#799884" />
+            </marker>
+            <pattern
+              id={`${prefix}-grid`}
+              width="28"
+              height="28"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="1" cy="1" r=".9" fill="#91ab91" opacity=".16" />
+            </pattern>
+          </defs>
+          <rect
+            width="760"
+            height="474"
+            rx="25"
+            fill={`url(#${prefix}-light)`}
+          />
+          <rect
+            width="760"
+            height="474"
+            rx="25"
+            fill={`url(#${prefix}-grid)`}
+          />
+          <g className="science-model" filter={`url(#${prefix}-depth)`}>
+            {art}
+          </g>
+        </svg>
+      </div>
       {!compact && (
         <>
           <figcaption>

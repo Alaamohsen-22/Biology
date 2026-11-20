@@ -1,3 +1,5 @@
+import assets from "./data/assets.json";
+import { LearningHub } from "./components/LearningHub";
 import { LessonReader } from "./components/LessonReader";
 import { conceptCheckIds, validReadingLocation } from "./engine/lessonFlow";
 import { PalestinianGuide } from "./components/PalestinianGuide";
@@ -9,21 +11,18 @@ import {
   BookOpen,
   Trophy,
   Settings,
+  Volume2,
+  VolumeX,
   HelpCircle,
   ArrowLeft,
-  Lock,
-  Star,
-  CheckCircle2,
   Flag,
   Menu,
   X,
   Leaf,
-  Home,
+  Lock,
   Download,
   Upload,
   Printer,
-  ChevronLeft,
-  Compass,
 } from "lucide-react";
 import { lessons, bank, finalBank, alignment } from "./data/lessons";
 import {
@@ -32,16 +31,11 @@ import {
   parseProgress,
   isMastered,
   lessonCompletion,
-  support,
   type Progress,
   type LessonProgress,
 } from "./engine/progress";
-import { IslandArt } from "./components/Island";
-import { TeacherAudio } from "./components/Audio";
-import { AmbientMusic } from "./components/AmbientMusic";
 import { Quiz } from "./components/Quiz";
 
-import assets from "./data/assets.json";
 import {
   SoundPreferences,
   SoundNotice,
@@ -263,6 +257,15 @@ export default function App() {
         </nav>
         <div className="header-actions">
           <button
+            className="icon-button quick-sound"
+            aria-label={settings.sound ? "كتم الصوت" : "تشغيل الصوت"}
+            aria-pressed={!settings.sound}
+            data-sound="handled"
+            onClick={() => setSettings((s) => ({ ...s, sound: !s.sound }))}
+          >
+            {settings.sound ? <Volume2 size={20} /> : <VolumeX size={20} />}
+          </button>
+          <button
             className="icon-button"
             aria-label="إعدادات العرض والمعلمة"
             onClick={() => setModal(true)}
@@ -297,137 +300,22 @@ export default function App() {
             </div>
           )}
           {page === "cover" && (
-            <>
-              <div className="cover">
-                <div className="cover-copy">
-                  <div className="eyebrow">
-                    <span className="flag-mark" /> المنهاج الفلسطيني · الصف
-                    السابع الأساسي
-                  </div>
-                  <h1>
-                    حديقة
-                    <br />
-                    <em>أسرار الحياة</em>
-                    <br />
-                    <span>كل كائن حيّ… يخفي سرًّا.</span>
-                  </h1>
-                  <p className="cover-description">
-                    أهلًا بك في <b>حديقة أسرار الحياة</b>.<br />
-                    سبع محطات، تجارب بين يديك، ومغامرة تبدأ بسؤال.
-                  </p>
-                  <div className="cover-actions">
-                    <button
-                      className="primary large"
-                      onClick={() => go(progress.name ? "map" : "name")}
-                    >
-                      ابدأ المغامرة
-                      <ArrowLeft size={20} />
-                    </button>
-                    {reading.saved && validReadingLocation(reading) && (
-                      <button
-                        className="text-button"
-                        onClick={() => {
-                          setActive(reading.lesson);
-                          setTab(reading.index);
-                          go("lesson");
-                        }}
-                      >
-                        متابعة التعلم · {lessons[reading.lesson - 1].title}
-                      </button>
-                    )}
-                    <button className="text-button" onClick={() => go("guide")}>
-                      كيف نخوض المغامرة؟
-                      <BookOpen size={18} />
-                    </button>
-                  </div>
-                  <p className="slogan">اكتشف، جرّب، تعلّم، وانطلق!</p>
-                  <div className="teacher-signature">
-                    <div className="portrait-frame">
-                      {assets.teacherPortrait ? (
-                        <img
-                          src={
-                            (import.meta.env?.BASE_URL ?? "/Biology/") +
-                            assets.teacherPortrait
-                          }
-                          alt="المعلمة آلاء محسن كلاب"
-                        />
-                      ) : (
-                        <Leaf aria-label="إطار الزيتون المخصص للصورة الأصلية" />
-                      )}
-                    </div>
-                    <div>
-                      <small>إعداد المعلمة</small>
-                      <b>أ. آلاء محسن كلاب</b>
-                      {!assets.teacherPortrait && (
-                        <small>الصورة الأصلية بانتظار الإضافة</small>
-                      )}
-                    </div>
-                  </div>
-                  <TeacherAudio
-                    text="مرحبًا بك في حديقة أسرار الحياة! سنكتشف خصائص الكائنات الحية بالملاحظة والتجريب والتفكير."
-                    enabled={settings.sound}
-                  />
-                  <AmbientMusic enabled={settings.sound} />
-                </div>
-                <div className="cover-art">
-                  <div className="floating-label top">
-                    <span>✦</span> مغامرة علمية بروح فلسطينية
-                  </div>
-                  <IslandArt />
-                  <div className="floating-label bottom">
-                    <span>🌱</span>
-                    <div>
-                      <b>من بذرة صغيرة… إلى أسرار كبيرة</b>
-                      <small>الوحدة الأولى · خصائص الكائنات الحية</small>
-                    </div>
-                  </div>
-                  <span className="art-coordinate">PALESTINE · 31.9° N</span>
-                </div>
-              </div>
-              <div className="intro-strip">
-                <div>
-                  <b>٧</b>
-                  <span>محطات للاستكشاف</span>
-                </div>
-                <div>
-                  <FlaskIcon />
-                  <span>شاهد، ثم جرّب بنفسك</span>
-                </div>
-                <div>
-                  <Star />
-                  <span>إتقان حقيقي… وإنجاز يستحق</span>
-                </div>
-                <div>
-                  <Leaf />
-                  <span>تعلم من بيئتنا الفلسطينية</span>
-                </div>
-              </div>
-              <section className="start-section">
-                <div>
-                  <span className="eyebrow">مسار واحد، اكتشافات كثيرة</span>
-                  <h2>ماذا يجعل الكائن حيًّا؟</h2>
-                </div>
-                <p>
-                  من الغذاء الذي يمنحه الطاقة، إلى الاستجابة والتكاثر… كل محطة
-                  تكشف جزءًا من حكاية الحياة.
-                </p>
-              </section>
-              <div className="preview-stations">
-                {lessons.map((l) => (
-                  <button
-                    key={l.id}
-                    onClick={() =>
-                      progress.name ? openLesson(l.id) : go("name")
-                    }
-                  >
-                    <span style={{ background: l.color + "20" }}>{l.icon}</span>
-                    <small>المحطة {l.id}</small>
-                    <b>{l.title}</b>
-                    <ChevronLeft size={17} />
-                  </button>
-                ))}
-              </div>
-            </>
+            <LearningHub
+              sound={settings.sound && settings.volume > 0}
+              progress={progress}
+              mastered={mastered.map((l) => l.id)}
+              threshold={settings.threshold}
+              welcome
+              reading={reading}
+              onStart={() => go(progress.name ? "map" : "name")}
+              onLesson={openLesson}
+              onResume={() => {
+                setActive(reading.lesson);
+                setTab(reading.index);
+                go("lesson");
+              }}
+              onGuide={() => go("guide")}
+            />
           )}
           {page === "name" && (
             <section className="name-card card">
@@ -470,126 +358,22 @@ export default function App() {
             <IslandSound enabled={settings.sound && settings.volume > 0} />
           )}
           {page === "map" && (
-            <>
-              <header className="page-heading split">
-                <div>
-                  <span className="eyebrow">خريطة المستكشف</span>
-                  <h1>
-                    أهلًا {progress.name}،<br />
-                    أي سرّ سنكتشف اليوم؟
-                  </h1>
-                  <p>
-                    كل المحطات متاحة منذ البداية. اختر ما تود استكشافه بحرية.
-                  </p>
-                </div>
-                <div className="progress-badge">
-                  <Compass size={32} />
-                  <strong>
-                    {mastered.length}
-                    <small> / ٧</small>
-                  </strong>
-                  <span>محطات متقنة</span>
-                </div>
-              </header>
-              <div className="map-layout">
-                <div className="adventure-map">
-                  <IslandArt compact />
-                  <svg
-                    className="map-path"
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M23 28Q53 12 72 29T55 50T24 65T64 78T76 53"
-                      fill="none"
-                      stroke="#fff7d6"
-                      strokeWidth="1"
-                      strokeDasharray="2 1"
-                    />
-                  </svg>
-                  {lessons.map((l, i) => {
-                    const positions = [
-                      [23, 28],
-                      [48, 22],
-                      [72, 29],
-                      [60, 49],
-                      [24, 65],
-                      [50, 78],
-                      [76, 53],
-                    ];
-                    const done = mastered.some((m) => m.id === l.id);
-                    return (
-                      <button
-                        className={`map-pin ${done ? "done" : ""}`}
-                        style={{
-                          left: `${positions[i][0]}%`,
-                          top: `${positions[i][1]}%`,
-                        }}
-                        key={l.id}
-                        onClick={() => openLesson(l.id)}
-                        aria-label={`المحطة ${l.id} ${l.title}: ${done ? "متقنة" : "متاحة"}`}
-                      >
-                        <span>{l.icon}</span>
-                        <b>
-                          {l.id}. {l.title}
-                        </b>
-                        <small>
-                          {done
-                            ? "★★★"
-                            : `${lessonCompletion(
-                                progress.lessons[l.id],
-                                l.scenes.map((s) => s.id),
-                                settings.threshold,
-                                conceptCheckIds(l.id),
-                              )}%`}
-                        </small>
-                      </button>
-                    );
-                  })}
-                </div>
-                <aside className="map-sidebar">
-                  <h2>دفتر الرحلة</h2>
-                  <div className="meter">
-                    <i style={{ width: `${(mastered.length / 7) * 100}%` }} />
-                  </div>
-                  <p>
-                    {Math.round((mastered.length / 7) * 100)}% من الدروس متقنة
-                  </p>
-                  {lessons.map((l) => (
-                    <button
-                      className="station-list-row"
-                      key={l.id}
-                      onClick={() => openLesson(l.id)}
-                    >
-                      <span>{l.icon}</span>
-                      <div>
-                        <b>{l.title}</b>
-                        <small>
-                          {l.place} ·{" "}
-                          {lessonCompletion(
-                            progress.lessons[l.id],
-                            l.scenes.map((s) => s.id),
-                            settings.threshold,
-                            conceptCheckIds(l.id),
-                          )}
-                          %
-                        </small>
-                      </div>
-                      {mastered.some((m) => m.id === l.id) ? (
-                        <CheckCircle2 size={18} />
-                      ) : (
-                        <ChevronLeft size={18} />
-                      )}
-                    </button>
-                  ))}
-                  <p className="hint">
-                    معيار الإتقان {settings.threshold}%، مع تنفيذ التجارب وتقويم
-                    المفاهيم.
-                  </p>
-                </aside>
-              </div>
-            </>
+            <LearningHub
+              sound={settings.sound && settings.volume > 0}
+              progress={progress}
+              mastered={mastered.map((l) => l.id)}
+              threshold={settings.threshold}
+              welcome={false}
+              reading={reading}
+              onStart={() => openLesson(1)}
+              onLesson={openLesson}
+              onResume={() => {
+                setActive(reading.lesson);
+                setTab(reading.index);
+                go("lesson");
+              }}
+              onGuide={() => go("guide")}
+            />
           )}
           {page === "lesson" && (
             <LessonReader
@@ -901,9 +685,6 @@ export default function App() {
       )}
     </div>
   );
-}
-function FlaskIcon() {
-  return <span aria-hidden="true">⚗</span>;
 }
 function Locked({
   title,

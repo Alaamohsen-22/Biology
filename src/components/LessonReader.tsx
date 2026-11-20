@@ -157,9 +157,21 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
             العودة إلى الجزيرة
           </button>
           <h1>
+            <span className="eyebrow">الوحدة الأولى / الدرس {lesson.id}</span>
             {lesson.icon} {lesson.title}
           </h1>
-          <span className="eyebrow">{lesson.place}</span>
+          <div className="lesson-achievement">
+            <span>{lesson.place}</span>
+            <small>
+              {progress.conceptChecks?.length ?? 0} / {data.topics.length}{" "}
+              مفاهيم متقنة
+            </small>
+            <progress
+              aria-label="إتقان مفاهيم الدرس"
+              max={data.topics.length}
+              value={progress.conceptChecks?.length ?? 0}
+            />
+          </div>
         </header>
         <button
           className="lesson-menu-toggle"
@@ -183,6 +195,34 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
             data-testid="classroom-content"
             key={current.id}
           >
+            {concept && (
+              <nav className="concept-path" aria-label="مسار المفهوم">
+                {pages.map((part, i) =>
+                  part.concept === current.concept ? (
+                    <button
+                      key={part.id}
+                      aria-current={i === index ? "step" : undefined}
+                      onClick={() => go(i)}
+                      data-sound="handled"
+                    >
+                      {part.kind === "explain" ? (
+                        <BookOpen size={17} />
+                      ) : part.kind === "check" ? (
+                        <CheckCircle2 size={17} />
+                      ) : (
+                        <FlaskConical size={17} />
+                      )}
+                      {part.kind === "explain"
+                        ? "افهم الفكرة"
+                        : part.kind === "check"
+                          ? "تحقق من فهمك"
+                          : lesson.scenes.find((s) => s.id === part.scene)
+                              ?.title}
+                    </button>
+                  ) : null,
+                )}
+              </nav>
+            )}
             {current.kind !== "intro" && (
               <div className="classroom-topic-heading">
                 <Icon size={20} />
@@ -490,15 +530,28 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
                     <ArrowRight size={18} />
                     السابق
                   </button>
-                  <span>
+                  <span
+                    className="lesson-position"
+                    aria-label={`موضعك في الدرس ${index + 1} من ${pages.length}`}
+                  >
                     {index + 1} / {pages.length}
                   </span>
                   {index < pages.length - 1 && (
                     <button
                       className="primary embroidered-nav next"
+                      aria-label="التالي"
                       onClick={next}
                     >
-                      التالي
+                      <span>
+                        التالي
+                        <small>
+                          {pages[index + 1]?.kind === "experiment"
+                            ? "إلى التجربة"
+                            : pages[index + 1]?.kind === "check"
+                              ? "تحقق من فهمك"
+                              : pages[index + 1]?.title}
+                        </small>
+                      </span>
                       <ArrowLeft size={18} />
                     </button>
                   )}
