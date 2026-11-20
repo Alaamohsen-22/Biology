@@ -1,157 +1,105 @@
-import assets from "./data/assets.json";
-import { LearningHub } from "./components/LearningHub";
-import { LessonReader } from "./components/LessonReader";
-import { conceptCheckIds, validReadingLocation } from "./engine/lessonFlow";
-import { PalestinianGuide } from "./components/PalestinianGuide";
-import { IslandSound } from "./components/IslandSound";
-import { useDraft } from "./engine/drafts";
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import {
-  Map,
-  BookOpen,
-  Trophy,
+  lessonDestination,
+  routeFromHash,
+  routeHash,
+} from "./classroom/router";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import {
+  Leaf,
+  Home as HomeIcon,
+  ChartNoAxesColumn,
+  HelpCircle,
   Settings,
   Volume2,
   VolumeX,
-  HelpCircle,
   ArrowLeft,
-  Flag,
-  Menu,
-  X,
-  Leaf,
-  Lock,
-  Download,
-  Upload,
   Printer,
 } from "lucide-react";
-import { lessons, bank, finalBank, alignment } from "./data/lessons";
+import { Home } from "./classroom/Home";
+import { LessonWorkspace } from "./classroom/LessonWorkspace";
+import { ProgressView } from "./classroom/ProgressView";
+import { HelpView } from "./classroom/HelpView";
+import { SettingsDialog } from "./classroom/SettingsDialog";
 import {
-  initialProgress,
+  home,
+  readSettings,
+  readProgress,
+  readLocation,
+  PROGRESS_KEY,
+  SETTINGS_KEY,
+  LOCATION_KEY,
+  type Destination,
+} from "./classroom/storage";
+import { lessons, finalBank } from "./data/lessons";
+import {
   emptyLesson,
-  parseProgress,
   isMastered,
-  lessonCompletion,
-  type Progress,
   type LessonProgress,
 } from "./engine/progress";
+import { conceptCheckIds } from "./engine/lessonFlow";
 import { Quiz } from "./components/Quiz";
-
 import {
   SoundPreferences,
   SoundNotice,
-  SoundSettings,
   interfaceClick,
+  useSound,
 } from "./components/SoundSystem";
-type SettingsData = {
-  dark: boolean;
-  contrast: boolean;
-  reduced: boolean;
-  font: number;
-  sound: boolean;
-  volume: number;
-  threshold: number;
-};
-const SETTINGS = "life-island-settings-v1",
-  SAVE = "life-island-progress-v1";
-const defaultSettings: SettingsData = {
-  dark: false,
-  contrast: false,
-  reduced: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-  font: 100,
-  sound: true,
-  volume: 70,
-  threshold: 70,
-};
-function getProgress() {
-  try {
-    const raw = localStorage.getItem(SAVE);
-    return raw ? parseProgress(JSON.parse(raw)) : initialProgress();
-  } catch {
-    return initialProgress();
-  }
-}
-function getSettings() {
-  try {
-    const r = JSON.parse(localStorage.getItem(SETTINGS) || "null");
-    if (!r) return defaultSettings;
-    return {
-      ...defaultSettings,
-      dark: r.dark === true,
-      contrast: r.contrast === true,
-      reduced:
-        typeof r.reduced === "boolean" ? r.reduced : defaultSettings.reduced,
-      font: [90, 100, 110, 120, 130].includes(r.font) ? r.font : 100,
-      sound: r.sound !== false,
-      volume:
-        typeof r.volume === "number" && r.volume >= 0 && r.volume <= 100
-          ? r.volume
-          : 70,
-      threshold:
-        typeof r.threshold === "number" &&
-        r.threshold >= 50 &&
-        r.threshold <= 100
-          ? r.threshold
-          : 70,
-    };
-  } catch {
-    return defaultSettings;
-  }
-}
+import { TeacherAudio } from "./components/Audio";
+import { AmbientMusic } from "./components/AmbientMusic";
+import { useDraft } from "./engine/drafts";
+import audio from "./data/audio.json";
 export default function App() {
-  const [progress, setProgress] = useState<Progress>(getProgress);
-  const [settings, setSettings] = useState<SettingsData>(getSettings);
-  const [page, setPage] = useState("cover");
-  const [active, setActive] = useState(1);
-  const [tab, setTab] = useState(0);
-  const [reading, setReading] = useDraft("concept-book-location-v1", {
-    lesson: 1,
-    index: 0,
-    saved: false,
-  });
+  const [progress, setProgress] = useState(readProgress),
+    [settings, setSettings] = useState(readSettings),
+    [route, setRoute] = useState<Destination>(() => routeFromHash()),
+    [resume, setResume] = useState(readLocation),
+    [modal, setModal] = useState(false),
+    [notice, setNotice] = useState("");
+  const content = useRef<HTMLElement>(null),
+    mounted = useRef(false);
+  const sound = useSound();
   useEffect(() => {
-    if (page === "lesson")
-      setReading({ lesson: active, index: tab, saved: true });
-  }, [page, active, tab]);
+    const update = () => {
+      if (window.location.hash !== "#main") setRoute(routeFromHash());
+    };
+    window.addEventListener("popstate", update);
+    window.addEventListener("hashchange", update);
+    return () => {
+      window.removeEventListener("popstate", update);
+      window.removeEventListener("hashchange", update);
+    };
+  }, []);
   useEffect(() => {
-    const scroll = document.getElementById("learning-scroll");
-    if (scroll) scroll.scrollTop = 0;
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }, [page, active, tab]);
-  const [mobile, setMobile] = useState(false);
-  const [modal, setModal] = useState(false);
-  const [notice, setNotice] = useState("");
-  const [name, setName] = useState(progress.name);
-  const [finalAttempt, setFinalAttempt] = useState(0);
-  const [celebrate, setCelebrate] = useState(false);
+    const hash = routeHash(route);
+    if (window.location.hash !== hash) window.history.pushState(null, "", hash);
+  }, [route]);
+  useEffect(() => {
+    if (!modal) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [modal]);
   const mastered = useMemo(
     () =>
-      lessons.filter((l) =>
-        isMastered(
-          progress.lessons[l.id],
-          settings.threshold,
-          l.scenes.map((s) => s.id),
-          conceptCheckIds(l.id),
-        ),
-      ),
+      lessons
+        .filter((l) =>
+          isMastered(
+            progress.lessons[l.id],
+            settings.threshold,
+            l.scenes.map((s) => s.id),
+            conceptCheckIds(l.id),
+          ),
+        )
+        .map((l) => l.id),
     [progress, settings.threshold],
   );
-  const all = mastered.length === 7;
-  const certificate = all && (progress.final ?? 0) >= settings.threshold;
-  const previousMastered = useRef(mastered.length);
-  useEffect(() => {
-    if (mastered.length > previousMastered.current && !settings.reduced) {
-      setCelebrate(true);
-      const timer = setTimeout(() => setCelebrate(false), 1800);
-      previousMastered.current = mastered.length;
-      return () => clearTimeout(timer);
-    }
-    previousMastered.current = mastered.length;
-  }, [mastered.length, settings.reduced]);
   useEffect(() => {
     try {
-      localStorage.setItem(SAVE, JSON.stringify(progress));
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
     } catch {
-      setNotice("تعذر الحفظ المحلي. صدّر نسخة من لوحة المتابعة قبل المغادرة.");
+      setNotice("تعذر الحفظ على هذا الجهاز. صدّر تقدمك قبل المغادرة.");
     }
   }, [progress]);
   useEffect(() => {
@@ -160,104 +108,110 @@ export default function App() {
     document.documentElement.dataset.reduced = String(settings.reduced);
     document.documentElement.style.fontSize = `${settings.font}%`;
     try {
-      localStorage.setItem(SETTINGS, JSON.stringify(settings));
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     } catch {
-      setNotice("تعذر حفظ الإعدادات.");
+      setNotice("تعذر حفظ إعدادات العرض.");
     }
   }, [settings]);
-  const go = (next: string) => {
-    setPage(next);
-    setMobile(false);
+  useEffect(() => {
+    if (route.page === "lesson") {
+      setResume(route);
+      try {
+        localStorage.setItem(LOCATION_KEY, JSON.stringify(route));
+      } catch {
+        setNotice("تعذر حفظ موضع التعلم.");
+      }
+    }
+  }, [route]);
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
     window.scrollTo({ top: 0, behavior: "instant" });
+    content.current?.focus({ preventScroll: true });
+    document.title =
+      route.page === "lesson"
+        ? `${lessons[route.lesson - 1].title} | حديقة أسرار الحياة`
+        : "حديقة أسرار الحياة";
+  }, [route.page, route.lesson, route.section, route.topic]);
+  const go = (next: Destination) => {
+    sound.play("step");
+    setRoute(next);
   };
-  const patchLesson = useCallback(
+  const openLesson = (id: number) => go(lessonDestination(id));
+  const select = (section: Destination["section"], topic = 0, scene?: string) =>
+    go(lessonDestination(route.lesson, section, topic, scene));
+  const patch = useCallback(
     (
-      id: number,
-      patch: Partial<LessonProgress> | ((p: LessonProgress) => LessonProgress),
+      change: Partial<LessonProgress> | ((p: LessonProgress) => LessonProgress),
     ) =>
       setProgress((prev) => {
-        const old = prev.lessons[id] ?? emptyLesson();
-        const next =
-          typeof patch === "function" ? patch(old) : { ...old, ...patch };
-        const earned = isMastered(
+        const old = prev.lessons[route.lesson] ?? emptyLesson(),
+          next =
+            typeof change === "function" ? change(old) : { ...old, ...change };
+        const complete = isMastered(
           next,
           settings.threshold,
-          lessons[id - 1].scenes.map((s) => s.id),
-          conceptCheckIds(id),
+          lessons[route.lesson - 1].scenes.map((s) => s.id),
+          conceptCheckIds(route.lesson),
         );
-        const recorded =
-          earned && !next.completedAt
-            ? { ...next, completedAt: new Date().toISOString() }
-            : next;
-        return { ...prev, lessons: { ...prev.lessons, [id]: recorded } };
+        return {
+          ...prev,
+          lessons: {
+            ...prev.lessons,
+            [route.lesson]: {
+              ...next,
+              ...(complete && !next.completedAt
+                ? { completedAt: new Date().toISOString() }
+                : {}),
+            },
+          },
+        };
       }),
-    [settings.threshold],
+    [route.lesson, settings.threshold],
   );
-  const openLesson = (id: number) => {
-    setActive(id);
-    setTab(0);
-    go("lesson");
-  };
   const nav = [
-    { id: "map", label: "خريطة الجزيرة", icon: Map },
-    { id: "dashboard", label: "رحلة إنجازي", icon: Trophy },
-    { id: "final", label: "تحدي الوحدة", icon: Flag },
-    { id: "guide", label: "دليل المستكشف", icon: HelpCircle },
-  ];
-  const lesson = lessons[active - 1];
-  const lp = progress.lessons[active] ?? emptyLesson();
-  const exportData = () => {
-    const blob = new Blob([JSON.stringify(progress, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "life-island-progress.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+    { page: "home", title: "الدروس", Icon: HomeIcon },
+    { page: "progress", title: "تقدمي", Icon: ChartNoAxesColumn },
+    { page: "help", title: "المساعدة", Icon: HelpCircle },
+  ] as const;
   return (
     <div
-      className="app"
-      onClickCapture={(event) => interfaceClick(event.target)}
+      className="science-app"
+      onClickCapture={(e) => interfaceClick(e.target)}
     >
       <SoundPreferences enabled={settings.sound} volume={settings.volume} />
       <a className="skip-link" href="#main">
         تجاوز إلى المحتوى
       </a>
-      <header className="site-header">
+      <header className="app-header">
         <button
-          className="brand"
-          onClick={() => go("cover")}
-          aria-label="حديقة أسرار الحياة، الغلاف"
+          className="site-brand"
+          aria-label="حديقة أسرار الحياة، الرئيسية"
+          onClick={() => go(home)}
         >
-          <span className="brand-symbol">
+          <span className="brand-leaf">
             <Leaf size={25} />
           </span>
           <span>
-            حديقة أسرار الحياة<small>علوم نكتشفها… وحياة نفهمها</small>
+            حديقة أسرار الحياة<small>علوم من أرضنا</small>
           </span>
         </button>
-        <nav
-          className={mobile ? "main-nav open" : "main-nav"}
-          aria-label="القائمة الرئيسية"
-        >
-          {nav.map((n) => (
+        <nav className="app-nav" aria-label="التنقل الرئيسي">
+          {nav.map(({ page, title, Icon }) => (
             <button
-              key={n.id}
-              aria-current={page === n.id ? "page" : undefined}
-              className={page === n.id ? "active" : ""}
-              onClick={() => go(progress.name ? n.id : "name")}
+              key={page}
+              aria-current={route.page === page ? "page" : undefined}
+              onClick={() => go({ ...home, page })}
             >
-              <n.icon size={17} />
-              {n.label}
+              <Icon size={19} />
+              <span>{title}</span>
             </button>
           ))}
         </nav>
-        <div className="header-actions">
+        <div className="utility-actions">
           <button
-            className="icon-button quick-sound"
             aria-label={settings.sound ? "كتم الصوت" : "تشغيل الصوت"}
             aria-pressed={!settings.sound}
             data-sound="handled"
@@ -266,409 +220,88 @@ export default function App() {
             {settings.sound ? <Volume2 size={20} /> : <VolumeX size={20} />}
           </button>
           <button
-            className="icon-button"
-            aria-label="إعدادات العرض والمعلمة"
+            aria-label="إعدادات العرض والصوت"
             onClick={() => setModal(true)}
           >
-            <Settings size={21} />
-          </button>
-          {progress.name && (
-            <span className="student-chip">
-              {progress.name.slice(0, 1)}
-              <span>{progress.name}</span>
-            </span>
-          )}
-          <button
-            className="icon-button mobile-menu"
-            aria-label={mobile ? "إغلاق القائمة" : "فتح القائمة"}
-            aria-expanded={mobile}
-            onClick={() => setMobile(!mobile)}
-          >
-            {mobile ? <X /> : <Menu />}
+            <Settings size={20} />
           </button>
         </div>
       </header>
-      <div className="learning-scroll" id="learning-scroll">
-        <main id="main" tabIndex={-1}>
-          <SoundNotice />
-          {notice && (
-            <div className="notice" role="status">
-              {notice}
-              <button aria-label="إغلاق التنبيه" onClick={() => setNotice("")}>
-                <X size={17} />
-              </button>
-            </div>
-          )}
-          {page === "cover" && (
-            <LearningHub
-              sound={settings.sound && settings.volume > 0}
-              progress={progress}
-              mastered={mastered.map((l) => l.id)}
-              threshold={settings.threshold}
-              welcome
-              reading={reading}
-              onStart={() => go(progress.name ? "map" : "name")}
-              onLesson={openLesson}
-              onResume={() => {
-                setActive(reading.lesson);
-                setTab(reading.index);
-                go("lesson");
-              }}
-              onGuide={() => go("guide")}
-            />
-          )}
-          {page === "name" && (
-            <section className="name-card card">
-              <span className="big-emoji">🧭</span>
-              <h1>لكل مستكشف اسم</h1>
-              <p>بماذا نناديك في رحلتك؟ يكفي اسمك الأول أو اسم تختاره.</p>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (name.trim()) {
-                    setProgress({
-                      ...progress,
-                      name: name.trim().slice(0, 40),
-                    });
-                    go("map");
-                  }
-                }}
-              >
-                <label htmlFor="student-name">اسم المستكشف</label>
-                <input
-                  id="student-name"
-                  value={name}
-                  maxLength={40}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="اكتب اسمك هنا"
-                  required
-                  autoComplete="off"
-                />
-                <button className="primary large" disabled={!name.trim()}>
-                  إلى الجزيرة <ArrowLeft size={18} />
-                </button>
-              </form>
-              <small>
-                يُحفظ الاسم والتقدم على هذا المتصفح فقط، ولا ينتقلان تلقائيًا
-                بين الأجهزة.
-              </small>
-            </section>
-          )}
-          {page === "map" && (
-            <IslandSound enabled={settings.sound && settings.volume > 0} />
-          )}
-          {page === "map" && (
-            <LearningHub
-              sound={settings.sound && settings.volume > 0}
-              progress={progress}
-              mastered={mastered.map((l) => l.id)}
-              threshold={settings.threshold}
-              welcome={false}
-              reading={reading}
-              onStart={() => openLesson(1)}
-              onLesson={openLesson}
-              onResume={() => {
-                setActive(reading.lesson);
-                setTab(reading.index);
-                go("lesson");
-              }}
-              onGuide={() => go("guide")}
-            />
-          )}
-          {page === "lesson" && (
-            <LessonReader
-              key={active}
-              lesson={lesson}
-              progress={lp}
-              index={tab}
-              setIndex={setTab}
-              onBack={() => go("map")}
-              onNextLesson={() =>
-                active < 7 ? openLesson(active + 1) : go("final")
-              }
-              patch={(patch) => patchLesson(active, patch)}
-              threshold={settings.threshold}
-              reduced={settings.reduced}
-              sound={settings.sound && settings.volume > 0}
-              name={progress.name}
-              onDiagnosticPage={() => {}}
-            />
-          )}
-          {page === "final" && (
-            <>
-              <header className="page-heading">
-                <span className="eyebrow">تحدي الوحدة الأولى · ١٥ سؤالًا</span>
-                <h1>اجمع خيوط أسرار الحياة</h1>
-                <p>
-                  يغطي الاختبار الدروس السبعة. معيار الإتقان{" "}
-                  {settings.threshold}
-                  %، ويمكن إعادة المحاولة بعد المراجعة.
-                </p>
-              </header>
-              {progress.final !== undefined && (
-                <div className="card">
-                  <h2>النتيجة: {progress.final}%</h2>
-                  <div className="goal-grid">
-                    {lessons.map((l, i) => (
-                      <div key={l.id}>
-                        <b>
-                          {progress.finalGoals?.[i] ? "✓" : "↺"} {l.title}
-                        </b>
-                        <p>
-                          {progress.finalGoals?.[i]
-                            ? "إجابات أهداف المحطة صحيحة في هذه المحاولة."
-                            : l.concepts[0].text}
-                        </p>
-                        {!progress.finalGoals?.[i] && (
-                          <button onClick={() => openLesson(l.id)}>
-                            راجع المحطة
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <button onClick={() => setFinalAttempt(finalAttempt + 1)}>
-                    إعادة بأسئلة مكافئة
-                  </button>
-                  {certificate && (
-                    <button
-                      className="primary"
-                      onClick={() => go("certificate")}
-                    >
-                      شهادتي <Trophy size={18} />
-                    </button>
-                  )}
-                </div>
-              )}
-              <Quiz
-                paged
-                threshold={settings.threshold}
-                key={`final-${finalAttempt}`}
-                title="الاختبار البعدي الشامل"
-                questions={finalBank(finalAttempt)}
-                onFinish={(value, goals) =>
-                  setProgress({
-                    ...progress,
-                    final: value,
-                    finalGoals: goals,
-                    date: new Date().toISOString(),
-                  })
-                }
-              />
-            </>
-          )}
-          {page === "dashboard" && (
-            <>
-              <header className="page-heading split">
-                <div>
-                  <span className="eyebrow">كل إنجاز يحكي تجربة</span>
-                  <h1>رحلة {progress.name}</h1>
-                  <p>التقدم محفوظ على هذا الجهاز والمتصفح فقط.</p>
-                </div>
-                <div className="earned-stars">{mastered.length * 3} ★</div>
-              </header>
-              <div className="stats-grid">
-                <div className="card">
-                  <strong>{Math.round((mastered.length / 7) * 100)}%</strong>
-                  <span>إتقان الوحدة</span>
-                </div>
-                <div className="card">
-                  <strong>{mastered.length} / ٧</strong>
-                  <span>أوسمة المحطات</span>
-                </div>
-                <div className="card">
-                  <strong>{progress.final ?? "—"}</strong>
-                  <span>الاختبار الشامل</span>
-                </div>
-              </div>
-              <div className="table-wrap">
-                <table>
-                  <caption>متابعة المحطات السبع</caption>
-                  <thead>
-                    <tr>
-                      <th>المحطة</th>
-                      <th>الحالة</th>
-                      <th>قبلي</th>
-                      <th>بعدي</th>
-                      <th>تقويم المفاهيم</th>
-                      <th>التجارب</th>
-                      <th>النجوم</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {lessons.map((l) => {
-                      const p = progress.lessons[l.id];
-                      const done = mastered.some((x) => x.id === l.id);
-                      return (
-                        <tr key={l.id}>
-                          <td>
-                            <button
-                              className="text-button"
-                              onClick={() => openLesson(l.id)}
-                            >
-                              {l.icon} {l.title}
-                            </button>
-                          </td>
-                          <td>
-                            {done ? "متقن" : p ? "قيد التعلم" : "لم يبدأ"}
-                          </td>
-                          <td>{p?.pre ?? "—"}</td>
-                          <td>{p?.post ?? "—"}</td>
-                          <td>
-                            {p?.conceptChecks?.length ?? 0} /{" "}
-                            {l.id === 5 ? 3 : 2}
-                          </td>
-                          <td>
-                            {p?.experimented.length ?? 0} / {l.scenes.length}
-                          </td>
-                          <td>{done ? "★★★" : "—"}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="button-row backup">
-                <button onClick={exportData}>
-                  <Download size={17} />
-                  تصدير التقدم
-                </button>
-                <label className="file-button">
-                  <Upload size={17} /> استعادة نسخة
-                  <input
-                    type="file"
-                    accept="application/json"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      try {
-                        if (file.size > 100000) throw Error();
-                        const data = parseProgress(
-                          JSON.parse(await file.text()),
-                        );
-                        setProgress(data);
-                        setName(data.name);
-                        setNotice("تمت استعادة نسخة التقدم.");
-                      } catch {
-                        setNotice("ملف النسخة غير صالح؛ لم تتغير بياناتك.");
-                      }
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
-                <button
-                  className="primary"
-                  disabled={!certificate}
-                  onClick={() => go("certificate")}
-                >
-                  <Trophy size={17} />
-                  شهادة المستكشف
-                </button>
-              </div>
-              <p className="hint">
-                تتاح الشهادة بعد إتقان الدروس السبعة والاختبار الشامل. التنقل
-                بين المحطات والمراحل لا يمنح نجومًا أو شهادة تلقائيًا.
-              </p>
-            </>
-          )}
-          {page === "certificate" &&
-            (certificate ? (
-              <>
-                <div className="certificate" id="certificate">
-                  <div className="tatreez" />
-                  <div className="certificate-leaves">❧ ★ ❧</div>
-                  <span className="eyebrow">
-                    حديقة أسرار الحياة · المنهاج الفلسطيني
-                  </span>
-                  <h1>شهادة مستكشف أسرار الحياة</h1>
-                  <p>تُمنح هذه الشهادة للمستكشف</p>
-                  <h2>{progress.name}</h2>
-                  <p>
-                    لإتمام الوحدة الأولى «خصائص الكائنات الحية»
-                    <br />
-                    في مبحث العلوم والحياة للصف السابع الأساسي
-                  </p>
-                  <strong className="certificate-score">
-                    نتيجة الاختبار الشامل: {progress.final}%
-                  </strong>
-                  <div className="certificate-sign">
-                    <span>
-                      إعداد المعلمة
-                      <br />
-                      <b>أ. آلاء محسن كلاب</b>
-                    </span>
-                    <span>
-                      تاريخ الإنجاز
-                      <br />
-                      <b>
-                        {new Date(
-                          progress.date ?? Date.now(),
-                        ).toLocaleDateString("ar-PS", {
-                          timeZone: "Asia/Hebron",
-                        })}
-                      </b>
-                    </span>
-                  </div>
-                  <div className="tatreez" />
-                </div>
-                <button
-                  className="primary print-button"
-                  onClick={() => window.print()}
-                >
-                  <Printer size={18} /> طباعة / حفظ PDF
-                </button>
-                <p className="muted">
-                  اختر «حفظ بصيغة PDF» من نافذة الطباعة إذا كان متصفحك يدعمها.
-                </p>
-              </>
-            ) : (
-              <Locked
-                title="الشهادة"
-                text="أكمل متطلبات الإتقان أولًا."
-                onBack={() => go("dashboard")}
-              />
-            ))}
-          {(page === "guide" || page === "teacher") && (
-            <Guide
-              teacher={page === "teacher"}
-              onSwitch={() => go(page === "teacher" ? "guide" : "teacher")}
-            />
-          )}
-        </main>
-        <footer>
-          <div>
-            <Leaf size={19} />
-            <b>حديقة أسرار الحياة</b>
-            <span>اكتشف، جرّب، تعلّم، وانطلق!</span>
+      <main id="main" ref={content} tabIndex={-1}>
+        <SoundNotice />
+        {notice && (
+          <div className="notice" role="status">
+            {notice}
+            <button onClick={() => setNotice("")}>إغلاق</button>
           </div>
-          <p>إعداد أ. آلاء محسن كلاب · العلوم والحياة · الصف السابع</p>
-          <button className="text-button" onClick={() => go("teacher")}>
-            دليل المعلمة وتوثيق المحتوى <BookOpen size={15} />
-          </button>
-        </footer>
-      </div>
-      {page !== "cover" && page !== "lesson" && (
-        <PalestinianGuide
-          name={progress.name}
-          character={
-            assets.companion
-              ? (import.meta.env?.BASE_URL ?? "/Biology/") + assets.companion
-              : undefined
-          }
-          context={`${page}-${active}-${tab}`}
-          hints={[
-            page === "final"
-              ? "اقرأ كل سؤال واربطه بالهدف العلمي، ثم راجع اختياراتك."
-              : "اختر محطتك بحرية. يمكنك العودة إلى أي جزء، والنجوم مرتبطة بالإتقان.",
-            "ابدأ بخطوة واحدة، واستخدم دليل المستكشف إذا احتجت توضيحًا.",
-          ]}
-        />
-      )}
-      {celebrate && !settings.reduced && (
-        <div className="celebration" aria-hidden="true">
-          ✦ ★ ✦ ★ ✦
-        </div>
-      )}
+        )}
+        {route.page === "home" && (
+          <>
+            <Home
+              progress={progress}
+              threshold={settings.threshold}
+              mastered={mastered}
+              resume={resume}
+              onLesson={openLesson}
+              onResume={() => resume && go(resume)}
+            />
+            <details className="welcome-sound">
+              <summary>أجواء التعلم الصوتية · اختيارية</summary>
+              {(audio as Record<string, string>)["0.welcome"] && (
+                <TeacherAudio
+                  enabled={settings.sound}
+                  text="أهلًا بك في حديقة أسرار الحياة، نكتشف خصائص الكائنات بالملاحظة والتجريب."
+                />
+              )}
+              <AmbientMusic enabled={settings.sound} />
+            </details>
+          </>
+        )}
+        {route.page === "lesson" && (
+          <LessonWorkspace
+            key={route.lesson}
+            route={route}
+            progress={progress.lessons[route.lesson] ?? emptyLesson()}
+            settings={settings}
+            name={progress.name}
+            onSelect={select}
+            onHome={() => go(home)}
+            patch={patch}
+          />
+        )}
+        {route.page === "progress" && (
+          <ProgressView
+            progress={progress}
+            threshold={settings.threshold}
+            mastered={mastered}
+            onChange={setProgress}
+            onLesson={openLesson}
+            onFinal={() => go({ ...home, page: "final" })}
+          />
+        )}
+        {route.page === "help" && <HelpView />}
+        {route.page === "final" && (
+          <UnitFinal
+            progress={progress}
+            threshold={settings.threshold}
+            mastered={mastered.length === 7}
+            onResult={(final, finalGoals) =>
+              setProgress((p) => ({
+                ...p,
+                final,
+                finalGoals,
+                date: new Date().toISOString(),
+              }))
+            }
+            onLesson={openLesson}
+          />
+        )}
+      </main>
+      <footer className="app-footer">
+        <span className="palestine-stitch" aria-hidden="true" />
+        <span>العلوم والحياة · الصف السابع الأساسي</span>
+        <span>إعداد أ. آلاء محسن كلاب</span>
+      </footer>
       {modal && (
         <div
           className="modal-backdrop"
@@ -686,310 +319,87 @@ export default function App() {
     </div>
   );
 }
-function Locked({
-  title,
-  text,
-  onBack,
+function UnitFinal({
+  progress,
+  threshold,
+  mastered,
+  onResult,
+  onLesson,
 }: {
-  title: string;
-  text: string;
-  onBack: () => void;
+  progress: ReturnType<typeof readProgress>;
+  threshold: number;
+  mastered: boolean;
+  onResult: (score: number, goals: Record<number, boolean>) => void;
+  onLesson: (id: number) => void;
 }) {
-  return (
-    <section className="card locked-page">
-      <Lock size={36} />
-      <h1>{title}</h1>
-      <p>{text}</p>
-      <button className="primary" onClick={onBack}>
-        خريطة الجزيرة <Map size={18} />
-      </button>
-    </section>
-  );
-}
-function SettingsDialog({
-  settings: s,
-  setSettings,
-  close,
-}: {
-  settings: SettingsData;
-  setSettings: (v: SettingsData) => void;
-  close: () => void;
-}) {
+  const [attempt, setAttempt] = useDraft("unit-final-attempt-v1", { value: 0 });
+  const earned = mastered && (progress.final ?? 0) >= threshold;
+  const sound = useSound();
+  const [award, setAward] = useDraft(`unit-award-${progress.name}`, {
+    celebrated: false,
+  });
   useEffect(() => {
-    const previous = document.activeElement as HTMLElement;
-    const dialog = document.getElementById("settings-dialog")!;
-    const elements = () =>
-      Array.from(
-        dialog.querySelectorAll<HTMLElement>(
-          'button,input,select,[tabindex="0"]',
-        ),
-      );
-    elements()[0]?.focus();
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-      if (e.key === "Tab") {
-        const list = elements();
-        const first = list[0],
-          last = list[list.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", handler);
-    return () => {
-      document.removeEventListener("keydown", handler);
-      previous?.focus();
-    };
-  }, []);
+    if (earned && !award.celebrated) {
+      setAward({ celebrated: true });
+      sound.play("success");
+    }
+  }, [earned, award.celebrated]);
   return (
-    <section
-      id="settings-dialog"
-      className="settings-dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="settings-title"
-    >
-      <div className="section-head">
-        <h2 id="settings-title">اضبط رحلتك</h2>
-        <button
-          className="icon-button"
-          aria-label="إغلاق الإعدادات"
-          onClick={close}
-        >
-          <X />
-        </button>
-      </div>
-      <label>
-        حجم الخط
-        <select
-          value={s.font}
-          onChange={(e) => setSettings({ ...s, font: +e.target.value })}
-        >
-          {[90, 100, 110, 120, 130].map((n) => (
-            <option key={n} value={n}>
-              {n}%
-            </option>
-          ))}
-        </select>
-      </label>
-      {[
-        ["dark", "الوضع الداكن"],
-        ["contrast", "تباين مرتفع"],
-        ["reduced", "تقليل الحركة"],
-        ["sound", "الصوت والتسجيلات والمؤثرات"],
-      ].map(([key, label]) => (
-        <label className="toggle" key={key}>
-          <span>{label}</span>
-          <input
-            type="checkbox"
-            checked={s[key as keyof SettingsData] === true}
-            onChange={(e) => setSettings({ ...s, [key]: e.target.checked })}
-          />
-        </label>
-      ))}
-      <SoundSettings
-        enabled={s.sound}
-        volume={s.volume}
-        onVolume={(volume) => setSettings({ ...s, volume })}
-      />{" "}
-      <p className="muted">
-        النصوص التعليمية ظاهرة دائمًا. الصوت لا يعمل تلقائيًا. جميع الأنشطة تدعم
-        اللمس ولوحة المفاتيح.
+    <section className="unit-final">
+      <span className="overline">الوحدة الأولى · ١٥ سؤالًا</span>
+      <h1>كيف ترتبط أسرار الحياة؟</h1>
+      <p className="lead">
+        اختبر فهمك عبر الدروس السبعة. يمكنك المراجعة وإعادة المحاولة.
       </p>
-      <details>
-        <summary>إعدادات المعلمة</summary>
-        <p>أدوات محلية لهذا المتصفح؛ ليست لوحة حسابات محمية.</p>
-        <label>
-          معيار الإتقان: {s.threshold}%
-          <input
-            type="range"
-            min="50"
-            max="100"
-            step="1"
-            value={s.threshold}
-            onChange={(e) => setSettings({ ...s, threshold: +e.target.value })}
-          />
-        </label>
-        <small>
-          التنقل مفتوح للجميع؛ تغيير المعيار يعيد احتساب الإتقان فقط.
-        </small>
-      </details>
-    </section>
-  );
-}
-function Guide({
-  teacher,
-  onSwitch,
-}: {
-  teacher: boolean;
-  onSwitch: () => void;
-}) {
-  const student = [
-    [
-      "ابدأ المغامرة",
-      "اكتب اسمًا تختاره. يُحفظ محليًا ويظهر في الترحيب والإنجاز والشهادة. لا نطلب بيانات أخرى.",
-    ],
-    [
-      "انتقل بين المحطات",
-      "كل المحطات وصفحات المفاهيم والاختبار متاحة منذ البداية؛ اختر مسارك بحرية. لوحة المتابعة تظهر الإتقان الفعلي، لا عدد الزيارات.",
-    ],
-    [
-      "شاهد المحاكاة",
-      "داخل المفهوم اختر صفحة التجربة، ثم شاهد المحاكاة واضغط تشغيل. يمكنك الإيقاف والإعادة وتغيير السرعة أو التقدم خطوة. عند تقليل الحركة تستخدم الخطوات الثابتة.",
-    ],
-    [
-      "جرّب بنفسك",
-      "غيّر عاملًا واحدًا، وشغّل إلى النهاية، وسجل الملاحظة واختر الاستنتاج. هذا نموذج مبسط بزمن مسرع، لا قياسات حقيقية.",
-    ],
-    [
-      "المفاهيم والتلميحات",
-      "لكل مفهوم شرح ومثال وتجربة عند الحاجة وسؤال قصير. اطلب تلميحًا من المرشدة عند التعثر، ثم حاول مجددًا. تلميحاتها مكتوبة دون صوت آلي.",
-    ],
-    [
-      "الاختبارات والتعلم التكيفي",
-      "لكل درس ٥ أسئلة قبلية و٧ بعدية. القبلي لا يدخل الإتقان. تحتاج إلى المعيار المحدد وتنفيذ التجارب وتقويم المفاهيم. عند الضعف راجع المفهوم وأعد الاختبار.",
-    ],
-    [
-      "الصوت وإعدادات العرض",
-      "افتح الترس لتغيير حجم الخط واللون والتباين والحركة والصوت. افتح بطاقة صوت المعلمة لقراءة النص؛ التسجيلات الأصلية تضاف لاحقًا.",
-    ],
-    [
-      "الشهادات",
-      "استكشف اختبار الوحدة في الوقت الذي تختاره. لنيل شهادة الوحدة أتقن الدروس السبعة والاختبار الشامل. اطبع الشهادة أو احفظ PDF من نافذة الطباعة.",
-    ],
-    [
-      "احفظ تقدمك",
-      "لا تنتقل البيانات تلقائيًا بين الأجهزة. صدّر نسخة JSON من لوحة المتابعة واستعدها عند الحاجة. مسح بيانات المتصفح يحذف التقدم المحلي.",
-    ],
-  ];
-  return (
-    <>
-      <header className="page-heading">
-        <span className="eyebrow">رفيقك في كل خطوة</span>
-        <h1>{teacher ? "دليل المعلمة والتصميم التعليمي" : "دليل المستكشف"}</h1>
-        <button onClick={onSwitch}>
-          {teacher ? "دليل الطالب" : "دليل المعلمة"} <ArrowLeft size={16} />
-        </button>
-      </header>
-      {!teacher ? (
-        student.map(([title, text], i) => (
-          <details className="card guide-detail" key={title} open={i === 0}>
-            <summary>
-              {String(i + 1).padStart(2, "0")} · {title}
-            </summary>
-            <p>{text}</p>
-          </details>
-        ))
-      ) : (
+      <Quiz
+        paged
+        key={attempt.value}
+        questions={finalBank(attempt.value)}
+        title="اختبار الوحدة"
+        threshold={threshold}
+        onFinish={onResult}
+      />
+      {progress.final !== undefined && (
         <>
-          <section className="card">
-            <h2>الأصول والتسجيلات</h2>
-            <p>
-              أضيفي الصورة الأصلية في public/images وعرّفي مسارها في
-              src/data/assets.json بالحقل teacherPortrait؛ للشخصية استخدمي
-              companion. لا يتم تغيير الوجه. ارفعي الملفات إلى المستودع وأعيدي
-              النشر.
-            </p>
-            <p>
-              التسجيلات في public/audio/lesson-1/… حتى lesson-7. اربطي المسارات
-              في src/data/audio.json بمفاتيح مثل 1.intro و1.explanation
-              و1.simulation و1.activity و1.summary. الترحيب: 0.welcome. لا يوجد
-              رفع دائم من المتصفح.
-            </p>
-            <p>
-              المحتوى والأسئلة في src/data/lessons.ts؛ معايير الإتقان والدعم في
-              src/engine/progress.ts؛ نماذج الظواهر في src/engine/models.ts.
-              يلزم مراجعة الإجابات والنماذج بعد أي تعديل.
-            </p>
-          </section>
-          <section className="card">
-            <h2>تطبيق ADDIE</h2>
-            <p>
-              <b>التحليل:</b> طالب سابع يعرف احتياجات الكائنات وأجزاء النبات.
-              الصعوبات: الخلط بين الغذاء والماء، والتنفس والبناء الضوئي، والنمو
-              والانتفاخ، والمؤثر والاستجابة.
-            </p>
-            <p>
-              <b>التصميم:</b> تهيئة ← تشخيص ← أهداف ← توقع ← شرح ← مشاهدة وتجريب
-              ← تطبيق وتقويم ← علاج أو إثراء.
-            </p>
-            <p>
-              <b>التطوير:</b> بيانات منفصلة، SVG تفاعلي، بنوك اختبارات، تخزين
-              محلي وصوت اختياري.
-            </p>
-            <p>
-              <b>التنفيذ:</b> RTL، هاتف وحاسوب، بدائل لوحة مفاتيح، تقليل حركة،
-              نصوص موازية.
-            </p>
-            <p>
-              <b>التقويم:</b> تشخيص لا يحتسب، إتقان معياري مع متطلبات أداء،
-              وتحليل أخطاء. تجربة صفية بإشراف المعلمة مطلوبة قبل الاعتماد
-              النهائي.
-            </p>
-          </section>
-          <section className="card">
-            <h2>حالة توثيق المصدر</h2>
-            <p>
-              تمت مراجعة الملف المصور 1001014054.pdf وصور الاستجابة والتكاثر
-              بصريًا، واستُكملت الأجزاء الناقصة بنسخة عامة تحمل في صفحة الحقوق
-              الطبعة الرابعة 2021 وتطابق الأمثلة المرسلة. تبقى مطابقة الطبعة
-              الثالثة الأصلية بحاجة مراجعة المعلمة. التوثيق التفصيلي:
-              docs/SOURCE-REVIEW.md.
-            </p>
-            <p>
-              الاختبار الشامل من إعداد المشروع بناء على أهداف الدروس، بناء على
-              توجيه المعلمة، وليس نسخة من أسئلة كتاب غير متاحة.
-            </p>
-          </section>
-          {lessons.map((l) => (
-            <section key={l.id} className="card">
-              <h2>
-                {l.icon} مواءمة {l.title}
-              </h2>
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>الهدف</th>
-                      <th>الشرح</th>
-                      <th>النشاط</th>
-                      <th>المحاكاة</th>
-                      <th>التقويم</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {l.goals.map((g, i) => (
-                      <tr key={g}>
-                        <td>{g}</td>
-                        <td>{l.concepts[alignment[l.id][i].concept].title}</td>
-                        <td>{alignment[l.id][i].activity}</td>
-                        <td>
-                          {alignment[l.id][i].scenes
-                            .map(
-                              (id) => l.scenes.find((s) => s.id === id)?.title,
-                            )
-                            .join("، ")}
-                        </td>
-                        <td>
-                          {l.questions
-                            .filter((q) => q.goal === i)
-                            .map((q) => q.id)
-                            .join("، ")}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <div className="final-review">
+            <h2>نتيجتك المسجلة: {progress.final}%</h2>
+            <div>
+              {lessons.map((l, i) => (
+                <button key={l.id} onClick={() => onLesson(l.id)}>
+                  {progress.finalGoals?.[i] ? "✓" : "راجع"} {l.title}
+                  <ArrowLeft size={16} />
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setAttempt((s) => ({ value: s.value + 1 }))}>
+              محاولة بأسئلة مكافئة
+            </button>
+          </div>
+          {earned ? (
+            <section className="award-card earned">
+              <h2>شهادة مستكشف أسرار الحياة</h2>
+              <h3>{progress.name || "المستكشف"}</h3>
+              <p>أتم الوحدة الأولى بنتيجة {progress.final}%</p>
+              <p>المعلمة: أ. آلاء محسن كلاب</p>
+              {progress.date && (
+                <time>
+                  {new Date(progress.date).toLocaleDateString("ar-PS", {
+                    timeZone: "Asia/Hebron",
+                  })}
+                </time>
+              )}
+              <button className="primary" onClick={() => window.print()}>
+                <Printer size={17} /> طباعة الشهادة
+              </button>
             </section>
-          ))}
+          ) : (
+            <p className="storage-note">
+              شهادة الوحدة تتطلب إتقان الدروس السبعة ودرجة {threshold}% فأعلى في
+              اختبار الوحدة.
+            </p>
+          )}
         </>
       )}
-    </>
+    </section>
   );
 }

@@ -9,12 +9,14 @@ export function StageGuide({
   className = "",
   hints = [],
   notice = "",
+  autoOpen = true,
 }: {
   context: string;
   text: string;
   className?: string;
   hints?: string[];
   notice?: string;
+  autoOpen?: boolean;
 }) {
   const [open, setOpen] = useState(false),
     [cue, setCue] = useState("");
@@ -25,7 +27,7 @@ export function StageGuide({
     previous.current = context;
     const first = !welcomedStages.has(context);
     welcomedStages.add(context);
-    setOpen(first);
+    setOpen(first && autoOpen);
     setCue("");
   }, [context]);
   useEffect(() => {
@@ -56,6 +58,11 @@ export function StageGuide({
           <TeacherCharacter />
         )}
       </button>
+      {!open && !autoOpen && (
+        <button className="guide-request" onClick={() => setOpen(true)}>
+          أحتاج تلميحًا
+        </button>
+      )}
       {open && (
         <div className="stage-guide-bubble">
           <p aria-live="polite">
