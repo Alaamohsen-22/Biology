@@ -20,6 +20,7 @@ export function CardOrdering({
   sound: allowSound = true,
   reduced = false,
   title = "رتب المراحل",
+  compact = false,
 }: {
   items: string[];
   done: boolean;
@@ -27,12 +28,16 @@ export function CardOrdering({
   sound?: boolean;
   reduced?: boolean;
   title?: string;
+  compact?: boolean;
 }) {
-  const [draft,setDraft] = useDraft(`ordering-${items.join("|")}`, {pool:shuffledCards(items.length),chosen: [] as number[]});
-  const pool=draft.pool;
-  const setPool=(pool:number[])=>setDraft(d=>({...d,pool}));
+  const [draft, setDraft] = useDraft(`ordering-${items.join("|")}`, {
+    pool: shuffledCards(items.length),
+    chosen: [] as number[],
+  });
+  const pool = draft.pool;
+  const setPool = (pool: number[]) => setDraft((d) => ({ ...d, pool }));
   const chosen = draft.chosen;
-  const setChosen = (chosen: number[]) => setDraft(d=>({...d,chosen}));
+  const setChosen = (chosen: number[]) => setDraft((d) => ({ ...d, chosen }));
   const sound = useSound();
   const feedback = useActivityFeedback(allowSound);
   const id = useId();
@@ -62,16 +67,22 @@ export function CardOrdering({
     >
       <div className="section-head">
         <div>
-          <span className="eyebrow">نشاط تفاعلي · لعبة ترتيب المراحل</span>
-          <h2 id={id}>{title}</h2>
+          {!compact && (
+            <span className="eyebrow">نشاط تفاعلي · لعبة ترتيب المراحل</span>
+          )}
+          <h2 id={id} className={compact ? "sr-only" : undefined}>
+            {title}
+          </h2>
         </div>
         {done && <span className="pill">✓ أُنجز النشاط</span>}
       </div>
       <p>اضغط على البطاقات حسب الترتيب الصحيح للمراحل</p>
-      <p className="muted">
-        اضغط على بطاقة مختارة لإعادتها، أو استخدم «تراجع عن آخر خطوة». إنجازك
-        السابق محفوظ عند إعادة اللعب.
-      </p>
+      {!compact && (
+        <p className="muted">
+          اضغط على بطاقة مختارة لإعادتها، أو استخدم «تراجع عن آخر خطوة». إنجازك
+          السابق محفوظ عند إعادة اللعب.
+        </p>
+      )}
       <div
         className="ordering-bank"
         role="group"

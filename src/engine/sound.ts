@@ -75,11 +75,15 @@ export class SoundManager {
       this.media?.pause();
     }
     if (this.gain) {
-      const narrationPlaying = this.media && !this.media.paused && this.mediaKind === "narration";
+      const narrationPlaying =
+        this.media && !this.media.paused && this.mediaKind === "narration";
       this.gain.gain.value = level * (narrationPlaying ? 0.18 : 0.9);
     }
     if (this.fallback) this.fallback.volume = level * 0.9;
-    if (this.bed && (!enabled || level === 0)) { this.bedSequence++; this.bed.pause(); }
+    if (this.bed && (!enabled || level === 0)) {
+      this.bedSequence++;
+      this.bed.pause();
+    }
     this.applyBedVolume();
     if (this.media) {
       if (!enabled) this.media.pause();
@@ -101,6 +105,9 @@ export class SoundManager {
       this.context = context;
       this.gain = gain;
     }
+  }
+  isNarrating() {
+    return !!this.media && !this.media.paused && this.mediaKind === "narration";
   }
   stop() {
     this.sequence++;
@@ -189,28 +196,46 @@ export class SoundManager {
   }
   private applyBedVolume = () => {
     if (!this.bed) return;
-    const narrating = this.mediaKind === "narration" && this.media && !this.media.paused;
+    const narrating =
+      this.mediaKind === "narration" && this.media && !this.media.paused;
     this.bed.muted = !this.state.enabled;
-    this.bed.volume = this.state.enabled ? this.state.volume * (narrating ? 0.025 : 0.22) : 0;
+    this.bed.volume = this.state.enabled
+      ? this.state.volume * (narrating ? 0.025 : 0.22)
+      : 0;
   };
   async playBed(audio: HTMLAudioElement) {
     if (!this.state.enabled || this.state.volume === 0) return false;
-    if(this.bed && this.bed !== audio) this.bed.pause();
+    if (this.bed && this.bed !== audio) this.bed.pause();
     this.bed = audio;
     const token = ++this.bedSequence;
     this.applyBedVolume();
     try {
       await audio.play();
-      if(token !== this.bedSequence || this.bed !== audio || !this.state.enabled || this.state.volume === 0) {
-        if(this.bed !== audio || !this.state.enabled || this.state.volume === 0) audio.pause();
+      if (
+        token !== this.bedSequence ||
+        this.bed !== audio ||
+        !this.state.enabled ||
+        this.state.volume === 0
+      ) {
+        if (
+          this.bed !== audio ||
+          !this.state.enabled ||
+          this.state.volume === 0
+        )
+          audio.pause();
         return false;
       }
       return true;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   }
   releaseBed(audio: HTMLAudioElement) {
     audio.pause();
-    if(this.bed === audio) { this.bedSequence++; this.bed = undefined; }
+    if (this.bed === audio) {
+      this.bedSequence++;
+      this.bed = undefined;
+    }
   }
   releaseMedia(audio: HTMLMediaElement) {
     audio.pause();
@@ -222,7 +247,11 @@ export class SoundManager {
       this.applyBedVolume();
     }
   }
-  async playMedia(audio: HTMLMediaElement, kind: "narration" | "music", reportError = true) {
+  async playMedia(
+    audio: HTMLMediaElement,
+    kind: "narration" | "music",
+    reportError = true,
+  ) {
     if (!this.state.enabled || this.state.volume === 0) return false;
     const token = ++this.mediaSequence;
     this.stop();
@@ -242,12 +271,21 @@ export class SoundManager {
     audio.volume = this.state.volume * (kind === "music" ? 0.22 : 1);
     try {
       await audio.play();
-      if (token !== this.mediaSequence || !this.state.enabled || this.state.volume === 0) {
-        if (this.media !== audio || !this.state.enabled || this.state.volume === 0) audio.pause();
+      if (
+        token !== this.mediaSequence ||
+        !this.state.enabled ||
+        this.state.volume === 0
+      ) {
+        if (
+          this.media !== audio ||
+          !this.state.enabled ||
+          this.state.volume === 0
+        )
+          audio.pause();
         return false;
       }
       this.applyBedVolume();
-      this.update({status: "ready", message: "الصوت جاهز"});
+      this.update({ status: "ready", message: "الصوت جاهز" });
       return true;
     } catch {
       if (token !== this.mediaSequence || !reportError) return false;

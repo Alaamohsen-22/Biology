@@ -1,0 +1,1179 @@
+/* Nutrition prototype. Other lessons retain their reviewed teaching components. */
+.palestinian-prototype {
+  border-inline: 3px solid #e5e9e2;
+  min-height: 100dvh;
+}
+.palestinian-prototype:before {
+  content: "";
+  display: block;
+  height: 5px;
+  background: linear-gradient(
+    to left,
+    #2d744f 0 28%,
+    #f7f8f2 28% 48%,
+    #202e28 48% 76%,
+    #af4d46 76%
+  );
+}
+.palestinian-prototype .app-header {
+  border-bottom: 1px solid #d9e1d5;
+  position: relative;
+}
+.palestinian-prototype .brand-leaf {
+  border-radius: 9px 9px 2px 9px;
+}
+.palestinian-prototype .home-welcome {
+  padding: 12px 0 28px;
+}
+.palestinian-prototype .home-welcome h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: 0;
+  margin: 12px 0 0;
+}
+.palestinian-prototype .catalog-heading {
+  padding-top: 25px;
+}
+.palestinian-prototype .lesson-tile {
+  padding: 20px;
+  border-radius: 14px;
+}
+.palestinian-prototype .lesson-tile h3 {
+  font-size: 1.25rem;
+}
+.palestinian-prototype .lesson-tile p {
+  font-size: 0.9rem;
+}
+.palestinian-prototype .tile-footer {
+  font-size: 0.8rem;
+}
+.palestinian-prototype .home-credit {
+  font-size: 0.875rem;
+}
+.palestinian-prototype select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #58745a 50%),
+    linear-gradient(135deg, #58745a 50%, transparent 50%);
+  background-position:
+    18px 50%,
+    12px 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  padding-inline-end: 32px;
+}
+[data-lesson="1"] .lesson-canvas {
+  border-top: 3px solid #819869;
+  background: #fffefb;
+}
+[data-lesson="1"] .concept-title h1 {
+  font-size: clamp(1.7rem, 3vw, 2.1rem);
+}
+[data-lesson="1"] .learning-modes {
+  margin-bottom: 18px;
+}
+[data-lesson="1"] .learning-modes button {
+  font-size: 0.95rem;
+  min-height: 48px;
+}
+[data-lesson="1"] .concept-title .overline {
+  font-size: 0.875rem;
+  color: #577155;
+}
+.nutrition-core {
+  font-size: 1.05rem;
+  line-height: 1.95;
+  max-width: 68ch;
+  color: #294e3c;
+  margin: 6px 0 24px;
+  font-weight: 600;
+}
+.nutrition-visual-lesson {
+  min-width: 0;
+}
+.nutrition-more {
+  border-top: 1px solid var(--line);
+  margin-top: 25px;
+  padding: 8px 0;
+  font-size: 0.9rem;
+}
+.nutrition-more summary {
+  font-weight: 400;
+  color: var(--green);
+  font-size: 0.9rem;
+}
+.nutrition-more p {
+  font-size: 1rem;
+  line-height: 2;
+  max-width: 70ch;
+  margin: 14px 0;
+}
+.nutrition-quick-question {
+  border-top: 1px solid var(--line);
+  margin-top: 20px;
+  padding-top: 8px;
+}
+.nutrition-quick-question > summary {
+  font-size: 1rem;
+  color: var(--green);
+  padding-block: 14px;
+}
+.nutrition-quick-question .concept-check > .eyebrow {
+  display: none;
+}
+.nutrition-quick-question .concept-check h2 {
+  font-size: 1.1rem;
+}
+.nutrition-quick-question .options label {
+  font-size: 0.95rem;
+  line-height: 1.95;
+  min-height: 56px;
+}
+.nutrition-quick-question .button-row button {
+  font-size: 0.875rem;
+}
+.nutrition-kicker {
+  font-size: 0.875rem;
+  color: #66754e;
+}
+.nutrition-intro h1 {
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  margin: 8px 0 12px;
+}
+.nutrition-question {
+  font-size: 1.1rem;
+  line-height: 1.95;
+  color: #3d5d45;
+  margin-bottom: 20px;
+}
+.nutrition-orchard {
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid #d6dfc8;
+  background: #d6e5ce;
+}
+.nutrition-orchard svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 430px;
+}
+.orchard-part-picker {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.orchard-part-picker button {
+  flex: 1;
+  min-height: 48px;
+  font-size: 0.875rem;
+  background: #f2f5e9;
+  border-color: #d9e3ca;
+}
+.orchard-part-picker button[aria-pressed="true"] {
+  background: #365f45;
+  color: #fff;
+  border-color: #365f45;
+}
+.orchard-discovery {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: #edf3e4;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: #35523c;
+  line-height: 1.9;
+}
+.nutrition-orchard.explore-sun {
+  box-shadow: 0 0 0 3px #e3ce86;
+}
+.nutrition-orchard.explore-leaves {
+  box-shadow: 0 0 0 3px #a4be8b;
+}
+.nutrition-orchard.explore-roots {
+  box-shadow: 0 0 0 3px #8eb5bd;
+}
+.nutrition-intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.nutrition-intro-actions button {
+  min-height: 50px;
+  font-size: 1rem;
+}
+.nutrition-prediction {
+  margin: 16px 0;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+.nutrition-prediction summary {
+  font-size: 1rem;
+  color: #476c42;
+}
+.nutrition-prediction fieldset {
+  border: 0;
+  padding: 12px 0;
+  margin: 0;
+  min-width: 0;
+}
+.nutrition-prediction legend {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 8px 0;
+}
+.nutrition-prediction label {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: white;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 1rem;
+  margin-bottom: 9px;
+  line-height: 1.9;
+}
+.nutrition-prediction label:has(input:checked) {
+  border-color: #8ea577;
+  background: #f2f5e8;
+}
+.nutrition-prediction p {
+  font-size: 0.9rem;
+  color: #476c42;
+}
+.nutrition-intro .goals-disclosure {
+  margin-top: 18px;
+  font-size: 0.9rem;
+}
+.nutrition-intro .goals-disclosure ul {
+  font-size: 0.95rem;
+  line-height: 2;
+}
+.nutrition-guide {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 5px;
+  min-width: 0;
+}
+.nutrition-guide-character {
+  background: transparent !important;
+  border: 0;
+  padding: 0;
+  width: 59px;
+  flex: 0 0 59px;
+  height: 90px;
+}
+.nutrition-guide-character svg {
+  width: 100%;
+  height: 100%;
+}
+.nutrition-guide > .plain {
+  font-size: 0.875rem;
+  border: 1px solid var(--line);
+  min-height: 46px;
+}
+.nutrition-guide-bubble {
+  border: 1px solid #c8d5bf;
+  background: #f1f5e9;
+  border-radius: 17px 17px 3px 17px;
+  padding: 13px 17px;
+  flex: 1;
+  min-width: 0;
+  max-width: 680px;
+}
+.nutrition-guide-bubble > p {
+  font-size: 0.95rem;
+  line-height: 1.9;
+  margin: 0 0 6px;
+  color: #31533e;
+}
+.nutrition-guide-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.nutrition-guide-actions button {
+  font-size: 0.875rem;
+  background: transparent;
+  border-color: transparent;
+  min-height: 44px;
+  padding: 6px 9px;
+  color: #426b45;
+}
+.nutrition-guide-actions details {
+  font-size: 0.875rem;
+  flex-basis: 100%;
+}
+.nutrition-guide-actions details p {
+  font-size: 0.9rem;
+}
+.nutrition-guide-actions summary {
+  font-weight: 400;
+}
+.nutrition-guide-actions button[aria-label="إغلاق التلميح"] {
+  margin-inline-start: auto;
+}
+.nutrition-guide-bubble > p[role="status"] {
+  color: #8b6033;
+  font-size: 0.875rem;
+}
+.specimen-challenge h2 {
+  font-size: 1.2rem;
+  margin: 12px 0 18px;
+}
+.specimen-choice {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.specimen-choice button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 12px 14px 16px;
+  border: 1px solid #dce4d4;
+  border-radius: 16px;
+  background: #f8faf4;
+  min-width: 0;
+  box-shadow: none;
+}
+.specimen-choice button[aria-pressed="true"] {
+  border-color: #6c9367;
+  box-shadow: 0 0 0 2px #d9e8cf;
+}
+.specimen-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/3;
+  max-height: 185px;
+  overflow: visible;
+}
+.specimen-choice button > span {
+  font-size: 1rem;
+  line-height: 1.9;
+  min-width: 0;
+}
+.specimen-choice button > svg:not(.specimen-art) {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: #416a3e;
+}
+.classification-options {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  min-width: 0;
+  margin: 15px 0;
+}
+.classification-options button {
+  flex: 1 1 140px;
+  background: #fff;
+  min-height: 53px;
+  font-size: 1rem;
+  border-color: #cfdac3;
+  padding: 12px;
+  line-height: 1.8;
+}
+.classification-options button[aria-pressed="true"] {
+  background: #eaf2de;
+  border-color: #6a8a55;
+  color: #305239;
+}
+.activity-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.activity-controls button {
+  min-height: 48px;
+  font-size: 0.95rem;
+}
+.activity-controls small {
+  color: var(--green);
+  font-size: 0.8rem;
+}
+.nutrition-feedback {
+  font-size: 1rem;
+  line-height: 2;
+  color: #355b40;
+  background: #f0f5e9;
+  padding: 14px 17px;
+  border-radius: 12px;
+  margin: 16px 0;
+}
+.specimen-challenge .ordering-feedback {
+  font-size: 1rem;
+}
+.nutrition-activity {
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+  margin-top: 20px;
+}
+.nutrition-activity > summary {
+  font-size: 1rem;
+  color: var(--green);
+}
+.card-ordering {
+  margin-top: 14px;
+}
+.card-ordering .section-head .pill {
+  font-size: 0.8rem;
+}
+.card-ordering p {
+  font-size: 0.95rem;
+  line-height: 1.95;
+}
+.ordering-bank {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+.science-card {
+  width: 100%;
+  text-align: right;
+  justify-content: start;
+  min-height: 67px;
+  font-size: 0.95rem;
+  line-height: 1.9;
+  background: #fafbf5;
+  border-color: #d9e1cb;
+  padding: 13px 16px;
+}
+.science-card b {
+  font-weight: 600;
+  min-width: 0;
+  flex: 1;
+}
+.science-card-icon {
+  font-size: 1.15rem;
+  color: #8b9f6a;
+}
+.ordering-answer {
+  border: 1px dashed #bdcbb1;
+  border-radius: 14px;
+  background: #f5f8ef;
+  padding: 16px;
+}
+.ordering-answer h3 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  margin: 0 0 12px;
+}
+.ordering-answer h3 span {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+.ordering-answer ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.chosen-card {
+  background: #fff;
+  transition: background 0.15s;
+}
+.card-rank {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  background: #e4edda;
+  color: #40623e;
+  border-radius: 50%;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+.ordering-empty {
+  font-size: 0.9rem !important;
+  color: var(--muted);
+  margin: 0 !important;
+}
+.ordering-actions {
+  margin-top: 15px;
+}
+.ordering-actions button {
+  min-height: 48px;
+  font-size: 0.875rem;
+}
+.ordering-success .chosen-card {
+  border-color: #759a65;
+  background: #eff5e5;
+}
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.photosynthesis-plate {
+  margin: 0;
+  min-width: 0;
+}
+.photosynthesis-plate > svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid #dce7d5;
+  border-radius: 18px;
+  aspect-ratio: 2/1;
+}
+.photosynthesis-plate text {
+  font-family: inherit;
+  font-size: 20px;
+  fill: #31573d;
+  direction: rtl;
+  text-anchor: middle;
+}
+.plate-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.plate-tabs button {
+  flex: 1;
+  min-height: 48px;
+  font-size: 0.95rem;
+  background: #f9fbf4;
+  border-color: #dbe5cf;
+}
+.plate-tabs button[aria-pressed="true"] {
+  background: #e1ecd3;
+  border-color: #789c65;
+  color: #345b3b;
+}
+.photosynthesis-plate figcaption {
+  font-size: 1rem;
+  line-height: 1.95;
+  margin-top: 13px;
+  color: #35553e;
+  padding: 3px 0;
+}
+.photosynthesis-plate .plate-water,
+.photosynthesis-plate .plate-light,
+.photosynthesis-plate .plate-gases {
+  opacity: 0.35;
+  transition: opacity 0.2s;
+}
+.highlight-water .plate-water,
+.highlight-light .plate-light,
+.highlight-gases .plate-gases {
+  opacity: 1;
+}
+.sample-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.sample-selector button {
+  flex: 1;
+  font-size: 1rem;
+  min-height: 50px;
+}
+.sample-selector button[aria-pressed="true"] {
+  background: #e7f0dd;
+  border-color: #71965d;
+}
+.starch-challenge > .scientific-scene {
+  border: 1px solid #dce5d2;
+  background: #f8faf4;
+  border-radius: 16px;
+  padding: 10px;
+}
+.starch-challenge h3 {
+  font-size: 1.05rem;
+  margin: 22px 0 12px;
+}
+.starch-challenge > button {
+  font-size: 0.95rem;
+}
+.science-safety {
+  font-size: 0.875rem;
+  color: #6f735e;
+  margin: 0 0 14px;
+}
+.starch-challenge .scene-zoom {
+  font-size: 0.875rem;
+  min-height: 44px;
+}
+.animal-infographic {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0 25px;
+}
+.animal-infographic > div {
+  display: grid;
+  justify-items: center;
+  border-bottom: 3px solid #b5c7a4;
+  padding: 12px 8px 15px;
+  text-align: center;
+  background: #f4f7ef;
+  border-radius: 12px 12px 0 0;
+  min-width: 0;
+}
+.animal-infographic span {
+  font-size: 0.875rem;
+  color: #667557;
+  margin-top: 8px;
+}
+.animal-infographic strong {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 6px;
+  color: #35573a;
+}
+.animal-infographic .specimen-art {
+  max-height: 155px;
+}
+.nutrition-infographic {
+  margin-top: 15px;
+}
+.infographic-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+.infographic-tabs button {
+  flex: 1 1 120px;
+  font-size: 0.875rem;
+  min-height: 48px;
+  padding: 10px;
+  background: #fff;
+}
+.infographic-tabs button[aria-pressed="true"] {
+  background: #e7f0dc;
+  border-color: #839e69;
+  color: #365a3c;
+}
+.nutrition-infographic h2 {
+  font-size: 1.35rem;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+.nutrition-tree {
+  margin: 0;
+}
+.nutrition-tree-branches {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  border-top: 2px solid #aac397;
+  margin-top: 25px;
+}
+.nutrition-tree-branches > section {
+  position: relative;
+  padding: 22px 15px 10px;
+  text-align: center;
+  min-width: 0;
+}
+.nutrition-tree-branches > section:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 24px;
+  border-left: 2px solid #aac397;
+}
+.nutrition-tree-branches strong {
+  font-size: 1.15rem;
+  color: #36583d;
+}
+.nutrition-tree-branches p {
+  font-size: 1rem;
+  line-height: 1.9;
+  margin-top: 8px;
+}
+.nutrition-tree-branches .specimen-art {
+  max-height: 190px;
+  margin-bottom: 12px;
+}
+.paired-specimens {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 190px;
+}
+.paired-specimens > svg {
+  width: 50%;
+}
+.infographic-return {
+  font-size: 0.95rem;
+  margin-top: 24px;
+  min-height: 48px;
+}
+.infographic-caption {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  font-size: 1rem;
+  line-height: 1.95;
+  padding: 15px 0;
+  color: #3b573e;
+}
+.starch-color,
+.control-color {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-block;
+  background: #242a50;
+  flex-shrink: 0;
+}
+.control-color {
+  background: #c5a052;
+  margin-inline-start: 15px;
+}
+[data-theme="dark"] [data-lesson="1"] .lesson-canvas {
+  background: var(--paper);
+}
+[data-theme="dark"] .nutrition-core,
+[data-theme="dark"] .nutrition-question {
+  color: #e2efd7;
+}
+[data-theme="dark"] .specimen-choice button,
+[data-theme="dark"] .classification-options button,
+[data-theme="dark"] .plate-tabs button,
+[data-theme="dark"] .infographic-tabs button {
+  background: #2e4333;
+  color: #e6efd9;
+  border-color: #637a55;
+}
+[data-theme="dark"] .classification-options button[aria-pressed="true"],
+[data-theme="dark"] .plate-tabs button[aria-pressed="true"],
+[data-theme="dark"] .infographic-tabs button[aria-pressed="true"] {
+  background: #48603c;
+  color: white;
+}
+[data-theme="dark"] .nutrition-guide-bubble,
+[data-theme="dark"] .nutrition-feedback {
+  background: #31472e;
+  border-color: #68825b;
+  color: #e7efd9;
+}
+[data-theme="dark"] .nutrition-guide-bubble > p,
+[data-theme="dark"] .nutrition-guide-actions button {
+  color: #e7efd9;
+}
+[data-theme="dark"] .photosynthesis-plate figcaption,
+[data-theme="dark"] .animal-infographic strong,
+[data-theme="dark"] .nutrition-tree-branches strong,
+[data-theme="dark"] .infographic-caption {
+  color: #cde3be;
+}
+[data-theme="dark"] .animal-infographic > div {
+  background: #314631;
+}
+[data-theme="dark"] .animal-infographic span {
+  color: #c0d1ae;
+}
+[data-theme="dark"] .nutrition-prediction label {
+  background: var(--paper);
+}
+[data-theme="dark"] .ordering-answer {
+  background: #2b432d;
+}
+[data-theme="dark"] .science-card {
+  background: #30442e;
+}
+[data-theme="dark"] .sample-selector button[aria-pressed="true"] {
+  background: #395431;
+}
+@media (max-width: 800px) {
+  .specimen-choice {
+    gap: 10px;
+  }
+  .specimen-choice button {
+    padding: 10px;
+  }
+  .specimen-choice button > span {
+    font-size: 0.95rem;
+  }
+  .nutrition-tree-branches {
+    gap: 10px;
+  }
+  .paired-specimens {
+    min-height: 155px;
+  }
+  .nutrition-tree-branches .specimen-art {
+    max-height: 155px;
+  }
+}
+@media (max-width: 560px) {
+  .palestinian-prototype {
+    border-inline-width: 2px;
+  }
+  .palestinian-prototype .home-welcome h1 {
+    font-size: 1.95rem;
+    line-height: 1.7;
+    margin-top: 7px;
+  }
+  .palestinian-prototype .home-welcome .overline {
+    font-size: 0.8rem;
+  }
+  .palestinian-prototype .lesson-tile {
+    padding: 16px 14px;
+  }
+  .palestinian-prototype .lesson-tile p {
+    font-size: 0.875rem;
+    min-height: 3.8em;
+  }
+  .palestinian-prototype .tile-footer {
+    font-size: 0.75rem;
+  }
+  .palestinian-prototype .catalog-heading h2 {
+    font-size: 1.15rem;
+  }
+  [data-lesson="1"] .lesson-canvas {
+    padding: 20px 14px;
+  }
+  [data-lesson="1"] .concept-title h1 {
+    font-size: 1.65rem;
+    margin-bottom: 18px;
+  }
+  [data-lesson="1"] .learning-modes button {
+    font-size: 0.875rem;
+    gap: 6px;
+    padding: 9px 8px;
+  }
+  [data-lesson="1"] .concept-title .overline {
+    font-size: 0.8rem;
+  }
+  .nutrition-core {
+    font-size: 1rem;
+    line-height: 2;
+    margin-bottom: 20px;
+  }
+  .nutrition-intro h1 {
+    font-size: 1.85rem;
+    line-height: 1.65;
+  }
+  .nutrition-kicker {
+    font-size: 0.8rem;
+  }
+  .nutrition-question {
+    font-size: 1rem;
+  }
+  .nutrition-orchard {
+    border-radius: 13px;
+  }
+  .nutrition-orchard svg {
+    max-height: 350px;
+  }
+  .orchard-part-picker {
+    gap: 6px;
+  }
+  .orchard-part-picker button {
+    font-size: 0.875rem;
+    min-height: 48px;
+    padding: 9px 7px;
+    gap: 6px;
+  }
+  .orchard-part-picker svg {
+    width: 17px;
+  }
+  .orchard-discovery {
+    font-size: 0.95rem;
+    padding: 12px;
+  }
+  .nutrition-prediction label {
+    font-size: 0.95rem;
+    padding: 12px;
+    gap: 10px;
+  }
+  .nutrition-prediction legend {
+    font-size: 0.95rem;
+  }
+  .nutrition-intro-actions button {
+    flex: 1 1 100%;
+    font-size: 1rem;
+  }
+  .nutrition-guide {
+    gap: 10px;
+    align-items: start;
+  }
+  .nutrition-guide-character {
+    width: 49px;
+    flex-basis: 49px;
+    height: 78px;
+  }
+  .nutrition-guide-bubble {
+    padding: 12px;
+    min-width: 0;
+  }
+  .nutrition-guide-bubble > p {
+    font-size: 0.9rem;
+    line-height: 2;
+  }
+  .nutrition-guide-actions button {
+    font-size: 0.875rem;
+    min-height: 44px;
+    padding: 5px;
+  }
+  .nutrition-guide-actions {
+    gap: 4px;
+  }
+  .specimen-choice {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .specimen-choice button[aria-pressed="true"] {
+    grid-column: 1/-1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+  }
+  .specimen-choice button[aria-pressed="true"] > .specimen-art {
+    width: min(200px, 100%);
+    max-height: 150px;
+  }
+  .specimen-choice button[aria-pressed="true"] > span {
+    flex-basis: 100%;
+    text-align: center;
+  }
+  .specimen-choice button > .specimen-art {
+    max-height: 115px;
+  }
+  .specimen-choice button > span {
+    font-size: 0.95rem;
+  }
+  .specimen-challenge h2 {
+    font-size: 1.1rem;
+    line-height: 1.9;
+  }
+  .classification-options {
+    gap: 8px;
+  }
+  .classification-options button {
+    flex-basis: 100%;
+    font-size: 0.95rem;
+    min-height: 52px;
+    padding: 11px;
+  }
+  .activity-controls button {
+    font-size: 0.9rem;
+    min-height: 48px;
+    flex: 1 1 40%;
+  }
+  .activity-controls small {
+    font-size: 0.8rem;
+    flex-basis: 100%;
+  }
+  .nutrition-feedback {
+    font-size: 0.95rem;
+    line-height: 2;
+    padding: 13px;
+  }
+  .nutrition-quick-question .options label {
+    font-size: 0.95rem;
+    padding: 13px;
+  }
+  .nutrition-quick-question .concept-check h2 {
+    font-size: 1.05rem;
+  }
+  .nutrition-quick-question .button-row button {
+    font-size: 0.875rem;
+  }
+  .nutrition-more p {
+    font-size: 0.95rem;
+  }
+  .photosynthesis-plate text {
+    font-size: 22px;
+  }
+  .photosynthesis-plate > svg {
+    border-radius: 13px;
+  }
+  .plate-tabs {
+    gap: 6px;
+  }
+  .plate-tabs button {
+    font-size: 0.875rem;
+    min-height: 48px;
+    padding: 9px 6px;
+    gap: 5px;
+  }
+  .plate-tabs button svg {
+    width: 16px;
+  }
+  .photosynthesis-plate figcaption {
+    font-size: 0.95rem;
+    line-height: 2;
+  }
+  .sample-selector {
+    gap: 8px;
+  }
+  .sample-selector button {
+    font-size: 0.95rem;
+    min-height: 49px;
+  }
+  .starch-challenge > .scientific-scene {
+    padding: 7px;
+    border-radius: 12px;
+  }
+  .science-safety {
+    font-size: 0.875rem;
+    line-height: 1.9;
+  }
+  .starch-challenge h3 {
+    font-size: 1rem;
+  }
+  .animal-infographic {
+    gap: 7px;
+  }
+  .animal-infographic > div {
+    padding: 9px 5px 12px;
+  }
+  .animal-infographic .specimen-art {
+    max-height: 100px;
+  }
+  .animal-infographic span {
+    font-size: 0.8rem;
+    line-height: 1.9;
+  }
+  .animal-infographic strong {
+    font-size: 0.9rem;
+    line-height: 1.9;
+  }
+  .nutrition-tree-branches > section {
+    padding: 20px 5px 10px;
+  }
+  .nutrition-tree-branches strong {
+    font-size: 1.05rem;
+  }
+  .nutrition-tree-branches p {
+    font-size: 0.9rem;
+    line-height: 2;
+  }
+  .nutrition-tree-branches .specimen-art {
+    max-height: 145px;
+  }
+  .paired-specimens {
+    min-height: 145px;
+    flex-wrap: wrap;
+    gap: 0;
+    justify-content: center;
+  }
+  .paired-specimens > svg {
+    max-height: 80px !important;
+    width: 100%;
+  }
+  .nutrition-infographic h2 {
+    font-size: 1.2rem;
+  }
+  .infographic-tabs {
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .infographic-tabs button {
+    flex: 1 1 42%;
+    font-size: 0.875rem;
+    padding: 10px 8px;
+    min-height: 48px;
+  }
+  .infographic-caption {
+    font-size: 0.95rem;
+  }
+  .ordering-bank {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+  .science-card {
+    font-size: 0.95rem;
+    min-height: 60px;
+    padding: 12px;
+  }
+  .ordering-answer {
+    padding: 13px;
+  }
+  .ordering-answer h3 {
+    font-size: 0.95rem;
+  }
+  .ordering-actions button {
+    font-size: 0.875rem;
+    flex: 1 1 100%;
+    min-height: 48px;
+  }
+  .card-ordering p {
+    font-size: 0.95rem;
+  }
+  .nutrition-more summary {
+    font-size: 0.875rem;
+  }
+}
+@media (max-width: 350px) {
+  .animal-infographic {
+    grid-template-columns: 1fr;
+  }
+  .animal-infographic > div {
+    grid-template-columns: 90px 1fr;
+    align-items: center;
+    text-align: right;
+    justify-items: start;
+    column-gap: 14px;
+  }
+  .animal-infographic .specimen-art {
+    grid-row: 1/3;
+    width: 90px;
+    height: 80px;
+  }
+  .animal-infographic span {
+    margin: 0;
+  }
+  .animal-infographic strong {
+    margin: 0;
+  }
+  .specimen-choice {
+    grid-template-columns: 1fr 1fr;
+  }
+  .plate-tabs button {
+    font-size: 0.8rem;
+  }
+  .plate-tabs svg {
+    display: none;
+  }
+  .orchard-part-picker button {
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+  .nutrition-tree-branches {
+    grid-template-columns: 1fr;
+  }
+  .paired-specimens {
+    min-height: 120px;
+    flex-wrap: nowrap;
+  }
+  .paired-specimens > svg {
+    width: 50%;
+    max-height: 120px !important;
+  }
+  .nutrition-tree-branches .specimen-art {
+    max-height: 150px;
+  }
+  .nutrition-tree-branches > section {
+    border-bottom: 1px solid var(--line);
+  }
+}

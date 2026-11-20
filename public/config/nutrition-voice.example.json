@@ -1,0 +1,39 @@
+{
+  "intro": {
+    "src": "audio/nutrition/welcome.mp3",
+    "transcript": "أهلًا يا مستكشف! نحن نأكل ثمار الزيتون، فكيف تحصل شجرته على غذائها؟"
+  },
+  "nutrition": {
+    "src": "audio/nutrition/nutrition.mp3",
+    "transcript": "تأمل الكائنات. أيها يصنع غذاءه، وأيها يعتمد على غيره؟"
+  },
+  "photosynthesis": {
+    "src": "audio/nutrition/photosynthesis.mp3",
+    "transcript": "تتبّع الماء والضوء والغازات، ثم جرّب تغيير عامل واحد."
+  },
+  "starch": {
+    "src": "audio/nutrition/starch.mp3",
+    "transcript": "قارن العينة بالماء الضابط قبل إضافة لوغول وبعده."
+  },
+  "feeding": {
+    "src": "audio/nutrition/feeding.mp3",
+    "transcript": "هل مصدر الغذاء كائن حي أم بقايا ميتة؟"
+  },
+  "animals": {
+    "src": "audio/nutrition/animals.mp3",
+    "transcript": "تتبّع الطعام الذي يأكله الحيوان، ثم صنّف نمط تغذيته."
+  },
+  "correct.1": {
+    "src": "audio/nutrition/excellent.mp3",
+    "transcript": "ممتاز!"
+  },
+  "correct.2": {
+    "src": "audio/nutrition/well-done.mp3",
+    "transcript": "أحسنت!"
+  },
+  "correct.3": { "src": "audio/nutrition/great.mp3", "transcript": "رائع!" },
+  "retry.1": {
+    "src": "audio/nutrition/try-again.mp3",
+    "transcript": "فكّر قليلًا، ثم حاول مرة أخرى."
+  }
+}

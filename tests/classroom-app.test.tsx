@@ -127,6 +127,10 @@ test("complete student journey: all seven integrated lessons, 23 watch and try s
           );
           fireEvent.click(ui.getByRole("button", { name: "اعتماد الاستنتاج" }));
         }
+        if (lesson.id === 1)
+          ui.container.querySelector<HTMLDetailsElement>(
+            ".nutrition-quick-question",
+          )!.open = true;
         fireEvent.click(
           ui.container.querySelectorAll<HTMLInputElement>(
             `input[name="${c.check.id}"]`,
@@ -254,6 +258,9 @@ test("invalid saved location falls back safely and incorrect concept answers exp
         .closest("button")!,
     );
     const c = curriculum[0].topics[0];
+    ui.container.querySelector<HTMLDetailsElement>(
+      ".nutrition-quick-question",
+    )!.open = true;
     fireEvent.click(
       ui.container.querySelectorAll<HTMLInputElement>(
         `input[name="${c.check.id}"]`,
