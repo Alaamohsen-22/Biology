@@ -54,6 +54,14 @@ export function Simulation({
     explained: false,
   });
   const [toolHint, setToolHint] = useState("");
+  const [comparison, setComparison] = useDraft(`comparison-${scene.id}`, {
+    saved: false,
+    vars: {} as Variables,
+    t: 1,
+    value: 0,
+    label: "",
+  });
+  const [comparing, setComparing] = useState(false);
   const [toolStep, setToolStep] = useDraftState(`scene-${scene.id}-tools`, 0);
   const [vars, setVars] = useDraftState<Variables>(
     `scene-${scene.id}-vars`,
@@ -66,6 +74,13 @@ export function Simulation({
   );
   const [t, setT] = useDraftState(`scene-${scene.id}-time`, 0);
   const [running, setRunning] = useState(false);
+  useEffect(() => {
+    const pause = () => {
+      if (document.hidden) setRunning(false);
+    };
+    document.addEventListener("visibilitychange", pause);
+    return () => document.removeEventListener("visibilitychange", pause);
+  }, []);
   const [speed, setSpeed] = useDraftState(`scene-${scene.id}-speed`, 1);
   const [changed, setChanged] = useDraftState(
     `scene-${scene.id}-changed`,
@@ -262,11 +277,6 @@ export function Simulation({
       className="simulation card simulation-v2"
       data-sound-scope="custom"
       aria-label={scene.title}
-      onFocusCapture={() =>
-        onHint?.(
-          `تجربة ${scene.title}: اختر عاملًا واحدًا، وسجل ما تراه لتبني استنتاجك.`,
-        )
-      }
     >
       <div className="section-head">
         <div>
@@ -319,174 +329,252 @@ export function Simulation({
           جرّب بنفسك {experimented && "✓"}
         </button>
       </div>
-      <div className="lab-step-header">
-        <span className="pill">
-          الخطوة {step + 1} / {scene.stages.length}
-        </span>
-        <p aria-live="polite">
-          {mode === "try" && scene.id.startsWith("micro")
-            ? [
-                "أجهز العينة المختارة.",
-                "ألاحظ شكل الجسم وزوائده.",
-                "أراقب الحركة وتغير الموضع.",
-                "أقارن وسيلة الدفع.",
-              ][step]
-            : scene.stages[step]}
-        </p>
-        <span
-          className={`play-state ${running ? "running" : ""}`}
-          role="status"
-        >
-          {preview
-            ? "معاينة الإعدادات"
-            : running
-              ? reduced
-                ? "المشاهدة تعمل"
-                : "المحاكاة تعمل"
-              : t >= 1
-                ? "انتهى العرض"
-                : t > 0
-                  ? "متوقفة مؤقتًا"
-                  : "جاهزة للتشغيل"}
-        </span>
-      </div>
-      <div className="lab-visual">
-        <ScientificScene
-          id={scene.id}
-          vars={effective}
-          t={t}
-          value={result.value}
-        />
-      </div>
-      <div className="simulation-controls">
-        <button className="primary" onClick={play}>
-          {running ? <Pause size={18} /> : <Play size={18} />}{" "}
-          {running ? "إيقاف مؤقت" : t > 0 && t < 1 ? "استئناف" : "تشغيل"}
-        </button>
-        {t > 0 && (
-          <button className="embroidered-nav previous" onClick={previous}>
-            <SkipBack size={18} />
-            خطوة سابقة
-          </button>
-        )}
-        {t < 1 && (
-          <button className="embroidered-nav next primary" onClick={next}>
-            <SkipForward size={18} />
-            خطوة تالية
-          </button>
-        )}
-        <button
-          aria-label="إعادة ضبط المحاكاة"
-          onClick={() => {
-            reset();
-            setVars(
-              mode === "try"
-                ? { ...defaults(), ...initialLabMaterials[scene.id] }
-                : defaults(),
-            );
-            setChanged(false);
-            sound.play("move");
-          }}
-        >
-          <RotateCcw size={18} />
-          إعادة المحاكاة
-        </button>
-        <label className="speed">
-          السرعة
-          <select
-            value={speed}
-            onChange={(e) => {
-              setSpeed(+e.target.value);
-              sound.play("select");
-            }}
-          >
-            <option value="0.5">½×</option>
-            <option value="1">1×</option>
-            <option value="2">2×</option>
-          </select>
-        </label>
-      </div>
-      {mode === "try" && (
-        <div className="experiment-tools">
-          {" "}
-          <div className="section-head">
-            <h3>أدوات التجربة</h3>
-            <span className="pill">غيّر عاملًا واحدًا وقارن</span>
+      <div className={`lab-workspace ${mode === "try" ? "interactive" : ""}`}>
+        <div className="lab-stage">
+          <div className="lab-step-header">
+            <span className="pill">
+              الخطوة {step + 1} / {scene.stages.length}
+            </span>
+            <p aria-live="polite">
+              {mode === "try" && scene.id.startsWith("micro")
+                ? [
+                    "أجهز العينة المختارة.",
+                    "ألاحظ شكل الجسم وزوائده.",
+                    "أراقب الحركة وتغير الموضع.",
+                    "أقارن وسيلة الدفع.",
+                  ][step]
+                : scene.stages[step]}
+            </p>
+            <span
+              className={`play-state ${running ? "running" : ""}`}
+              role="status"
+            >
+              {preview
+                ? "معاينة الإعدادات"
+                : running
+                  ? reduced
+                    ? "المشاهدة تعمل"
+                    : "المحاكاة تعمل"
+                  : t >= 1
+                    ? "انتهى العرض"
+                    : t > 0
+                      ? "متوقفة مؤقتًا"
+                      : "جاهزة للتشغيل"}
+            </span>
           </div>
-          <div className="lab-tools">
-            {labProtocols[scene.id].map((action, i) => (
-              <button
-                key={action.label}
-                className={i < toolStep ? "used-tool" : ""}
-                onClick={() => {
-                  setVars((v) => ({ ...v, ...action.patch }));
-                  setChanged(true);
-                  setT(0);
-                  setLogged(false);
-                  setCompletedRun(false);
-                  setConclusion("");
-                  setFeedback("");
-                  setPreview(false);
-                  reported.current = false;
-                  started.current = false;
-                  activity.reset();
-                  setToolStep(i + 1);
-                  sound.play(action.sound);
-                  onHint?.(
-                    `${action.label}: راقب ما يتغير وقارن بالتجربة السابقة.`,
-                  );
-                  if (i === labProtocols[scene.id].length - 1) {
-                    started.current = true;
-                    setRunning(true);
-                  } else setRunning(false);
+          <div className="lab-visual">
+            <ScientificScene
+              id={scene.id}
+              vars={effective}
+              t={t}
+              value={result.value}
+            />
+          </div>
+          <div className="simulation-controls">
+            <button className="primary" onClick={play}>
+              {running ? <Pause size={18} /> : <Play size={18} />}{" "}
+              {running ? "إيقاف مؤقت" : t > 0 && t < 1 ? "استئناف" : "تشغيل"}
+            </button>
+            {t > 0 && (
+              <button className="embroidered-nav previous" onClick={previous}>
+                <SkipBack size={18} />
+                خطوة سابقة
+              </button>
+            )}
+            {t < 1 && (
+              <button className="embroidered-nav next primary" onClick={next}>
+                <SkipForward size={18} />
+                خطوة تالية
+              </button>
+            )}
+            <button
+              aria-label="إعادة ضبط المحاكاة"
+              onClick={() => {
+                reset();
+                setVars(
+                  mode === "try"
+                    ? { ...defaults(), ...initialLabMaterials[scene.id] }
+                    : defaults(),
+                );
+                setChanged(false);
+                sound.play("move");
+              }}
+            >
+              <RotateCcw size={18} />
+              إعادة المحاكاة
+            </button>
+            <label className="speed">
+              السرعة
+              <select
+                value={speed}
+                onChange={(e) => {
+                  setSpeed(+e.target.value);
+                  sound.play("select");
                 }}
               >
-                <LabTool type={action.tool} />
-                <span>{action.label}</span>
-                {i < toolStep && <b>✓</b>}
-              </button>
-            ))}
-          </div>
-          <h3>غيّر ظروف التجربة</h3>
-          <div className="variables">
-            {scene.variables.map((v) => (
-              <label key={v.key}>
-                <span>
-                  {v.label}
-                  <b>
-                    {vars[v.key]} {v.unit}
-                  </b>
-                </span>
-                <input
-                  type="range"
-                  min={v.min}
-                  max={v.max}
-                  step="1"
-                  value={vars[v.key]}
-                  onChange={(e) => setVariable(v.key, +e.target.value)}
-                />
-                {v.max <= 2 && (
-                  <div className="variable-choices">
-                    {Array.from({ length: v.max + 1 }, (_, n) => (
-                      <button
-                        key={n}
-                        aria-label={`${v.label}: ${n}`}
-                        aria-pressed={vars[v.key] === n}
-                        onClick={() => setVariable(v.key, n)}
-                      >
-                        {v.max === 1
-                          ? n
-                            ? "متاح / مفعّل"
-                            : "غير متاح / متوقف"
-                          : n}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </label>
-            ))}
+                <option value="0.5">½×</option>
+                <option value="1">1×</option>
+                <option value="2">2×</option>
+              </select>
+            </label>
           </div>
         </div>
+        {mode === "try" && (
+          <div className="experiment-tools">
+            {" "}
+            <div className="section-head">
+              <h3>أدوات التجربة</h3>
+              <span className="pill">غيّر عاملًا واحدًا وقارن</span>
+            </div>
+            <div className="lab-tools">
+              {labProtocols[scene.id].map((action, i) => (
+                <button
+                  key={action.label}
+                  className={i < toolStep ? "used-tool" : ""}
+                  onClick={() => {
+                    setVars((v) => ({ ...v, ...action.patch }));
+                    setChanged(true);
+                    setT(0);
+                    setLogged(false);
+                    setCompletedRun(false);
+                    setConclusion("");
+                    setFeedback("");
+                    setPreview(false);
+                    reported.current = false;
+                    started.current = false;
+                    activity.reset();
+                    setToolStep(i + 1);
+                    sound.play(action.sound);
+                    onHint?.(
+                      `${action.label}: راقب ما يتغير وقارن بالتجربة السابقة.`,
+                    );
+                    if (i === labProtocols[scene.id].length - 1) {
+                      started.current = true;
+                      setRunning(true);
+                    } else setRunning(false);
+                  }}
+                >
+                  <LabTool type={action.tool} />
+                  <span>{action.label}</span>
+                  {i < toolStep && <b>✓</b>}
+                </button>
+              ))}
+            </div>
+            <h3>غيّر ظروف التجربة</h3>
+            <div className="variables">
+              {scene.variables.map((v) => (
+                <label key={v.key}>
+                  <span>
+                    {v.label}
+                    <b>
+                      {vars[v.key]} {v.unit}
+                    </b>
+                  </span>
+                  <input
+                    type="range"
+                    min={v.min}
+                    max={v.max}
+                    step="1"
+                    value={vars[v.key]}
+                    onChange={(e) => setVariable(v.key, +e.target.value)}
+                  />
+                  {v.max <= 2 && (
+                    <div className="variable-choices">
+                      {Array.from({ length: v.max + 1 }, (_, n) => (
+                        <button
+                          key={n}
+                          aria-label={`${v.label}: ${n}`}
+                          aria-pressed={vars[v.key] === n}
+                          onClick={() => setVariable(v.key, n)}
+                        >
+                          {v.max === 1
+                            ? n
+                              ? "متاح / مفعّل"
+                              : "غير متاح / متوقف"
+                            : n}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      {mode === "try" && (
+        <div className="lab-comparison-controls">
+          <button
+            disabled={!completedRun}
+            onClick={() => {
+              setComparison({
+                saved: true,
+                vars: { ...effective },
+                t,
+                value: result.value,
+                label: result.label,
+              });
+              setComparing(false);
+              sound.play("check");
+            }}
+          >
+            احفظ هذه النتيجة للمقارنة
+          </button>
+          {comparison.saved && (
+            <button
+              aria-pressed={comparing}
+              onClick={() => {
+                setComparing(!comparing);
+                sound.play("select");
+              }}
+            >
+              {comparing ? "إخفاء المقارنة" : "قارن بالنتيجة المحفوظة"}
+            </button>
+          )}
+          {!completedRun && (
+            <small>أكمل تشغيل التجربة لحفظ نتيجة تقارن بها.</small>
+          )}
+        </div>
+      )}
+      {mode === "try" && comparing && comparison.saved && (
+        <section className="lab-comparison" aria-label="مقارنة التجارب">
+          <div>
+            <h3>تجربتك المحفوظة</h3>
+            <ScientificScene
+              id={scene.id}
+              vars={comparison.vars}
+              t={comparison.t}
+              value={comparison.value}
+              compact
+            />
+            <p>{comparison.label}</p>
+            <ul>
+              {scene.variables.map((v) => (
+                <li key={v.key}>
+                  {v.label}: {comparison.vars[v.key]} {v.unit}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3>تجربتك الحالية</h3>
+            <ScientificScene
+              id={scene.id}
+              vars={effective}
+              t={t}
+              value={result.value}
+              compact
+            />
+            <p>{t >= 1 ? result.label : "شغّل التجربة لتكتمل المقارنة."}</p>
+            <ul>
+              {scene.variables.map((v) => (
+                <li key={v.key}>
+                  {v.label}: {vars[v.key]} {v.unit}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
       )}
       <button
         className="lab-hint"
