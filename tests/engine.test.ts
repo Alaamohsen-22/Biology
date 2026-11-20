@@ -130,7 +130,7 @@ test("untrusted backup data is rejected", () => {
   );
 });
 test("concept-book mastery replaces deleted tasks with checks and preserves earned legacy mastery", async () => {
-  const { conceptCheckIds } = await import("../src/engine/conceptBook");
+  const { conceptCheckIds } = await import("../src/engine/lessonFlow");
   for (const lesson of lessons) {
     const ids = lesson.scenes.map((s) => s.id),
       checks = conceptCheckIds(lesson.id);

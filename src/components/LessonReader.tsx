@@ -1,4 +1,4 @@
-import { BookContentsDrawer } from "./BookContentsDrawer";
+import { LessonSidebar } from "./LessonSidebar";
 import { forwardRef, useState, useEffect, lazy, Suspense } from "react";
 import {
   Leaf,
@@ -21,7 +21,7 @@ import {
   lessonPages,
   lessonIndex,
   conceptCheckIds,
-} from "../engine/conceptBook";
+} from "../engine/lessonFlow";
 import { type LessonProgress, isMastered } from "../engine/progress";
 import { useDraft } from "../engine/drafts";
 import {
@@ -82,7 +82,7 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
         current.concept === undefined
           ? undefined
           : data.topics[current.concept];
-    const [menu, setMenu] = useState(false),
+    const [menu, setMenu] = useState(() => window.innerWidth >= 1050),
       [help, setHelp] = useState("");
     const sound = useSound();
     const [award, setAward] = useDraft(
@@ -105,8 +105,12 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
       }
     }, [current.kind, mastered, award.celebrated]);
     const go = (i: number) => {
-      setIndex(Math.max(0, Math.min(pages.length - 1, i)));
-      setMenu(false);
+      const target = Math.max(0, Math.min(pages.length - 1, i));
+      if (target !== index) {
+        sound.play("step");
+        setIndex(target);
+      }
+      if (window.innerWidth < 1050) setMenu(false);
     };
     const next = () => go(index + 1);
     const note = concept
@@ -144,76 +148,43 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
           ? CheckCircle2
           : BookOpen;
     return (
-      <div className={`concept-reader ${current.kind === "experiment" ? "is-experiment" : ""}`}>
+      <div
+        className={`classroom ${current.kind === "experiment" ? "is-experiment" : ""}`}
+      >
         <header className="lesson-heading">
           <button className="text-button" onClick={onBack}>
             <Map size={17} />
-            العودة إلى الفهرس
+            العودة إلى الجزيرة
           </button>
           <h1>
             {lesson.icon} {lesson.title}
           </h1>
           <span className="eyebrow">{lesson.place}</span>
         </header>
-        <div className="concept-reader-layout">
-          <button
-            className="book-contents-toggle"
-            aria-controls={menu ? "concept-index" : undefined}
-            aria-expanded={menu}
-            onClick={() => setMenu(!menu)}
+        <button
+          className="lesson-menu-toggle"
+          aria-controls="lesson-sidebar"
+          aria-expanded={menu}
+          onClick={() => setMenu(!menu)}
+        >
+          {menu ? "إخفاء محتويات الدرس" : "إظهار محتويات الدرس"}
+          <BookOpen size={18} />
+        </button>
+        <div className={`classroom-layout ${menu ? "menu-open" : ""}`}>
+          <LessonSidebar
+            lesson={lesson}
+            progress={progress}
+            currentIndex={index}
+            open={menu}
+            onSelect={go}
+          />
+          <div
+            className="classroom-content"
+            data-testid="classroom-content"
+            key={current.id}
           >
-            فهرس الدرس · {current.title}
-          </button>
-          {menu && (
-            <BookContentsDrawer
-              title={lesson.title}
-              onClose={() => setMenu(false)}
-            >
-              {lessonIndex(lesson.id).map(({ page, index: i }) => {
-                const active =
-                  current.concept !== undefined
-                    ? current.concept === page.concept
-                    : index === i;
-                const icon =
-                  page.kind === "goals"
-                    ? Target
-                    : page.kind === "certificate"
-                      ? Trophy
-                      : page.kind === "post"
-                        ? Flag
-                        : page.kind === "infographic"
-                          ? Network
-                          : BookOpen;
-                const ItemIcon = icon;
-                const done =
-                  page.concept !== undefined
-                    ? progress.conceptChecks?.includes(
-                        data.topics[page.concept].check.id,
-                      )
-                    : page.kind === "pre"
-                      ? progress.pre !== undefined
-                      : page.kind === "post"
-                        ? progress.post !== undefined
-                        : false;
-                return (
-                  <button
-                    key={page.id}
-                    aria-label={page.title}
-                    aria-current={active ? "page" : undefined}
-                    className={active ? "active" : ""}
-                    onClick={() => go(i)}
-                  >
-                    <ItemIcon size={18} />
-                    <span>{page.title}</span>
-                    {done && <CheckCircle2 size={15} aria-label="منجز" />}
-                  </button>
-                );
-              })}
-            </BookContentsDrawer>
-          )}
-          <div className="concept-leaf" key={current.id}>
             {current.kind !== "intro" && (
-              <div className="concept-leaf-heading">
+              <div className="classroom-topic-heading">
                 <Icon size={20} />
                 <span>{current.title}</span>
                 {concept && (
@@ -507,7 +478,11 @@ export const LessonReader = forwardRef<DiagnosticNavigation, Props>(
             )}
             {current.kind !== "pre" &&
               !(current.kind === "intro" && lesson.id === 1) && (
-                <nav className="lesson-bottom" aria-label="تنقل صفحات الدرس">
+                <nav
+                  className="lesson-bottom"
+                  aria-label="التنقل بين أجزاء الدرس"
+                  data-sound-scope="custom"
+                >
                   <button
                     className="embroidered-nav previous"
                     onClick={() => (index === 0 ? onBack() : go(index - 1))}

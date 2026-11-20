@@ -5,9 +5,8 @@ import { lessons, bank } from "../src/data/lessons";
 import {
   lessonPages,
   lessonIndex,
-  conceptBookNumber,
   validReadingLocation,
-} from "../src/engine/conceptBook";
+} from "../src/engine/lessonFlow";
 import { diagnostics } from "../src/data/diagnostics";
 import { simulationCue } from "../src/data/labProtocols";
 test("all seven concept sequences assign each scientific simulation exactly once, with inline checks", () => {
@@ -72,14 +71,7 @@ test("35 diagnostic questions are distinct from the posttests and use stable ans
     }
   }
 });
-test("book numbering stays ordered through diagnostic pages and all seven lessons; invalid reading locations are rejected", () => {
-  let previous = 1;
-  for (const lesson of lessons)
-    for (const [index] of lessonPages(lesson.id).entries()) {
-      const n = conceptBookNumber("lesson", lesson.id, index, 0);
-      assert.ok(n > previous);
-      previous = n;
-    }
+test("saved lesson locations stay valid across all seven lessons; invalid locations are rejected", () => {
   assert.equal(
     validReadingLocation({ lesson: 7, index: lessonPages(7).length - 1 }),
     true,

@@ -94,6 +94,7 @@ export const NutritionDiagnostic = forwardRef<
     }
     if (sent.current || draft.submitted) return;
     sent.current = true;
+    sound.play("diagnostic-result");
     setDraft((d) => ({ ...d, submitted: true }));
     onFinish(result.percent);
   };

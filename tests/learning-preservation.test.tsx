@@ -24,7 +24,6 @@ const { NutritionDiagnostic } = await import(
   "../src/components/NutritionDiagnostic"
 );
 const { NutritionGoals } = await import("../src/components/NutritionGoals");
-const { BookFrame } = await import("../src/components/BookFrame");
 const { Simulation } = await import("../src/components/Simulation");
 const { Quiz } = await import("../src/components/Quiz");
 const { lessons, bank } = await import("../src/data/lessons");
@@ -125,52 +124,7 @@ test("six concise goals are presented without developer alignment notes", () => 
     cleanup();
   }
 });
-test("one book page is rendered and sounds occur only on actual navigation, never by mount or no-op", () => {
-  const play = soundManager.play;
-  const effects: string[] = [];
-  soundManager.play = async (e) => {
-    effects.push(e);
-    return true;
-  };
-  const props = {
-    pageKey: "cover",
-    pageNumber: 0,
-    title: "الغلاف",
-    cover: true,
-    reduced: false,
-    onIndex: () => {},
-    children: <p>غلاف أصلي</p>,
-  };
-  const ui = render(<BookFrame {...props} />);
-  try {
-    assert.equal(effects.length, 0);
-    ui.rerender(<BookFrame {...props} />);
-    assert.equal(effects.length, 0);
-    ui.rerender(
-      <BookFrame {...props} pageKey="map" pageNumber={1} cover={false} />,
-    );
-    assert.deepEqual(effects, ["book-open"]);
-    assert.equal(ui.getAllByTestId("single-book-page").length, 1);
-    ui.rerender(
-      <BookFrame {...props} pageKey="goals" pageNumber={9} cover={false} />,
-    );
-    assert.equal(effects.at(-1), "page-turn");
-    ui.rerender(
-      <BookFrame
-        {...props}
-        pageKey="result"
-        pageNumber={8}
-        cover={false}
-        resultPage
-      />,
-    );
-    assert.equal(effects.at(-1), "diagnostic-result");
-  } finally {
-    cleanup();
-    soundManager.play = play;
-  }
-});
-test("turning pages restores simulation position, variables and mode without awarding observation by restoring", () => {
+test("returning to a lesson restores simulation position, variables and mode without awarding observation by restoring", () => {
   const scene = lessons[0].scenes[0];
   let watched = 0;
   const props = {
@@ -222,127 +176,6 @@ test("submitted quizzes keep results when returning and do not rescore until an 
     assert.equal(finished, 1);
     fireEvent.click(ui.getByText("إعادة الاختبار"));
     assert.ok(ui.getByRole("button", { name: /تصحيح الاختبار/ }));
-  } finally {
-    cleanup();
-  }
-});
-test("diagnostic question turns keep the live form mounted and page number synchronized", () => {
-  function DiagnosticBook() {
-    const [page, setPage] = React.useState(0);
-    return (
-      <BookFrame
-        pageKey={`diagnostic-${page}`}
-        contentKey="nutrition-pre"
-        pageNumber={3 + page}
-        title="الاختبار القبلي"
-        cover={false}
-        reduced
-        onIndex={() => {}}
-      >
-        <NutritionDiagnostic
-          onPage={setPage}
-          onFinish={() => {}}
-          onLearn={() => {}}
-          onIntro={() => {}}
-        />
-      </BookFrame>
-    );
-  }
-  const ui = render(<DiagnosticBook />);
-  try {
-    for (let i = 0; i < 5; i++) {
-      assert.ok(ui.getByLabelText(`صفحة الكتاب ${3 + i}`));
-      assert.ok(ui.getByText(nutritionDiagnostic[i].text));
-      fireEvent.click(ui.getByText(nutritionDiagnostic[i].options[0].text));
-      if (i < 4)
-        fireEvent.click(
-          ui.getByRole("button", { name: "التالي", exact: true }),
-        );
-    }
-    fireEvent.click(ui.getByLabelText("انتقل إلى السؤال 1"));
-    assert.equal(
-      (ui.getAllByRole("radio")[0] as HTMLInputElement).checked,
-      true,
-    );
-  } finally {
-    cleanup();
-  }
-});
-test("page-edge swipes ignore vertical scrolling and activity dragging, support RTL and cancel safely", () => {
-  // jsdom has no PointerEvent; supply pointer coordinates just as a browser does.
-  const pointer = (
-    node: Element,
-    type: string,
-    x: number,
-    y: number,
-    id = 1,
-  ) => {
-    const event = new dom.window.Event(type, { bubbles: true });
-    Object.defineProperties(event, {
-      clientX: { value: x },
-      clientY: { value: y },
-      pointerId: { value: id },
-    });
-    fireEvent(node, event);
-  };
-  let next = 0,
-    previous = 0;
-  const ui = render(
-    <BookFrame
-      pageKey="lab"
-      pageNumber={12}
-      title="المختبر"
-      cover={false}
-      reduced
-      onIndex={() => {}}
-      onNext={() => next++}
-      onPrevious={() => previous++}
-    >
-      <button>أداة تجربة</button>
-    </BookFrame>,
-  );
-  try {
-    const edge = ui.container.querySelector(".book-turn-edge")!;
-    pointer(edge, "pointerdown", 20, 30);
-    pointer(edge, "pointerup", 100, 180);
-    assert.equal(next, 0);
-    const tool = ui.getByRole("button", { name: "أداة تجربة" });
-    pointer(tool, "pointerdown", 20, 30);
-    pointer(tool, "pointerup", 150, 30);
-    assert.equal(next, 0);
-    pointer(edge, "pointerdown", 20, 30);
-    pointer(edge, "pointerup", 100, 35);
-    assert.equal(next, 1);
-    pointer(edge, "pointerdown", 100, 30);
-    pointer(edge, "pointerup", 20, 35);
-    assert.equal(previous, 1);
-    pointer(edge, "pointerdown", 20, 30);
-    pointer(edge, "pointercancel", 20, 30);
-    pointer(edge, "pointerup", 150, 30);
-    assert.equal(next, 1);
-  } finally {
-    cleanup();
-  }
-});
-test("activity animations do not interrupt the book turn animation", () => {
-  const props = {
-    pageKey: "intro",
-    pageNumber: 2,
-    title: "التغذية",
-    cover: false,
-    reduced: false,
-    onIndex: () => {},
-    children: <div data-testid="animated-activity">نشاط</div>,
-  };
-  const ui = render(<BookFrame {...props} />);
-  try {
-    ui.rerender(<BookFrame {...props} pageKey="pre" pageNumber={3} />);
-    const sheet = ui.getByTestId("single-book-page");
-    assert.match(sheet.className, /turn-forward/);
-    fireEvent.animationEnd(ui.getByTestId("animated-activity"));
-    assert.match(sheet.className, /turn-forward/);
-    fireEvent.animationEnd(sheet);
-    assert.match(sheet.className, /turn-none/);
   } finally {
     cleanup();
   }
